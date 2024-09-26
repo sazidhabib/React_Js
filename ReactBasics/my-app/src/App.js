@@ -1,7 +1,6 @@
-import logo from "./logo.svg";
 import "./App.css";
-import ExpenseItem from "./Components/Expense/ExpenseItem";
-import Card from "./Components/UI/Card";
+import Expenses from "./Components/Expense/Expenses";
+import NewExpense from "./Components/Expense/NewExpense/NewExpense";
 
 function App() {
   const expenses = [
@@ -26,23 +25,10 @@ function App() {
     },
   ];
   return (
-    <Card className="App expenses">
-      <ExpenseItem
-        title={expenses[0].title}
-        amount={expenses[0].amount}
-        date={expenses[0].date}
-      />
-      <ExpenseItem
-        title={expenses[1].title}
-        amount={expenses[1].amount}
-        date={expenses[1].date}
-      />
-      <ExpenseItem
-        title={expenses[2].title}
-        amount={expenses[2].amount}
-        date={expenses[2].date}
-      />
-    </Card>
+    <div>
+      <NewExpense />
+      <Expenses items={expenses} />
+    </div>
   );
 }
 

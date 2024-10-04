@@ -1,14 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import Header from "./Component/Header";
 import From from "./Component/Form";
-//import Result from "./Component/Result";
+import Result from "./Component/Result";
+
 function App() {
+  //for store the data in initial stage
+  const [userInput, setUserInput] = useState(null);
   const calculateHandler = (userInput) => {
     // Should be triggered when form is submitted
-    // You might not directly want to bind it to the submit event on the form though...
+    setUserInput(userInput);
+  };
 
-    const yearlyData = []; // per-year results
+  const yearlyData = []; // per-year results
 
+  if (userInput) {
     let currentSavings = +userInput["current-savings"]; // feel free to change the shape of this input object!
     const yearlyContribution = +userInput["yearly-contribution"]; // as mentioned: feel free to change the shape...
     const expectedReturn = +userInput["expected-return"] / 100;
@@ -28,15 +33,24 @@ function App() {
     }
 
     // do something with yearlyData ...
-  };
+  }
 
   return (
     <div>
       <Header />
-      <From />
-      {/* Todo: Show below table conditionally (only once result data is available) */}
-      {/* Show fallback text if no data is available */}
-      {/* <Result /> */}
+      {/* Form table er userInput neaor jonno jei function create kora hoyse otai akhne call diye calculation jei function korbe take assing kore dite hobe */}
+      <From calculate={calculateHandler} />
+
+      {!userInput && (
+        <p style={{ textAlign: "center" }}>No investment calculated yet.</p>
+      )}
+      {/* Result table e initialInvestment er data ta nai data user input e ase userInput["current-savings"] er moddhe tar jonno initialInvestment props create kore userInputer data assine kore disi */}
+      {userInput && (
+        <Result
+          data={yearlyData}
+          initialInvestment={userInput["current-savings"]}
+        />
+      )}
     </div>
   );
 }

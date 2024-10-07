@@ -14,6 +14,13 @@ const InputForm = (props) => {
 
   const formSubmitHandler = (event) => {
     event.preventDefault();
+    if (UserName.trim().length === 0 || UserAge.trim().length === 0) {
+      return;
+    }
+
+    if (UserAge < 1) {
+      return;
+    }
     props.onSubmit({ UserName, UserAge });
 
     setUserName("");

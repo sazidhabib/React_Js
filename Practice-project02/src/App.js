@@ -11,6 +11,8 @@ function App() {
   const handleFormSubmit = (newSubmit) => {
     setUserInput(newSubmit);
     if (userInput) {
+      console.log(userInput);
+
       setSubmittedData([...submittedData, newSubmit]);
     }
   };
@@ -18,7 +20,8 @@ function App() {
   return (
     <div className="container ">
       <InputForm onSubmit={handleFormSubmit} />
-      <ResultTable submittedData={submittedData} />
+      {!userInput && <p style={{ textAlign: "center" }}>No value enter yet.</p>}
+      {userInput && <ResultTable submittedData={submittedData} />}
     </div>
   );
 }

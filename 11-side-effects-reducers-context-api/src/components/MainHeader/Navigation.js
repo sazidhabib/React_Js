@@ -18,6 +18,7 @@ const Navigation = () => {
             <a href="/">Admin</a>
           </li>
         )}
+
         {ctx.isLoggedIn && (
           <li>
             <button onClick={ctx.onLogout}>Logout</button>

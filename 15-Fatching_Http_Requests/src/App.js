@@ -13,19 +13,31 @@ function App() {
     setError(null);
 
     try {
-      const response = await fetch("https://swapi.dev/api/films");
+      //const response = await fetch("https://swapi.dev/api/films");
+      const response = await fetch(
+        "https://movies-api14.p.rapidapi.com/movies",
+        {
+          method: "GET",
+          headers: {
+            "X-RapidAPI-Key":
+              "f763d779e0mshf17c58e06e03995p10a109jsnd27ec419a469",
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error("Something went wrong!");
       }
 
       const data = await response.json();
+      console.log(data);
 
-      const transformedMovies = data.results.map((movieData) => {
+      const transformedMovies = data.movies.map((movieData) => {
         return {
-          id: movieData.episode_id,
+          id: movieData._id,
+          img: movieData.poster_path,
           title: movieData.title,
           releaseDate: movieData.release_date,
-          openingText: movieData.opening_crawl,
+          openingText: movieData.overview,
         };
       });
       setMovies(transformedMovies);
@@ -51,6 +63,7 @@ function App() {
   if (isLoading) {
     content = <p>Loading...</p>;
   }
+  console.log(movies);
 
   return (
     <React.Fragment>

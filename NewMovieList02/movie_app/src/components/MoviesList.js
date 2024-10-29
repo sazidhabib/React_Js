@@ -52,9 +52,21 @@ const MoviesList = ({ movies }) => {
 
               setWatched(arr);
             }}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-3 my-3 rounded"
+            className="bg-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-3 my-3 rounded"
           >
-            watched
+            <svg
+              class="h-8 w-8 text-sky-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              {" "}
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />{" "}
+              <circle cx="12" cy="12" r="3" />
+            </svg>
           </button>
           <button
             disabled={existInWatchList(movie)}

@@ -1,9 +1,13 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+
 import MovieControls from "./MovieControls";
 
 const MovieCard = ({ movie, type }) => {
-  const navigate = useNavigate();
+  const limitText = (text, maxLength) => {
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
+  };
   return (
     <div key={movie.id} className="bg-white p-4 shadow-lg rounded-lg">
       <img
@@ -15,19 +19,11 @@ const MovieCard = ({ movie, type }) => {
         {movie.title}
       </h3>
       <p className="text-sm text-gray-600">Release Date: {movie.releaseDate}</p>
-      <p className="text-sm text-gray-700 mt-2">{movie.openingText}</p>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-3 my-3 rounded">
-        watched
-      </button>
+      <p className="text-sm text-gray-700 mt-2">
+        {limitText(movie.openingText, 100)}
+      </p>
+
       <MovieControls movies={movie} type={type} />
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        onClick={() => {
-          navigate(`/details/${movie.id}`);
-        }}
-      >
-        Details
-      </button>
     </div>
   );
 };

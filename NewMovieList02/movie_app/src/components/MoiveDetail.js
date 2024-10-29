@@ -44,17 +44,54 @@ const MovieDetail = () => {
     <Fragment>
       <Navbar />
       {movie && (
-        <div className="container mx-auto p-6 bg-white shadow-lg rounded-lg">
-          <h2 className="text-2xl font-bold text-gray-800 text-center mb-4">
-            {movie.title}
-          </h2>
-          <img
-            src={movie.poster_path}
-            alt={movie.title}
-            className="w-full h-auto mb-6 rounded-lg"
-          />
-          <p className="text-gray-700 mb-4">{movie.overview}</p>
-          <p className="text-gray-600">Release Date: {movie.release_date}</p>
+        <div className="bg-gray-100 dark:bg-gray-800 py-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row -mx-4">
+              <div className="md:flex-1 px-4">
+                <div className=" rounded-lg bg-gray-300 dark:bg-gray-700 mb-4">
+                  <img
+                    className="w-full h-full object-cover"
+                    src={movie.poster_path}
+                    alt={movie.title}
+                  />
+                </div>
+              </div>
+              <div className="md:flex-1 px-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
+                  {movie.title}
+                </h2>
+
+                <div className="flex mb-4">
+                  <div className="mr-4">
+                    <span className="font-bold text-gray-700 dark:text-gray-300">
+                      Release Date:
+                    </span>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-2">
+                      {movie.release_date}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex mb-4">
+                  <div className="mr-4">
+                    <span className="font-bold text-gray-700 dark:text-gray-300">
+                      Genres:
+                    </span>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mt-2">
+                      {movie.genres}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-bold text-gray-700 dark:text-gray-300">
+                    Movie Description:
+                  </span>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-2">
+                    {movie.overview}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </Fragment>

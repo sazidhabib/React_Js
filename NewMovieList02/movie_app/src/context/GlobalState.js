@@ -3,8 +3,8 @@ import AppReducer from "./AppReducer";
 
 //initial state
 const initialState = {
-  watchlist: localStorage.getItem("watchlist")
-    ? JSON.parse(localStorage.getItem("watchlist"))
+  watchlater: localStorage.getItem("watchlater")
+    ? JSON.parse(localStorage.getItem("watchlater"))
     : [],
   watched: localStorage.getItem("watched")
     ? JSON.parse(localStorage.getItem("watched"))
@@ -19,26 +19,42 @@ export const GlobalProvider = (props) => {
   const [state, dispatch] = useReducer(AppReducer, initialState);
 
   useEffect(() => {
-    localStorage.setItem("watchlist", JSON.stringify(state.watchlist));
+    localStorage.setItem("watchlater", JSON.stringify(state.watchlater));
     localStorage.setItem("watched", JSON.stringify(state.watched));
   }, [state]);
 
   //actions
-  const addMovieToWatchlist = (movie) => {
-    dispatch({ type: "ADD_MOVIE_TO_WATCHLIST", payload: movie });
+  const addMovieToWatchlater = (movie) => {
+    dispatch({ type: "ADD_MOVIE_TO_WATCHLATER", payload: movie });
   };
 
-  const removeMovieFromWatchlist = (id) => {
-    dispatch({ type: "REMOVE_MOVIE_FROM_WATCHLIST", payload: id });
+  const removeMovieFromWatchlater = (id) => {
+    dispatch({ type: "REMOVE_MOVIE_FROM_WATCHLATER", payload: id });
   };
 
+  const addMovieToWatched = (movie) => {
+    dispatch({ type: "ADD_MOVIE_TO_WATCHED", payload: movie });
+  };
+
+  //move to watchlater
+  const moveToWatchlater = (movie) => {
+    dispatch({ type: "MOVE_TO_WATCHLATER", payload: movie });
+  };
+
+  //remove from watched
+  const removeMovieFromWatched = (id) => {
+    dispatch({ type: "REMOVE_MOVIE_FROM_WATCHED", payload: id });
+  };
   return (
     <GlobalContex.Provider
       value={{
-        watchlist: state.watchlist,
+        watchlater: state.watchlater,
         watched: state.watched,
-        addMovieToWatchlist,
-        removeMovieFromWatchlist,
+        addMovieToWatchlater,
+        removeMovieFromWatchlater,
+        addMovieToWatched,
+        moveToWatchlater,
+        removeMovieFromWatched,
       }}
     >
       {props.children}

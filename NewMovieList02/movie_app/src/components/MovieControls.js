@@ -11,7 +11,24 @@ const MovieControls = ({ movies, type }) => {
     addMovieToWatched,
     moveToWatchlater,
     removeMovieFromWatched,
+    watchlater,
+    watched,
   } = useContext(GlobalContex);
+
+  let existInWatchLater = (movie) => {
+    let moviePresent = watchlater.find(
+      (insideMovie) => insideMovie.id === movie.id
+    );
+    return moviePresent ? true : false;
+  };
+
+  let existInWatched = (movie) => {
+    let moviePresent = watched.find(
+      (insideMovie) => insideMovie.id === movie.id
+    );
+    return moviePresent ? true : false;
+  };
+
   return (
     <div>
       <button
@@ -39,8 +56,13 @@ const MovieControls = ({ movies, type }) => {
       {type === "watchlater" && (
         <>
           <button
+            disabled={existInWatched(movies)}
             onClick={() => addMovieToWatched(movies)}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-3 rounded w-full"
+            className={`${
+              existInWatched(movies)
+                ? "bg-gray-300 cursor-not-allowed opacity-50 text-black"
+                : "bg-blue-500 hover:bg-blue-700 text-white"
+            } className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-3 rounded w-full`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +81,7 @@ const MovieControls = ({ movies, type }) => {
             watched
           </button>
           <button
-            onClick={() => movies?.id && removeMovieFromWatchlater(movies.id)}
+            onClick={() => removeMovieFromWatchlater(movies.id)}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 my-3 rounded w-full"
           >
             Remove WatchLater
@@ -69,8 +91,13 @@ const MovieControls = ({ movies, type }) => {
       {type === "watched" && (
         <>
           <button
+            disabled={existInWatchLater(movies)}
             onClick={() => moveToWatchlater(movies)}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-3 rounded w-full"
+            className={`${
+              existInWatchLater(movies)
+                ? "bg-gray-300 cursor-not-allowed opacity-50 text-black"
+                : "bg-blue-500 hover:bg-blue-700 text-white"
+            }  font-bold py-2 px-4 mt-3 rounded w-full`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

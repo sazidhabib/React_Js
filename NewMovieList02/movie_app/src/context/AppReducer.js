@@ -9,7 +9,7 @@ const AppReducer = (state, action) => {
       return {
         ...state,
         watchlater: state.watchlater.filter(
-          (movie) => movie.id !== action.payload.id
+          (movie) => movie.id !== action.payload
         ),
       };
     case "ADD_MOVIE_TO_WATCHED":

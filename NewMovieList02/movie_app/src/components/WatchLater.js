@@ -1,13 +1,10 @@
 import React, { Fragment, useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import { GlobalContex } from "../context/GlobalState";
 import Navber from "./NavBar";
 import MovieCard from "./MovieCard";
 
 const WatchLater = () => {
   const { watchlater } = useContext(GlobalContex);
-
-  const navigate = useNavigate();
 
   return (
     <Fragment>

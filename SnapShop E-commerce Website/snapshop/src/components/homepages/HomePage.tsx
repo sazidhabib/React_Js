@@ -1,11 +1,11 @@
 import React from "react";
-import Layout from "../Layout";
-import HeroSection from "../HeroSection";
-import FlashSaleSection from "../FlashSaleSection";
-import CategorySection from "../CategorySection";
-import TopRatedProducts from "../TopRatedProducts";
-import NewArrivalSection from "../NewArrivalSection";
-import ServiceFeatures from "../ServiceFeatures";
+import Layout from "./Layout";
+import HeroSection from "./HeroSection";
+import FlashSaleSection from "./FlashSaleSection";
+import CategorySection from "./CategorySection";
+import TopRatedProducts from "./TopRatedProducts";
+import NewArrivalSection from "./NewArrivalSection";
+import ServiceFeatures from "./ServiceFeatures";
 
 const HomePage: React.FC = () => {
   return (

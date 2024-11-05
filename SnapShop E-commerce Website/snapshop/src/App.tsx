@@ -9,6 +9,8 @@ import ContactPage from "./components/contactpage/ContactPage";
 // import ErrorPage from "./components/errorpage/ErrorPage";
 import HomePage from "./components/homepages/HomePage";
 import ProductDetails from "./components/ProductDetails/ProductDetails";
+import Footer from "./components/Footer";
+import Layout from "./components/Layout";
 // import SignUp from "./components/signup/SignUp";
 // import WishlistPage from "./components/wishlistpage/WishlistPage";
 //import NewHomePage from "./components/pages/NewHomePage";
@@ -16,15 +18,18 @@ import ProductDetails from "./components/ProductDetails/ProductDetails";
 const App: React.FC = () => {
   return (
     <>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/services" element={<ProductDetails />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Routes>
-      </Router>
+      <Layout>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/services" element={<ProductDetails />} />
+            <Route path="/contact" element={<ContactPage />} />
+          </Routes>
+        </Router>
+      </Layout>
+      <Footer />
 
       {/* <SignUp />
       <WishlistPage />

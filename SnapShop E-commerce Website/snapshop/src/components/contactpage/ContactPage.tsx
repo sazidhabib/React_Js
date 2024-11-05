@@ -1,13 +1,10 @@
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
 import ContactForm from "./ContactForm";
 import ContactInfo from "./ContactInfo";
 
 const ContactPage: React.FC = () => {
   return (
     <div className="flex overflow-hidden flex-col bg-white">
-      <Header />
       <main>
         <section className="flex flex-col self-center mt-20 w-full max-w-[1170px] max-md:mt-10 max-md:max-w-full">
           <nav aria-label="Breadcrumb">
@@ -28,7 +25,6 @@ const ContactPage: React.FC = () => {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 };

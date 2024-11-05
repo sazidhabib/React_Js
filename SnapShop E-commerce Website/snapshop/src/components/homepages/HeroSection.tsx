@@ -5,7 +5,7 @@ const HeroSection: React.FC = () => {
     <section className="flex z-10 flex-col items-start self-end w-full max-w-[1305px] max-md:max-w-full">
       <div className="w-full max-w-[1170px] max-md:max-w-full">
         <div className="flex gap-5 max-md:flex-col">
-          <aside className="flex flex-col w-[21%] max-md:ml-0 max-md:w-full">
+          <aside className="hidden md:flex flex-col w-[21%] max-md:ml-0 max-md:w-full">
             <nav className="flex grow gap-4 text-base text-center text-black max-md:mt-10">
               <div className="flex flex-col items-start self-end mt-10">
                 <ul>
@@ -48,7 +48,7 @@ const HeroSection: React.FC = () => {
               <div className="shrink-0 w-px h-96 border border-black border-solid"></div>
             </nav>
           </aside>
-          <main className="flex flex-col ml-5 w-[79%] max-md:ml-0 max-md:w-full">
+          <main className="flex flex-col ml-5 w-[100%] max-md:ml-0 md:w-full">
             <div className="overflow-hidden grow pt-4 pl-16 mt-10 w-full bg-black max-md:max-w-full">
               <div className="flex gap-5 max-md:flex-col">
                 <div className="flex flex-col w-[37%] max-md:ml-0 max-md:w-full">

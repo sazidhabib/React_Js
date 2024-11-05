@@ -2,20 +2,27 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaTimes } from "react-icons/fa";
+
+import { FaUserCircle } from "react-icons/fa";
 import SearchComponent from "./homepages/SearchComponent";
+import AccountDropdown from "./homepages/AccountDropdown";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
   return (
-    <nav className="bg-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
+    <nav className="bg-white p-4 relative">
+      <div className="container mx-auto flex justify-between items-center relative">
         <div className="flex gap-6">
-          <h1 className=" text-2xl font-bold">MyApp</h1>
+          <h1 className=" text-2xl font-bold">SnapShop</h1>
         </div>
 
         <div className="hidden md:flex space-x-8">
@@ -60,7 +67,7 @@ const Navbar: React.FC = () => {
             Contact
           </NavLink>
         </div>
-        <div className="flex gap-6 items-center self-stretch my-auto min-w-[240px]">
+        <div className="md:items-left flex gap-6 items-center self-stretch my-auto ">
           <SearchComponent />
           <div className="flex gap-4 justify-center items-center self-stretch my-auto">
             <img
@@ -75,8 +82,17 @@ const Navbar: React.FC = () => {
               className="object-contain shrink-0 self-stretch my-auto w-8 aspect-square"
               alt="Cart icon"
             />
+            <button onClick={toggleDropdown}>
+              <FaUserCircle className=" text-3xl object-contain shrink-0 self-stretch my-auto w-8 aspect-square" />
+            </button>
           </div>
         </div>
+        {isDropdownOpen && (
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-20">
+            <AccountDropdown />
+          </div>
+        )}
+
         {/* Mobile Menu */}
         <div className="md:hidden items-left">
           <button

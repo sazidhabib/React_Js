@@ -1,6 +1,4 @@
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,10 +6,10 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex overflow-hidden flex-col bg-white">
+    <div className="flex overflow-hidden justify-center items-center flex-col bg-white">
       <div
         data-layername="topHeader"
-        className="flex overflow-hidden flex-col justify-center items-end px-16 py-3 w-full text-sm bg-black text-neutral-50 max-md:px-5 max-md:max-w-full"
+        className="flex overflow-hidden flex-col justify-center items-center px-16 py-3 w-full text-sm bg-black text-neutral-50 max-md:px-5 max-md:max-w-full"
       >
         <div className="flex flex-wrap gap-10 items-start max-md:max-w-full">
           <div className="flex flex-wrap gap-2 items-center min-w-[240px] max-md:max-w-full">
@@ -26,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               ShopNow
             </a>
           </div>
-          <div className="flex gap-1.5 justify-center items-center whitespace-nowrap">
+          <div className="flex gap-1.5 justify-center items-end whitespace-nowrap">
             <span className="self-stretch my-auto">English</span>
             <img
               loading="lazy"
@@ -37,9 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       </div>
-      <Header logo="SnapShop" />
       <main>{children}</main>
-      <Footer />
     </div>
   );
 };

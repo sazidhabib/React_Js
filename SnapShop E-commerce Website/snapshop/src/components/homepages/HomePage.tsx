@@ -1,5 +1,4 @@
 import React from "react";
-import Layout from "./Layout";
 import HeroSection from "./HeroSection";
 import FlashSaleSection from "./FlashSaleSection";
 import CategorySection from "./CategorySection";
@@ -9,7 +8,7 @@ import ServiceFeatures from "./ServiceFeatures";
 
 const HomePage: React.FC = () => {
   return (
-    <Layout>
+    <div className="flex overflow-hidden flex-col bg-white relative">
       <HeroSection />
       <FlashSaleSection />
       <CategorySection />
@@ -28,7 +27,7 @@ const HomePage: React.FC = () => {
         className="object-contain self-end mt-16 mr-24 aspect-square w-[46px] max-md:mt-10 max-md:mr-2.5"
         alt="Scroll to top"
       />
-    </Layout>
+    </div>
   );
 };
 

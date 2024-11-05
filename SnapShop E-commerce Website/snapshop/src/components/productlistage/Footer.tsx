@@ -17,70 +17,52 @@ const Footer: React.FC = () => {
             <p className="mt-6 text-base">Get 10% off your first order</p>
           </div>
           <form className="flex gap-8 items-center py-3 pl-4 mt-4 max-w-full text-base rounded border-solid border-[1.5px] border-neutral-50 w-[217px]">
-            <label htmlFor="email-subscribe" className="sr-only">
+            <label htmlFor="email-input" className="sr-only">
               Enter your email
             </label>
             <input
+              id="email-input"
               type="email"
-              id="email-subscribe"
               placeholder="Enter your email"
-              className="self-stretch my-auto opacity-40 bg-transparent border-none outline-none"
+              className="self-stretch my-auto opacity-40 bg-transparent"
             />
             <button type="submit" aria-label="Subscribe">
               <img
                 loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/12a54082781a806227ade42d81d6722495cd51ed50c28a6b5eebf5a1f9d88295?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/6bac8a3a4556d00df359345f40c4304fa01a92d9d278e1cc8be218cdcd6e20d8?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
                 alt=""
                 className="object-contain shrink-0 self-stretch my-auto w-6 aspect-square"
               />
             </button>
           </form>
         </div>
-        <div className="flex flex-col text-neutral-50 w-[175px]">
+        <nav className="flex flex-col text-neutral-50 w-[175px]">
           <h3 className="text-xl font-medium leading-snug">Support</h3>
-          <address className="flex flex-col mt-6 max-w-full text-base w-[175px] not-italic">
-            <p className="leading-6">
+          <ul className="flex flex-col mt-6 max-w-full text-base w-[175px]">
+            <li className="leading-6">
               111 Bijoy sarani, Dhaka, DH 1515, Bangladesh.
-            </p>
-            <p className="mt-4">exclusive@gmail.com</p>
-            <p className="mt-4">+88015-88888-9999</p>
-          </address>
-        </div>
+            </li>
+            <li className="mt-4">exclusive@gmail.com</li>
+            <li className="mt-4">+88015-88888-9999</li>
+          </ul>
+        </nav>
         <nav className="flex flex-col text-neutral-50">
           <h3 className="text-xl font-medium leading-snug">Account</h3>
           <ul className="flex flex-col mt-6 text-base">
-            <li>
-              <a href="/account">My Account</a>
-            </li>
-            <li className="mt-4">
-              <a href="/login">Login / Register</a>
-            </li>
-            <li className="mt-4">
-              <a href="/cart">Cart</a>
-            </li>
-            <li className="mt-4">
-              <a href="/wishlist">Wishlist</a>
-            </li>
-            <li className="mt-4">
-              <a href="/shop">Shop</a>
-            </li>
+            <li>My Account</li>
+            <li className="mt-4">Login / Register</li>
+            <li className="mt-4">Cart</li>
+            <li className="mt-4">Wishlist</li>
+            <li className="mt-4">Shop</li>
           </ul>
         </nav>
         <nav className="flex flex-col text-neutral-50">
           <h3 className="text-xl font-medium leading-snug">Quick Link</h3>
           <ul className="flex flex-col mt-6 text-base">
-            <li>
-              <a href="/privacy-policy">Privacy Policy</a>
-            </li>
-            <li className="mt-4">
-              <a href="/terms">Terms Of Use</a>
-            </li>
-            <li className="mt-4">
-              <a href="/faq">FAQ</a>
-            </li>
-            <li className="mt-4">
-              <a href="/contact">Contact</a>
-            </li>
+            <li>Privacy Policy</li>
+            <li className="mt-4">Terms Of Use</li>
+            <li className="mt-4">FAQ</li>
+            <li className="mt-4">Contact</li>
           </ul>
         </nav>
         <div className="flex flex-col">
@@ -128,7 +110,7 @@ const Footer: React.FC = () => {
             <a href="#" aria-label="Twitter">
               <img
                 loading="lazy"
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/b23fcf42a88f1e06f880f1034f42c47e6bafe9d4662676890355e5f83230f948?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/df2ffeb667b9d146eb24f14263bae8d940b8ab8369394557d924a9e4e9fbaf32?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
                 alt=""
                 className="object-contain shrink-0 w-6 aspect-square"
               />
@@ -154,13 +136,13 @@ const Footer: React.FC = () => {
       </div>
       <div className="flex flex-col items-center mt-16 w-full max-md:mt-10 max-md:max-w-full">
         <div className="flex flex-col w-full max-md:max-w-full">
-          <div className="w-full bg-white border border-white border-solid opacity-40 min-h-[1px] max-md:max-w-full" />
+          <hr className="w-full bg-white border-white border-solid opacity-40 min-h-[1px] max-md:max-w-full" />
         </div>
         <div className="flex gap-3 items-center mt-4 text-base text-white">
           <div className="flex gap-1.5 items-center self-stretch my-auto min-w-[240px]">
             <img
               loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/d9e77ca5f6362e8c84e9e430400b10a2e9fcc4f4b98d11736abbf6c72292338e?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/4ec9569466e034c374fe774f4027efc34c40210ae00b79cd471c903edbe68455?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
               alt=""
               className="object-contain shrink-0 self-stretch my-auto w-5 aspect-square"
             />

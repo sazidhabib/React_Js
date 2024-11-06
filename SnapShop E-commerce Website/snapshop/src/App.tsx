@@ -3,7 +3,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import AboutPage from "./components/about/AboutPage";
 // import AccountPage from "./components/accountpage/AccountPage";
-// import Cart from "./components/cart/Cart";
+import Cart from "./components/cart/Cart";
 // import CheckOut from "./components/checkout/CheckOut";
 import ContactPage from "./components/contactpage/ContactPage";
 // import ErrorPage from "./components/errorpage/ErrorPage";
@@ -11,6 +11,7 @@ import HomePage from "./components/homepages/HomePage";
 import ProductDetails from "./components/ProductDetails/ProductDetails";
 import Footer from "./components/Footer";
 import Layout from "./components/Layout";
+import ProductsPage from "./components/productlistage/ProductsPage";
 // import SignUp from "./components/signup/SignUp";
 // import WishlistPage from "./components/wishlistpage/WishlistPage";
 //import NewHomePage from "./components/pages/NewHomePage";
@@ -30,6 +31,8 @@ const App: React.FC = () => {
         </Router>
       </Layout>
       <Footer />
+      <ProductsPage />
+      <Cart />
 
       {/* <SignUp />
       <WishlistPage />

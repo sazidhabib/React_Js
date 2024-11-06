@@ -11,8 +11,9 @@ const MovieList = (props) => {
           key={movie.id}
           img={movie.img}
           title={movie.title}
-          releaseDate={movie.releaseDate}
-          openingText={movie.openingText}
+          category={movie.category}
+          description={movie.description}
+          price={movie.price}
         />
       ))}
     </ul>

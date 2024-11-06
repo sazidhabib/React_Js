@@ -14,16 +14,9 @@ function App() {
 
     try {
       //const response = await fetch("https://swapi.dev/api/films");
-      const response = await fetch(
-        "https://movies-api14.p.rapidapi.com/movies",
-        {
-          method: "GET",
-          headers: {
-            "X-RapidAPI-Key":
-              "f763d779e0mshf17c58e06e03995p10a109jsnd27ec419a469",
-          },
-        }
-      );
+      const response = await fetch("https://fakestoreapi.com/products", {
+        method: "GET",
+      });
       if (!response.ok) {
         throw new Error("Something went wrong!");
       }
@@ -31,13 +24,16 @@ function App() {
       const data = await response.json();
       console.log(data);
 
-      const transformedMovies = data.movies.map((movieData) => {
+      const transformedMovies = data.map((productData) => {
         return {
-          id: movieData._id,
-          img: movieData.poster_path,
-          title: movieData.title,
-          releaseDate: movieData.release_date,
-          openingText: movieData.overview,
+          id: productData.id,
+          img: productData.image,
+          title: productData.title,
+          price: productData.price,
+          description: productData.description,
+          category: productData.category,
+          ratingRate: productData.rating.rate,
+          ratingCount: productData.rating.count,
         };
       });
       setMovies(transformedMovies);

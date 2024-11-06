@@ -1,9 +1,10 @@
 import React from "react";
+import RatingBar from "./RatingBar";
 
 type ProductCardProps = {
   image: string;
   title: string;
-  price: string;
+  price: number;
   originalPrice?: string;
   discount?: string;
   isNew?: boolean;
@@ -22,7 +23,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   reviews,
 }) => {
   return (
-    <div className="flex flex-col min-w-[240px] w-[270px]">
+    <div className="flex flex-col w-[270px]">
       <div className="flex overflow-hidden flex-col pt-3 w-full rounded bg-neutral-100 max-w-[270px]">
         <div className="flex gap-2.5 mx-3 max-md:mx-2.5">
           <div className="flex flex-col text-xs whitespace-nowrap text-neutral-50">
@@ -73,19 +74,20 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="flex flex-col items-start self-start mt-4 text-base font-medium">
         <h3 className="self-stretch text-black">{title}</h3>
         <div className="flex gap-3 items-start mt-2 whitespace-nowrap">
-          <span className="text-red-500">{price}</span>
+          <span className="text-red-500">$ {price}</span>
           {originalPrice && (
             <span className="text-black opacity-50">{originalPrice}</span>
           )}
         </div>
         {rating && (
           <div className="flex gap-2 items-start mt-2 text-sm font-semibold text-black whitespace-nowrap">
-            <img
+            <RatingBar rating={rating} />
+            {/* <img
               loading="lazy"
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/f79bd71a6471f38d5d1fc5e45c151fa99346fc4a5342fd2b25d87f1e68ade395?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
               alt={`Rating: ${rating} out of 5`}
               className="object-contain shrink-0 aspect-[5] w-[100px]"
-            />
+            /> */}
             <span className="w-8 opacity-50">({reviews})</span>
           </div>
         )}

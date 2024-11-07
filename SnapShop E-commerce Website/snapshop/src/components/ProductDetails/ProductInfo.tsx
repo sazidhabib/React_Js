@@ -1,6 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
+import RatingBar from "../productlistage/RatingBar";
 
-const ProductInfo: React.FC = () => {
+interface ProductInfoProps {
+  product?: {
+    title: string;
+    price: number;
+    description: string;
+    image?: string;
+    stock: string;
+    rating: {
+      rate: number;
+      count: number;
+    };
+  };
+}
+
+const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
+  const [quantity, setQuantity] = useState(1);
+
+  const incrementQuantity = () => setQuantity((prev) => prev + 1);
+  const decrementQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
+  if (!product) {
+    return <div>Product information is not available.</div>;
+  }
+
+  const { title, price, description, image, rating } = product;
+
   return (
     <div className="flex flex-col self-center mt-20 w-full max-w-[1171px] max-md:mt-10 max-md:max-w-full">
       <nav
@@ -13,10 +38,12 @@ const ProductInfo: React.FC = () => {
         <a href="#" className="self-stretch my-auto opacity-50">
           Gaming
         </a>
-        <span className="self-stretch my-auto">Havic HV G-92 Gamepad</span>
+        <span className="self-stretch my-auto">{title}</span>
       </nav>
+
       <div className="mt-20 w-full max-md:mt-10 max-md:max-w-full">
         <div className="flex gap-5 max-md:flex-col">
+          {/* Thumbnails Section */}
           <div
             data-layername="column"
             className="flex flex-col w-[64%] max-md:ml-0 max-md:w-full"
@@ -28,7 +55,7 @@ const ProductInfo: React.FC = () => {
                   className="flex flex-col w-3/12 max-md:ml-0 max-md:w-full"
                 >
                   <div className="flex flex-col grow max-md:mt-8">
-                    {[1, 2, 3, 4].map((index) => (
+                    {[...Array(4)].map((_, index) => (
                       <div
                         key={index}
                         className={`flex overflow-hidden flex-col justify-center px-6 py-3 rounded bg-neutral-100 ${
@@ -37,14 +64,16 @@ const ProductInfo: React.FC = () => {
                       >
                         <img
                           loading="lazy"
-                          src={`http://b.io/ext_${5 + index}-`}
-                          alt={`Product view ${index}`}
+                          src={image}
+                          alt={`Product view ${index + 1}`}
                           className="object-contain aspect-[1.06] w-[121px]"
                         />
                       </div>
                     ))}
                   </div>
                 </div>
+
+                {/* Main Product Image */}
                 <div
                   data-layername="column"
                   className="flex flex-col ml-5 w-9/12 max-md:ml-0 max-md:w-full"
@@ -52,7 +81,7 @@ const ProductInfo: React.FC = () => {
                   <div className="flex overflow-hidden flex-col grow justify-center px-7 py-36 w-full rounded bg-neutral-100 max-md:px-5 max-md:py-24 max-md:mt-8 max-md:max-w-full">
                     <img
                       loading="lazy"
-                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/10996276eabfcd881e2e8c8c41b66f0ecbf43032de670185029bac10af65ae81?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
+                      src={image}
                       alt="Main product view"
                       className="object-contain w-full aspect-[1.42] max-md:max-w-full"
                     />
@@ -61,87 +90,83 @@ const ProductInfo: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Product Details */}
           <div
             data-layername="column"
             className="flex flex-col ml-5 w-[36%] max-md:ml-0 max-md:w-full"
           >
             <div className="flex flex-col items-start w-full max-md:mt-10">
-              <h1
-                data-layername="havicHvG92Gamepad"
-                className="text-2xl font-semibold tracking-wider leading-none text-black"
-              >
-                Havic HV G-92 Gamepad
+              <h1 className="text-2xl font-semibold tracking-wider leading-none text-black">
+                {title}
               </h1>
               <div className="flex gap-4 items-start mt-4 text-sm">
                 <div className="flex gap-2 items-start text-black">
-                  <img
-                    loading="lazy"
-                    src="https://cdn.builder.io/api/v1/image/assets/TEMP/c35d903ef32712f74f1d691c7776b06b738b9c9c861a4482d47d9f9e4b9b6d4a?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-                    alt="Rating stars"
-                    className="object-contain shrink-0 aspect-[5] w-[100px]"
-                  />
-                  <div data-layername="150Reviews" className="opacity-50">
-                    (150 Reviews)
-                  </div>
+                  <RatingBar rating={rating.rate} />
+                  <div className="opacity-50">({rating.count} Reviews)</div>
                 </div>
                 <div className="flex gap-4 items-center text-green-500">
                   <div className="shrink-0 self-stretch my-auto w-0 h-4 bg-black border border-black border-solid opacity-50" />
-                  <div
+                  <span
                     data-layername="inStock"
                     className="self-stretch my-auto opacity-60"
                   >
                     In Stock
-                  </div>
+                  </span>
                 </div>
               </div>
-              <div
-                data-layername="19200"
-                className="mt-4 text-2xl tracking-wider leading-none text-black"
-              >
-                $192.00
+              <div className="mt-4 text-2xl tracking-wider leading-none text-black">
+                ${price.toFixed(2)}
               </div>
-              <p
-                data-layername="playStation5ControllerSkinHighQualityVinylWithAirChannelAdhesiveForEasyBubbleFreeInstallMessFreeRemovalPressureSensitive"
-                className="self-stretch mt-6 mr-7 text-sm leading-5 text-black max-md:mr-2.5"
-              >
-                PlayStation 5 Controller Skin High quality vinyl with air
-                channel adhesive for easy bubble free install & mess free
-                removal Pressure sensitive.
+              <p className="self-stretch mt-6 mr-7 text-sm leading-5 text-black max-md:mr-2.5">
+                {description}
               </p>
+
+              {/* Divider */}
               <div className="shrink-0 self-stretch mt-6 w-full h-px bg-black border border-black border-solid" />
+
+              {/* Color Options */}
               <div className="flex gap-6 items-start mt-6">
-                <div
+                <span
                   data-layername="colours"
                   className="text-xl tracking-wide leading-none text-black"
                 >
                   Colours:
-                </div>
+                </span>
                 <div
-                  data-layername="colourChnage"
+                  data-layername="colourChange"
                   className="flex gap-2 items-start"
                 >
-                  <div className="flex flex-col w-5">
+                  <button
+                    aria-label="Select blue color"
+                    className="flex flex-col w-5"
+                  >
                     <div className="flex flex-col justify-center items-center px-0.5 w-5 h-5 rounded-full border-2 border-black border-solid">
                       <div className="flex shrink-0 w-3 h-3 bg-indigo-300 rounded-full" />
                     </div>
-                  </div>
-                  <div className="flex shrink-0 w-5 h-5 bg-red-400 rounded-full fill-red-400" />
+                  </button>
+                  <button
+                    aria-label="Select red color"
+                    className="flex shrink-0 w-5 h-5 bg-red-400 rounded-full fill-red-400"
+                  />
                 </div>
               </div>
+
+              {/* Size Options */}
               <div className="flex gap-6 items-center mt-6 whitespace-nowrap">
-                <div
+                <span
                   data-layername="size"
                   className="self-stretch my-auto text-xl tracking-wide leading-none text-black"
                 >
                   Size:
-                </div>
+                </span>
                 <div className="flex gap-4 items-start self-stretch my-auto text-sm font-medium text-black">
-                  {["XS", "S", "M", "L", "XL"].map((size, index) => (
+                  {["XS", "S", "M", "L", "XL"].map((size) => (
                     <button
                       key={size}
-                      data-layername={size.toLowerCase()}
+                      aria-label={`Select size ${size}`}
                       className={`overflow-hidden px-2 pt-1.5 pb-4 w-8 rounded border border-solid ${
-                        index === 2
+                        size === "M"
                           ? "bg-red-500 text-neutral-50"
                           : "border-black border-opacity-50"
                       }`}
@@ -151,33 +176,33 @@ const ProductInfo: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Quantity and Buy Now Buttons */}
               <div className="flex gap-4 self-stretch mt-6 w-full font-medium">
                 <div className="flex gap-0 items-start text-xl leading-snug text-black whitespace-nowrap min-h-[44px]">
-                  <button aria-label="Decrease quantity">
-                    <img
-                      loading="lazy"
-                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/ed9ed51dc91da1a317a6ec57e005b4e5f8a1b0bff1721c29819dbbc2af1e9ae3?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-                      alt=""
-                      className="object-contain shrink-0 w-10 rounded aspect-[0.91]"
-                    />
+                  <button
+                    onClick={decrementQuantity}
+                    aria-label="Decrease quantity"
+                    className="px-3 py-2 border border-black border-opacity-50 rounded-l"
+                  >
+                    -
                   </button>
                   <div className="overflow-hidden px-9 py-2 w-20 border-t border-b border-black border-opacity-50 max-md:px-5">
-                    2
+                    {quantity}
                   </div>
-                  <button aria-label="Increase quantity">
-                    <img
-                      loading="lazy"
-                      src="https://cdn.builder.io/api/v1/image/assets/TEMP/a09c076caa5a0aa0236a51fa2801afde79e8017a579e89aa6abb403c0af33200?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-                      alt=""
-                      className="object-contain shrink-0 aspect-[0.93] w-[41px]"
-                    />
+                  <button
+                    onClick={incrementQuantity}
+                    aria-label="Increase quantity"
+                    className="px-3 py-2 border border-black border-opacity-50 rounded-r"
+                  >
+                    +
                   </button>
                 </div>
                 <button
                   data-layername="button"
-                  className="gap-2.5 self-stretch px-12 py-2.5 text-base bg-red-500 rounded text-neutral-50 max-md:px-5"
+                  className="gap-2.5 self-stretch px-1 py-2.5 text-base bg-red-500 rounded text-neutral-50 max-md:px-5"
                 >
-                  Buy Now
+                  Add to Cart
                 </button>
                 <button aria-label="Add to wishlist">
                   <img
@@ -188,6 +213,8 @@ const ProductInfo: React.FC = () => {
                   />
                 </button>
               </div>
+
+              {/* Delivery and Return Information */}
               <div className="flex overflow-hidden flex-col items-start self-stretch py-6 mt-10 w-full font-medium rounded border border-solid border-black border-opacity-50">
                 <div className="flex gap-4 items-center ml-4 max-md:ml-2.5">
                   <img
@@ -197,18 +224,18 @@ const ProductInfo: React.FC = () => {
                     className="object-contain shrink-0 self-stretch my-auto w-10 aspect-square"
                   />
                   <div className="flex flex-col self-stretch my-auto min-w-[240px]">
-                    <div
+                    <h3
                       data-layername="freeDelivery"
                       className="text-base text-black"
                     >
                       Free Delivery
-                    </div>
-                    <div
+                    </h3>
+                    <p
                       data-layername="enterYourPostalCodeForDeliveryAvailability"
                       className="mt-2 text-xs text-black"
                     >
                       Enter your postal code for Delivery Availability
-                    </div>
+                    </p>
                   </div>
                 </div>
                 <div className="shrink-0 self-stretch mt-4 h-px bg-black border border-black border-solid" />
@@ -220,21 +247,15 @@ const ProductInfo: React.FC = () => {
                     className="object-contain shrink-0 self-stretch my-auto w-10 aspect-square"
                   />
                   <div className="flex flex-col self-stretch my-auto">
-                    <div className="flex flex-col self-stretch my-auto">
-                      <div
-                        data-layername="returnDelivery"
-                        className="text-base"
-                      >
-                        Return Delivery
-                      </div>
-                      <div
-                        data-layername="free30DaysDeliveryReturnsDetails"
-                        className="mt-2 text-xs leading-5 underline"
-                      >
-                        Free 30 Days Delivery Returns.{" "}
-                        <span className="underline">Details</span>
-                      </div>
-                    </div>
+                    <h3 data-layername="returnDelivery" className="text-base">
+                      Return Delivery
+                    </h3>
+                    <p className="mt-2 text-xs leading-5 underline">
+                      Free 30 Days Delivery Returns{" "}
+                      <a href="/return-policy" className="underline">
+                        Details
+                      </a>
+                    </p>
                   </div>
                 </div>
               </div>

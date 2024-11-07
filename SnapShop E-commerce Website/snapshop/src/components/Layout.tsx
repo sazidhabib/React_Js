@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,12 +18,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               Summer Sale For All Swim Suits And Free Express Delivery - OFF
               50%!
             </p>
-            <a
-              href="#shop-now"
+            <Link
+              to="/product"
               className="self-stretch my-auto font-semibold leading-6 text-center underline"
             >
               ShopNow
-            </a>
+            </Link>
           </div>
           <div className="flex gap-1.5 justify-center items-end whitespace-nowrap">
             <span className="self-stretch my-auto">English</span>

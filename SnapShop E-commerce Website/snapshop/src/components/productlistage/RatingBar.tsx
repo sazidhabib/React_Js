@@ -14,7 +14,7 @@ const RatingBar: React.FC<RatingBarProps> = ({ rating }) => {
       {stars.map((star) => (
         <div
           key={star}
-          className={`w-6 h-6 ${
+          className={`w-5 h-5 ${
             star <= rating
               ? "text-yellow-400" // Filled star color
               : rating >= star - 0.5 && rating < star
@@ -26,7 +26,7 @@ const RatingBar: React.FC<RatingBarProps> = ({ rating }) => {
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-6 h-6"
+            className="w-5 h-5"
           >
             <path d="M12 .587l3.668 7.429 8.2 1.192-5.935 5.784 1.4 8.165L12 18.896l-7.333 3.861 1.4-8.165L.132 9.208l8.2-1.192L12 .587z" />
           </svg>

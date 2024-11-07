@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+
 import ProductCard from "./ProductCard";
 
 // Define a type for the product data
@@ -17,6 +18,16 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | JSX.Element | null>(null);
+
+  const existInWishlist = (
+    product: Product,
+    watchlater: Product[]
+  ): boolean => {
+    const productPresent = watchlater.find(
+      (insideProduct) => insideProduct.id === product.id
+    );
+    return productPresent ? true : false;
+  };
 
   const fetchProductHandler = useCallback(async () => {
     setIsLoading(true);

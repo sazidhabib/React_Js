@@ -1,38 +1,9 @@
-import React from "react";
-import Header from "./Header";
+import React, { useContext } from "react";
+import { GlobalContext } from "../../context/GlobalContext";
 import ProductCard from "./ProductCard";
-import Footer from "./Footer";
 
 const WishlistPage: React.FC = () => {
-  const navItems = ["Home", "Contact", "About", "Sign Up"];
-  const wishlistItems = [
-    {
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/21ee6e335ae9924a6e3f4f8d94798cec2f6ec584333896550356c05f5acab46a?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef",
-      title: "Gucci duffle bag",
-      price: "$960",
-      originalPrice: "$1160",
-      discount: "-35%",
-    },
-    {
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/623eb32eb1bbc25f1dc254a16c9cc73fa991f608ad75733d84070533c47c43a9?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef",
-      title: "RGB liquid CPU Cooler",
-      price: "$1960",
-    },
-    {
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/aa70e9baabbdd2932d65630db583f5e35497d82d8df49ce4b4b04c9ea246aba3?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef",
-      title: "GP11 Shooter USB Gamepad",
-      price: "$550",
-    },
-    {
-      image:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/f53d1575c5dccca3733da8baa05d2d3e119a3c8552cb518629866a49fa0488f7?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef",
-      title: "Quilted Satin Jacket",
-      price: "$750",
-    },
-  ];
+  const { wishlist } = useContext(GlobalContext);
 
   const justForYouItems = [
     {
@@ -74,34 +45,6 @@ const WishlistPage: React.FC = () => {
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
-      <div className="flex overflow-hidden flex-col justify-center items-end px-16 py-3 w-full text-sm bg-black text-neutral-50 max-md:px-5 max-md:max-w-full">
-        <div className="flex flex-wrap gap-10 items-start max-md:max-w-full">
-          <div className="flex flex-wrap gap-2 items-center min-w-[240px] max-md:max-w-full">
-            <p className="self-stretch my-auto w-[474px] max-md:max-w-full">
-              Summer Sale For All Swim Suits And Free Express Delivery - OFF
-              50%!
-            </p>
-            <a
-              href="#"
-              className="self-stretch my-auto font-semibold leading-6 text-center underline"
-            >
-              ShopNow
-            </a>
-          </div>
-          <div className="flex gap-1.5 justify-center items-center whitespace-nowrap">
-            <span className="self-stretch my-auto">English</span>
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/086dd669bbad3e4fcefbf1d6392f774b77d8ae772723fe01a24425e01abcaf04?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              alt=""
-              className="object-contain shrink-0 self-stretch my-auto w-6 aspect-square"
-            />
-          </div>
-        </div>
-      </div>
-
-      <Header logoText="Exclusive" navItems={navItems} />
-
       <hr className="mt-4 w-full bg-black border-black border-solid opacity-30 min-h-[1px] max-md:max-w-full" />
 
       <main className="flex flex-col self-center mt-20 max-md:mt-10 max-md:max-w-full">
@@ -115,8 +58,8 @@ const WishlistPage: React.FC = () => {
             </button>
           </div>
           <div className="flex flex-wrap gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full">
-            {wishlistItems.map((item, index) => (
-              <ProductCard key={index} {...item} />
+            {wishlist.map((item) => (
+              <ProductCard key={item.id} {...item} />
             ))}
           </div>
         </section>
@@ -140,8 +83,6 @@ const WishlistPage: React.FC = () => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

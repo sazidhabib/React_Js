@@ -8,6 +8,8 @@ import ProductDetails from "./components/ProductDetails/ProductDetails";
 import Footer from "./components/Footer";
 import Layout from "./components/Layout";
 import ProductsPage from "./components/productlistage/ProductsPage";
+import WishlistPage from "./components/wishlistpage/WishlistPage";
+import Cart from "./components/cart/Cart";
 
 const App: React.FC = () => {
   return (
@@ -20,6 +22,8 @@ const App: React.FC = () => {
           <Route path="/services" element={<ProductDetails />} />
           <Route path="/product" element={<ProductsPage />} />
           <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="//wishlist" element={<WishlistPage />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/contact" element={<ContactPage />} />
         </Routes>
         <Footer />

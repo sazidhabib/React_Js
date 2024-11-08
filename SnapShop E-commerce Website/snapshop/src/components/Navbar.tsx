@@ -5,7 +5,8 @@ import { FaTimes } from "react-icons/fa";
 
 import { FaUserCircle } from "react-icons/fa";
 import SearchComponent from "./homepages/SearchComponent";
-import AccountDropdown from "./homepages/AccountDropdown";
+//import AccountDropdown from "./homepages/AccountDropdown";
+import LogoutDropdown from "./homepages/LogoutDropdown";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,18 +71,40 @@ const Navbar: React.FC = () => {
         <div className="md:items-left flex gap-6 items-center self-stretch my-auto ">
           <SearchComponent />
           <div className="flex gap-4 justify-center items-center self-stretch my-auto">
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/0123583f55d849d761c5aafb62524e58e76f4578ffd0ca775554d42933ddc549?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              className="object-contain shrink-0 self-stretch my-auto w-8 aspect-square"
-              alt="User icon"
-            />
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/27e6583cc2b0ad6384fa0e09ba54d132ea13906a2c9553ea3ae9481ef2628ff7?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              className="object-contain shrink-0 self-stretch my-auto w-8 aspect-square"
-              alt="Cart icon"
-            />
+            <NavLink
+              to="/wishlist"
+              className={({ isActive }) =>
+                ` hover:text-gray-300 px-3 py-2 rounded-md text-sm  ${
+                  isActive
+                    ? "underline underline-offset-8 border-black-500"
+                    : ""
+                }`
+              }
+            >
+              <img
+                loading="lazy"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/0123583f55d849d761c5aafb62524e58e76f4578ffd0ca775554d42933ddc549?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
+                className="object-contain shrink-0 self-stretch my-auto w-8 aspect-square"
+                alt="Wishlist icon"
+              />
+            </NavLink>
+            <NavLink
+              to="/cart"
+              className={({ isActive }) =>
+                ` hover:text-gray-300 px-3 py-2 rounded-md text-sm  ${
+                  isActive
+                    ? "underline underline-offset-8 border-black-500"
+                    : ""
+                }`
+              }
+            >
+              <img
+                loading="lazy"
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/27e6583cc2b0ad6384fa0e09ba54d132ea13906a2c9553ea3ae9481ef2628ff7?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
+                className="object-contain shrink-0 self-stretch my-auto w-8 aspect-square"
+                alt="Cart icon"
+              />
+            </NavLink>
             <button onClick={toggleDropdown}>
               <FaUserCircle className=" text-3xl object-contain shrink-0 self-stretch my-auto w-8 aspect-square" />
             </button>
@@ -89,7 +112,7 @@ const Navbar: React.FC = () => {
         </div>
         {isDropdownOpen && (
           <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-20">
-            <AccountDropdown />
+            <LogoutDropdown />
           </div>
         )}
 

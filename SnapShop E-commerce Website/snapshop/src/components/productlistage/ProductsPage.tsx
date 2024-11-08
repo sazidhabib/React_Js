@@ -19,16 +19,6 @@ const ProductsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | JSX.Element | null>(null);
 
-  const existInWishlist = (
-    product: Product,
-    watchlater: Product[]
-  ): boolean => {
-    const productPresent = watchlater.find(
-      (insideProduct) => insideProduct.id === product.id
-    );
-    return productPresent ? true : false;
-  };
-
   const fetchProductHandler = useCallback(async () => {
     setIsLoading(true);
     setError(null);

@@ -1,22 +1,25 @@
-import React from "react";
+import React, { useContext } from "react";
+import { GlobalContext } from "../../context/GlobalContext";
 import Header from "./Header";
 import Footer from "./Footer";
 import CartItem from "./CartItem";
 import CouponForm from "./CouponForm";
 import CartTotal from "./CartTotal";
 
-// interface CartProps {
-//   id: number;
-//   name: string;
-//   price: number;
-//   quantity: number;
-// }
+interface CartProps {
+  id: number;
+  image: string;
+  name: string;
+  price: number;
+  quantity?: number;
+}
 
-const Cart: React.FC = () => {
-  const cartItems = [
-    { id: 1, name: "LCD Monitor", price: 650, quantity: 1 },
-    { id: 2, name: "H1 Gamepad", price: 550, quantity: 2 },
-  ];
+const Cart: React.FC<CartProps> = () => {
+  const { cart } = useContext(GlobalContext);
+  console.log("cart: ", cart);
+  // Calculate the total amount based on items in the cart
+  const totalAmount = cart.reduce((total, item) => total + item.price, 0);
+  console.log("totalAmount: ", totalAmount);
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
@@ -34,14 +37,14 @@ const Cart: React.FC = () => {
         </nav>
         <section className="flex flex-col mt-20 w-full max-md:mt-10 max-md:max-w-full">
           <div className="flex overflow-hidden flex-col justify-center px-10 py-6 w-full text-base text-black whitespace-nowrap bg-white rounded shadow-sm max-md:px-5 max-md:max-w-full">
-            <div className="flex flex-wrap gap-10 items-center max-md:max-w-full">
+            <div className="flex flex-wrap justify-between gap-10 items-center max-md:max-w-full">
               <div className="self-stretch my-auto">Product</div>
               <div className="self-stretch my-auto">Price</div>
               <div className="self-stretch my-auto">Quantity</div>
               <div className="self-stretch my-auto">Subtotal</div>
             </div>
           </div>
-          {cartItems.map((item) => (
+          {cart.map((item) => (
             <CartItem key={item.id} {...item} />
           ))}
           <div className="flex flex-wrap gap-10 items-start mt-6 text-base font-medium text-black max-md:max-w-full">
@@ -55,7 +58,7 @@ const Cart: React.FC = () => {
         </section>
         <section className="flex flex-wrap gap-10 items-start mt-20 text-base max-md:mt-10 max-md:max-w-full">
           <CouponForm />
-          <CartTotal total={1750} />
+          <CartTotal total={totalAmount} />
         </section>
       </main>
       <Footer />

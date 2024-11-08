@@ -4,7 +4,7 @@ const AccountDropdown: React.FC = () => {
   return (
     <div className="flex overflow-hidden z-10 flex-col self-end px-3 pt-5 pb-2.5 mt-0 w-56 max-w-full text-sm text-center rounded bg-cyan-950 text-neutral-50">
       <nav className="flex flex-col items-start">
-        <a href="#" className="flex gap-4 items-center self-stretch">
+        <a href="#" className="flex gap-4 items-center">
           <img
             loading="lazy"
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/d4d3933bd60bc7f03e80195cff61581a8fb5573107350371a713dbfa0482821b?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"

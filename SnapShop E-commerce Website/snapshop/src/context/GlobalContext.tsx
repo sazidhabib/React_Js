@@ -16,13 +16,16 @@ const initialState: State = {
 interface GlobalContextProps {
   wishlist: Product[];
   cart: Product[];
+  isLogin: boolean;
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (id: number) => void;
   addToCart: (product: Product) => void;
   removeFromCart: (id: number) => void;
   moveToWishlist: (product: Product) => void;
+  setLogin: (Login: boolean) => void;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const GlobalContext = createContext<GlobalContextProps | undefined>(
   undefined
 );
@@ -52,6 +55,10 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const addToCart = (product: Product) => {
     dispatch({ type: "ADD_TO_CART", payload: product });
   };
+  const setLogin = (login: boolean) => {
+    console.log("Loging", login);
+    dispatch({ type: "SET_TO_LOGIN", payload: login });
+  };
 
   const removeFromCart = (id: number) => {
     dispatch({ type: "REMOVE_FROM_CART", payload: id });
@@ -66,11 +73,13 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
       value={{
         wishlist: state.wishlist,
         cart: state.cart,
+        isLogin: state.isLogin,
         addToWishlist,
         removeFromWishlist,
         addToCart,
         removeFromCart,
         moveToWishlist,
+        setLogin,
       }}
     >
       {children}

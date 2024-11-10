@@ -1,6 +1,7 @@
 import { State, Action } from "./types";
 
 const AppReducer = (state: State, action: Action): State => {
+  console.log("Topu", state);
   switch (action.type) {
     case "ADD_TO_WISHLIST":
       return {
@@ -32,6 +33,12 @@ const AppReducer = (state: State, action: Action): State => {
       return {
         ...state,
         cart: state.cart.filter((product) => product.id !== action.payload),
+      };
+    case "SET_TO_LOGIN":
+      console.log("HEHEHEHEH", action.payload);
+      return {
+        ...state,
+        isLogin: action.payload,
       };
     default:
       return state;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import RatingBar from "../productlistage/RatingBar";
+import RatingBar from "../productlist/RatingBar";
 
 interface ProductInfoProps {
   product?: {

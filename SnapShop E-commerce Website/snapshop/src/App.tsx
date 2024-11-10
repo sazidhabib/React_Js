@@ -7,27 +7,31 @@ import HomePage from "./components/homepages/HomePage";
 import ProductDetails from "./components/ProductDetails/ProductDetails";
 import Footer from "./components/Footer";
 import Layout from "./components/Layout";
-import ProductsPage from "./components/productlistage/ProductsPage";
+import ProductsPage from "./components/productlist/ProductsPage";
 import WishlistPage from "./components/wishlistpage/WishlistPage";
 import Cart from "./components/cart/Cart";
+import ErrorPage from "./components/errorpage/ErrorPage";
+import LoginPage from "./components/login/LoginPage";
+import SignUp from "./components/signup/SignUp";
 
 const App: React.FC = () => {
   return (
     <Router>
-      <Layout>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/services" element={<ProductDetails />} />
-          <Route path="/product" element={<ProductsPage />} />
-          <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="//wishlist" element={<WishlistPage />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/contact" element={<ContactPage />} />
-        </Routes>
-        <Footer />
-      </Layout>
+      <Layout />
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/product" element={<ProductsPage />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="//wishlist" element={<WishlistPage />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="*" element={<ErrorPage />} />
+      </Routes>
+      <Footer />
     </Router>
   );
 };

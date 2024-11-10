@@ -44,9 +44,9 @@ const Footer: React.FC = () => {
   return (
     <footer className="flex overflow-hidden flex-col justify-end pt-20 pb-6 mt-36 w-full bg-black max-md:mt-10 max-md:max-w-full">
       <div className="flex flex-wrap gap-10 justify-center items-start self-center max-md:max-w-full">
-        <div className="flex flex-col text-neutral-50 w-[217px]">
+        <div className="flex flex-col text-neutral-50 ">
           <div className="flex flex-col self-start">
-            <div className="flex flex-col max-w-full whitespace-nowrap w-[118px]">
+            <div className="flex flex-col max-w-full whitespace-nowrap">
               <h2 className="w-full text-2xl font-bold tracking-wider leading-none">
                 Exclusive
               </h2>
@@ -170,7 +170,7 @@ const Footer: React.FC = () => {
               className="object-contain shrink-0 self-stretch my-auto w-5 aspect-square"
             />
             <p className="self-stretch my-auto">
-              Copyright Rimel 2022. All right reserved
+              Copyright from SazidHabib 2024. All right reserved
             </p>
           </div>
         </div>

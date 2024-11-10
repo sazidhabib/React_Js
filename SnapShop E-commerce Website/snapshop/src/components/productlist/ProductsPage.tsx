@@ -18,6 +18,7 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | JSX.Element | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   const fetchProductHandler = useCallback(async () => {
     setIsLoading(true);
@@ -57,12 +58,20 @@ const ProductsPage: React.FC = () => {
     fetchProductHandler();
   }, [fetchProductHandler]);
 
+  useEffect(() => {
+    // Check if user is logged in, for instance, by checking local storage
+    const userLoggedIn = localStorage.getItem("userToken") !== null;
+    setIsLoggedIn(userLoggedIn);
+  }, []);
+
   let content: JSX.Element | string | JSX.Element[] = (
     <p>Found no products...</p>
   );
 
   if (products.length > 0) {
-    content = products.map((item) => <ProductCard key={item.id} {...item} />);
+    content = products.map((item) => (
+      <ProductCard key={item.id} {...item} isLoggedIn={isLoggedIn} />
+    ));
   }
   if (error) {
     content = <p>{error}</p>;
@@ -74,17 +83,13 @@ const ProductsPage: React.FC = () => {
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
-      <hr className="mt-4 w-full bg-black border-black border-solid opacity-30 min-h-[1px] max-md:max-w-full" />
-
       <main className="flex flex-col self-center mt-20 max-md:mt-10 max-md:max-w-full">
         <section className="flex flex-col max-md:max-w-full">
-          <div className="flex flex-wrap gap-10 items-center max-md:max-w-full">
-            <h2 className="self-stretch my-auto text-xl leading-tight text-center text-black">
-              Wishlist (4)
+          <div className="flex flex-wrap items-center gap-3 max-md:max-w-full">
+            <h2 className="self-stretch my-auto  leading-tight text-center text-black opacity-50">
+              Home
             </h2>
-            <button className="gap-2.5 self-stretch px-12 py-4 my-auto text-base font-medium text-black rounded border border-solid border-black border-opacity-50 max-md:px-5">
-              Move All To Bag
-            </button>
+            <span>ShopNow</span>
           </div>
           <div className="flex flex-wrap justify-center gap-8 items-start my-16 max-md:mt-10 max-md:max-w-full">
             {content}

@@ -1,7 +1,5 @@
 import React, { useContext } from "react";
 import { GlobalContext } from "../../context/GlobalContext";
-import Header from "./Header";
-import Footer from "./Footer";
 import CartItem from "./CartItem";
 import CouponForm from "./CouponForm";
 import CartTotal from "./CartTotal";
@@ -11,7 +9,7 @@ interface CartProps {
   image: string;
   name: string;
   price: number;
-  quantity?: number;
+  quantity: number;
 }
 
 const Cart: React.FC<CartProps> = () => {
@@ -23,7 +21,6 @@ const Cart: React.FC<CartProps> = () => {
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
-      <Header />
       <main className="flex flex-col self-center mt-20 w-full max-w-[1170px] max-md:mt-10 max-md:max-w-full">
         <nav aria-label="Breadcrumb">
           <ol className="flex gap-3 items-center self-start text-sm text-black whitespace-nowrap">
@@ -61,7 +58,6 @@ const Cart: React.FC<CartProps> = () => {
           <CartTotal total={totalAmount} />
         </section>
       </main>
-      <Footer />
     </div>
   );
 };

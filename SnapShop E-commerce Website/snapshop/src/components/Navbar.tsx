@@ -20,7 +20,7 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-white p-4 relative">
+    <nav className="bg-white p-4 relative border-b-2 border-black">
       <div className="container mx-auto flex justify-between items-center relative">
         <div className="flex gap-6">
           <h1 className=" text-2xl font-bold">SnapShop</h1>
@@ -48,14 +48,14 @@ const Navbar: React.FC = () => {
             About
           </NavLink>
           <NavLink
-            to="/services"
+            to="/product"
             className={({ isActive }) =>
               ` hover:text-gray-300 px-3 py-2 rounded-md text-sm  ${
                 isActive ? "underline underline-offset-8 border-black-500" : ""
               }`
             }
           >
-            Services
+            ShopNow
           </NavLink>
           <NavLink
             to="/contact"
@@ -112,7 +112,7 @@ const Navbar: React.FC = () => {
         </div>
         {isDropdownOpen && (
           <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-20">
-            <LogoutDropdown />
+            <LogoutDropdown closeDropdown={() => setIsDropdownOpen(false)} />
           </div>
         )}
 
@@ -154,7 +154,7 @@ const Navbar: React.FC = () => {
             About
           </NavLink>
           <NavLink
-            to="/services"
+            to="/product"
             className={({ isActive }) =>
               ` hover:text-gray-300 px-3 py-2 rounded-md text-sm  ${
                 isActive ? "underline underline-offset-8 border-blue-500" : ""
@@ -162,7 +162,7 @@ const Navbar: React.FC = () => {
             }
             onClick={() => setIsOpen(false)}
           >
-            Services
+            ShopNow
           </NavLink>
           <NavLink
             to="/contact"

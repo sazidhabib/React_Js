@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const SignUpForm: React.FC = () => {
   return (
@@ -82,9 +83,12 @@ const SignUpForm: React.FC = () => {
           <p className="self-stretch my-auto opacity-70">
             Already have account?
           </p>
-          <a href="#" className="self-stretch my-auto font-medium opacity-70">
+          <Link
+            to="/login"
+            className="self-stretch my-auto font-medium opacity-70"
+          >
             Log in
-          </a>
+          </Link>
         </div>
       </div>
     </section>

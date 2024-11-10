@@ -9,6 +9,7 @@ export interface Product {
 export interface State {
   wishlist: Product[];
   cart: Product[];
+  isLogin: boolean;
 }
 
 export type Action =
@@ -16,4 +17,5 @@ export type Action =
   | { type: "REMOVE_FROM_WISHLIST"; payload: number }
   | { type: "ADD_TO_CART"; payload: Product }
   | { type: "REMOVE_FROM_CART"; payload: number }
+  | { type: "SET_TO_LOGIN"; payload: boolean }
   | { type: "MOVE_TO_WISHLIST"; payload: Product };

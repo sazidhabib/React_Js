@@ -36,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </div>
       </div>
-      <main>{children}</main>
+      {/* <main>{children}</main> */}
     </div>
   );
 };

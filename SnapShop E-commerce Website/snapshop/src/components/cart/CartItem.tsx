@@ -24,25 +24,6 @@ const CartItem: React.FC<CartItemProps> = ({ title, image, price }) => {
           </div>
         </div>
         <div className="flex flex-col ml-5 w-4/5 max-md:ml-0 max-md:w-full">
-          {/* <div className="flex flex-wrap grow gap-5 justify-between items-center self-stretch my-auto text-base text-black whitespace-nowrap max-md:mt-10 max-md:max-w-full flex gap-0 items-start text-xl leading-snug text-black whitespace-nowrap min-h-[44px]">
-            <button
-              onClick={decrementQuantity}
-              aria-label="Decrease quantity"
-              className="px-3 py-2 border border-black border-opacity-50 rounded-l"
-            >
-              -
-            </button>
-            <div className="overflow-hidden px-9 py-2 w-20 border-t border-b border-black border-opacity-50 max-md:px-5">
-              {quantity}
-            </div>
-            <button
-              onClick={incrementQuantity}
-              aria-label="Increase quantity"
-              className="px-3 py-2 border border-black border-opacity-50 rounded-r"
-            >
-              +
-            </button>
-          </div> */}
           <div className="flex flex-wrap grow gap-5 justify-between items-center self-stretch my-auto text-base text-black  max-md:mt-10 max-md:max-w-full">
             <div className="self-stretch my-auto">${price}</div>
             <div className="flex my-auto shrink-0 self-stretch rounded border-2 border-solid border-black border-opacity-40 h-[47px] w-[100px]">

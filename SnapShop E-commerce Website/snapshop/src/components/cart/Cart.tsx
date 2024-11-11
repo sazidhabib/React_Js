@@ -44,6 +44,11 @@ const Cart: React.FC<CartProps> = () => {
           {cart.map((item) => (
             <CartItem key={item.id} {...item} />
           ))}
+          {cart.length === 0 && (
+            <p className="mt-5 text-center">
+              There is no product in Cart. Please add products to Cart...
+            </p>
+          )}
           <div className="flex flex-wrap gap-10 items-start mt-6 text-base font-medium text-black max-md:max-w-full">
             <button className="gap-2.5 self-stretch px-12 py-4 rounded border border-solid border-black border-opacity-50 max-md:px-5">
               Return To Shop

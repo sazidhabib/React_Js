@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
+import { GlobalContext } from "../../context/GlobalContext";
 import AccountManagement from "./AccountManagement";
 import ProfileEdit from "./ProfileEdit";
 
 const AccountPage: React.FC = () => {
+  const { user } = useContext(GlobalContext);
+
   return (
     <div className="flex flex-col bg-white">
       <main className="flex flex-col items-center">
@@ -12,7 +15,8 @@ const AccountPage: React.FC = () => {
             <span className="self-stretch my-auto">My Account</span>
           </div>
           <div className="leading-5 text-red-500">
-            Welcome! <span className="text-red-500">Md Rimel</span>
+            Welcome!{" "}
+            <span className="text-red-500">{user?.firstName || ""}</span>
           </div>
         </div>
         <section className="self-center mt-20 w-full max-w-[1170px] max-md:mt-10 max-md:max-w-full">

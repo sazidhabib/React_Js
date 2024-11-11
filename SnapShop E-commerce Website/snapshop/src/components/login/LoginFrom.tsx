@@ -28,6 +28,7 @@ const LoginForm: React.FC = () => {
           email: user.email,
           firstName: user.name.firstname,
           lastName: user.name.lastname,
+          address: user.address.city,
         });
         navigate("/"); // Redirect to homepage
       } else {

@@ -45,9 +45,7 @@ const WishlistPage: React.FC = () => {
 
   return (
     <div className="flex overflow-hidden flex-col bg-white">
-      <hr className="mt-4 w-full bg-black border-black border-solid opacity-30 min-h-[1px] max-md:max-w-full" />
-
-      <main className="flex flex-col self-center mt-20 max-md:mt-10 max-md:max-w-full">
+      <main className="flex flex-col self-center mt-20 max-md:mt-10 max-md:max-w-full px-4">
         <section className="flex flex-col max-md:max-w-full">
           <div className="flex flex-wrap gap-10 items-center max-md:max-w-full">
             <h2 className="self-stretch my-auto text-xl leading-tight text-center text-black">
@@ -57,10 +55,16 @@ const WishlistPage: React.FC = () => {
               Move All To Bag
             </button>
           </div>
-          <div className="flex flex-wrap gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full">
+          <div className="flex flex-wrap justify-around gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full">
             {wishlist.map((item) => (
               <ProductCard key={item.id} {...item} />
             ))}
+            {wishlist.length === 0 && (
+              <p>
+                There is no product in WishList. Please add products to
+                wishlist...
+              </p>
+            )}
           </div>
         </section>
 
@@ -76,7 +80,7 @@ const WishlistPage: React.FC = () => {
               See All
             </button>
           </div>
-          <div className="flex flex-wrap gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full">
+          <div className="flex flex-wrap justify-around gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full">
             {justForYouItems.map((item, index) => (
               <ProductCard key={index} {...item} />
             ))}

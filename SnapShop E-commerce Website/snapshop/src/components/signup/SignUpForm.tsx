@@ -78,7 +78,7 @@ const SignUpForm: React.FC = () => {
   };
 
   return (
-    <section className="flex flex-col self-stretch my-auto text-black h-[712px] min-w-[240px] w-[369px]">
+    <section className="flex flex-col self-stretch my-auto text-black h-[712px] min-w-[240px] w-[369px] px-2 ">
       <h1 className="text-4xl font-medium tracking-widest leading-none">
         Create an account
       </h1>

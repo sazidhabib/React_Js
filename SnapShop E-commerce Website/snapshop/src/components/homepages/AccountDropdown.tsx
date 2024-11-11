@@ -49,7 +49,11 @@ const AccountDropdown: React.FC<AccountDropdownProps> = ({ closeDropdown }) => {
           />
           <span className="self-stretch my-auto">My Cancellations</span>
         </a>
-        <Link to="/signup" className="flex gap-4 items-center mt-3.5">
+        <Link
+          onClick={closeDropdown}
+          to="/signup"
+          className="flex gap-4 items-center mt-3.5"
+        >
           <img
             loading="lazy"
             src="https://cdn.builder.io/api/v1/image/assets/TEMP/943c84ae3047cf3e3844a45ef6f5c62cb367d6032aaa74048785a1d185e49909?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"

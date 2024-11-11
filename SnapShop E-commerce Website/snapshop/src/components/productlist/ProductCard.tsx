@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import RatingBar from "./RatingBar";
 import { GlobalContext } from "../../context/GlobalContext";
 import LoginPromptModal from "../LoginPromptModal";
+import { MdFavoriteBorder } from "react-icons/md";
+import { MdFavorite } from "react-icons/md";
 
 type ProductCardProps = {
   id: number;
@@ -86,16 +88,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     addToWishlist({ id, image, title, price });
                 }}
               >
-                <img
-                  loading="lazy"
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/00d93adab53c5214ab1a164999c542db25c2e68622e0085e7c9140fbeae9a9e5?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-                  alt="Add to Wishlist"
-                  className="object-contain aspect-square w-[34px]"
-                />
+                {existInWishlist ? (
+                  <MdFavorite className=" text-2xl hover:bg-gray-300 object-contain aspect-square" />
+                ) : (
+                  <MdFavoriteBorder className=" text-2xl hover:bg-gray-300 object-contain aspect-square" />
+                )}
               </button>
             </div>
             <button
-              className="hover:bg-red-500 group-hover:flex inset-x-0 bottom-0 justify-center items-center px-7 py-2.5 mt-3.5 w-full text-xs text-white bg-black"
+              className={`${
+                existInCart
+                  ? "bg-gray-300 cursor-not-allowed opacity-50 text-black justify-center items-center px-7 py-2.5 mt-3.5 w-full"
+                  : "hover:bg-red-500 group-hover:flex inset-x-0 bottom-0 justify-center items-center px-7 py-2.5 mt-3.5 w-full text-xs text-white bg-black"
+              } `}
               aria-label="Add to Cart"
               onClick={handleAddToCart}
             >

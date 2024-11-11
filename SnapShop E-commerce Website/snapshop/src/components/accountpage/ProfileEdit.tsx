@@ -55,6 +55,8 @@ const ProfileEdit: React.FC = () => {
                 id="address"
                 className="mt-2 px-4 py-3.5 rounded bg-neutral-100"
                 placeholder="Kingston, 5236, United State"
+                value={user?.address || ""}
+                readOnly
               />
             </div>
           </div>

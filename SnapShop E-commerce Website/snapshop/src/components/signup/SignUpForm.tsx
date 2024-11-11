@@ -1,65 +1,143 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
+// Define validation schema using yup
+const schema = yup.object().shape({
+  name: yup.string().required("Name is required"),
+  email: yup
+    .string()
+    .email("Invalid email format")
+    .required("Email is required"),
+  password: yup
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  address: yup.string().required("Address is required"),
+  phone: yup
+    .string()
+    .matches(/^[0-9]+$/, "Phone must only contain numbers")
+    .min(10, "Phone must be at least 10 characters")
+    .required("Phone is required"),
+});
+
+interface FormInputs {
+  name: string;
+  email: string;
+  password: string;
+  address: string;
+  phone: string;
+}
 
 const SignUpForm: React.FC = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInputs>({
+    resolver: yupResolver(schema),
+  });
+
+  const onSubmit = async (data: FormInputs) => {
+    const userData = {
+      email: data.email,
+      username: data.name,
+      password: data.password,
+      name: {
+        firstname: data.name.split(" ")[0] || "",
+        lastname: data.name.split(" ")[1] || "",
+      },
+      address: {
+        city: "your city here",
+        street: data.address,
+        number: 1,
+        zipcode: "00000",
+        geolocation: {
+          lat: "0",
+          long: "0",
+        },
+      },
+      phone: data.phone,
+    };
+
+    try {
+      const response = await fetch("https://fakestoreapi.com/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      const result = await response.json();
+      console.log("User created:", result);
+      alert("Account created successfully!");
+    } catch (error) {
+      console.error("Failed to create account:", error);
+      alert("Account creation failed!");
+    }
+  };
+
   return (
     <section className="flex flex-col self-stretch my-auto text-black h-[712px] min-w-[240px] w-[369px]">
       <h1 className="text-4xl font-medium tracking-widest leading-none">
         Create an account
       </h1>
       <p className="mt-6 text-base">Enter your details below</p>
-      <form className="flex flex-col mt-12 text-base max-md:mt-10">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col mt-12 text-base max-md:mt-10"
+      >
         <div className="flex flex-col items-center whitespace-nowrap">
           <div className="flex flex-col w-full">
-            <label htmlFor="name" className="sr-only">
-              Name
-            </label>
             <input
               type="text"
-              id="name"
               placeholder="Name"
-              className="opacity-40 p-2 border rounded mb-10"
+              {...register("name")}
+              className="opacity-40 p-2 border rounded mb-2"
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm">{errors.name.message}</p>
+            )}
 
-            <label htmlFor="email" className="sr-only">
-              Email
-            </label>
             <input
               type="email"
-              id="email"
               placeholder="Email"
-              className="opacity-40 p-2 border rounded mb-10"
+              {...register("email")}
+              className="opacity-40 p-2 border rounded mb-2"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
 
-            <label htmlFor="password" className="sr-only">
-              Password
-            </label>
             <input
               type="password"
-              id="password"
               placeholder="Password"
-              className="opacity-40 p-2 border rounded mb-10"
+              {...register("password")}
+              className="opacity-40 p-2 border rounded mb-2"
             />
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
+            )}
 
-            <label htmlFor="address" className="sr-only">
-              Address
-            </label>
             <input
               type="text"
-              id="address"
               placeholder="Address"
-              className="opacity-40 p-2 border rounded mb-10"
+              {...register("address")}
+              className="opacity-40 p-2 border rounded mb-2"
             />
+            {errors.address && (
+              <p className="text-red-500 text-sm">{errors.address.message}</p>
+            )}
 
-            <label htmlFor="phone" className="sr-only">
-              Phone
-            </label>
             <input
               type="tel"
-              id="phone"
               placeholder="Phone"
-              className="opacity-40 p-2 border rounded mb-10"
+              {...register("phone")}
+              className="opacity-40 p-2 border rounded mb-2"
             />
+            {errors.phone && (
+              <p className="text-red-500 text-sm">{errors.phone.message}</p>
+            )}
           </div>
         </div>
         <button
@@ -81,7 +159,7 @@ const SignUpForm: React.FC = () => {
         </button>
         <div className="flex gap-4 items-center mt-8">
           <p className="self-stretch my-auto opacity-70">
-            Already have account?
+            Already have an account?
           </p>
           <Link
             to="/login"

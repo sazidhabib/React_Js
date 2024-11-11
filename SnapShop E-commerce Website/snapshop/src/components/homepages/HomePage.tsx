@@ -8,7 +8,7 @@ import ServiceFeatures from "./ServiceFeatures";
 
 const HomePage: React.FC = () => {
   return (
-    <div className="flex overflow-hidden flex-col bg-white relative">
+    <div className="flex overflow-hidden flex-col bg-white relative ">
       <HeroSection />
       <FlashSaleSection />
       <CategorySection />
@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
       <img
         loading="lazy"
         src="https://cdn.builder.io/api/v1/image/assets/TEMP/df6ac03ddfea8c230a9930e390a638ce1ab1abb6377bcd7761859019e109c730?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-        className="object-contain mt-36 w-full aspect-[2.34] max-w-[1170px] max-md:mt-10 max-md:max-w-full"
+        className="object-contain self-center mt-36 w-full aspect-[2.34] max-w-[1170px] max-md:mt-10 max-md:max-w-full"
         alt="Featured product banner"
       />
       <NewArrivalSection />

@@ -1,6 +1,6 @@
 import React, { createContext, useReducer, useEffect, ReactNode } from "react";
 import AppReducer from "./AppReducer";
-import { State, Product } from "./types";
+import { State, User, Product } from "./types";
 
 // Initial state
 const initialState: State = {
@@ -17,12 +17,13 @@ interface GlobalContextProps {
   wishlist: Product[];
   cart: Product[];
   isLogin: boolean;
+  user?: User; // Add user type here
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (id: number) => void;
   addToCart: (product: Product) => void;
   removeFromCart: (id: number) => void;
   moveToWishlist: (product: Product) => void;
-  setLogin: (Login: boolean) => void;
+  setLogin: (isLogin: boolean, user?: User) => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -41,6 +42,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("wishlist", JSON.stringify(state.wishlist));
     localStorage.setItem("cart", JSON.stringify(state.cart));
+    localStorage.setItem("user", JSON.stringify(state.user));
   }, [state]);
 
   // Actions
@@ -55,9 +57,8 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
   const addToCart = (product: Product) => {
     dispatch({ type: "ADD_TO_CART", payload: product });
   };
-  const setLogin = (login: boolean) => {
-    console.log("Loging", login);
-    dispatch({ type: "SET_TO_LOGIN", payload: login });
+  const setLogin = (isLogin: boolean, user?: User) => {
+    dispatch({ type: "SET_TO_LOGIN", payload: { isLogin, user } });
   };
 
   const removeFromCart = (id: number) => {
@@ -74,6 +75,7 @@ export const GlobalProvider: React.FC<GlobalProviderProps> = ({ children }) => {
         wishlist: state.wishlist,
         cart: state.cart,
         isLogin: state.isLogin,
+        user: state.user,
         addToWishlist,
         removeFromWishlist,
         addToCart,

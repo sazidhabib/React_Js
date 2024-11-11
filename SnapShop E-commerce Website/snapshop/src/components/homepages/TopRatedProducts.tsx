@@ -42,28 +42,31 @@ const TopRatedProducts: React.FC = () => {
   ];
 
   return (
-    <section className="flex flex-col mt-16 max-md:mt-10 max-md:max-w-full">
-      <div className="flex flex-wrap gap-10 items-end max-md:max-w-full">
-        <div className="flex flex-col min-w-[240px]">
-          <div className="flex gap-4 items-center self-start">
-            <div className="flex flex-col self-stretch my-auto w-5">
-              <div className="flex shrink-0 h-10 bg-red-500 rounded"></div>
-            </div>
-            <h2 className="self-stretch my-auto text-base font-semibold leading-none text-red-500">
+    <section className="flex flex-col items-center mt-16 w-full px-4 mx-auto md:px-6 ">
+      <div className="flex flex-wrap gap-6 items-end w-full justify-between">
+        <div className="flex flex-col min-w-[240px] md:min-w-[280px]">
+          <div className="flex items-center gap-4">
+            <div className="w-5 h-10 bg-red-500 rounded"></div>
+            <h2 className="text-lg md:text-base font-semibold text-red-500">
               This Month
             </h2>
           </div>
-          <h3 className="mt-5 text-4xl font-semibold tracking-widest leading-none text-black">
+          <h3 className="mt-4 text-2xl md:text-3xl lg:text-4xl font-semibold leading-tight tracking-widest text-black">
             Top Rated Products
           </h3>
         </div>
-        <button className="gap-2.5 self-stretch px-12 py-4 text-base font-medium bg-red-500 rounded text-neutral-50 max-md:px-5">
+        <button className="self-stretch px-6 md:px-12 py-2 md:py-4 bg-red-500 text-white font-medium text-sm md:text-base rounded-md">
           View All
         </button>
       </div>
-      <div className="flex flex-wrap gap-8 items-start mt-16 text-base font-medium max-md:mt-10 max-md:max-w-full">
+      <div className="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-8 mt-8 md:mt-10 lg:mt-12">
         {products.map((product, index) => (
-          <ProductCard key={index} {...product} discount="" />
+          <div
+            key={index}
+            className="min-w-[220px] sm:min-w-[260px] md:min-w-[280px] lg:min-w-[300px]"
+          >
+            <ProductCard {...product} discount="" />
+          </div>
         ))}
       </div>
     </section>

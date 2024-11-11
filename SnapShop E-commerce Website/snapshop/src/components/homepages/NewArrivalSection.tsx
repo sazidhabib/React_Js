@@ -2,7 +2,7 @@ import React from "react";
 
 const NewArrivalSection: React.FC = () => {
   return (
-    <section className="flex flex-col mt-40 max-md:mt-10 max-md:max-w-full">
+    <section className="flex flex-col mt-40 max-md:mt-10 max-md:max-w-full px-4 md:px-6">
       <div className="flex flex-col self-start">
         <div className="flex gap-4 items-center self-start">
           <div className="flex flex-col self-stretch my-auto w-5">
@@ -16,7 +16,7 @@ const NewArrivalSection: React.FC = () => {
           New Arrival
         </h3>
       </div>
-      <div className="flex flex-wrap gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full">
+      <div className="flex flex-wrap gap-8 items-start mt-16 max-md:mt-10 max-md:max-w-full mx-auto md:px-6 lg:px-8 max-md:mt-10">
         <div className="flex overflow-hidden flex-col px-7 pt-24 bg-black rounded min-w-[240px] w-[570px] max-md:px-5 max-md:max-w-full">
           <div className="flex relative flex-col items-start px-1 pt-96 pb-8 min-h-[511px] max-md:pt-24 max-md:pr-5 max-md:max-w-full">
             <img

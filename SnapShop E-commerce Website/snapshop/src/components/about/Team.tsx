@@ -24,7 +24,7 @@ const Team: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-wrap gap-8 items-start mt-36 max-md:mt-10">
+    <div className="flex flex-wrap justify-center gap-8 items-start mt-36 max-w-full px-4 md:px-8 lg:px-12 max-md:mt-10">
       {teamMembers.map((member, index) => (
         <TeamMember key={index} {...member} />
       ))}

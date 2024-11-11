@@ -13,6 +13,8 @@ import Cart from "./components/cart/Cart";
 import ErrorPage from "./components/errorpage/ErrorPage";
 import LoginPage from "./components/login/LoginPage";
 import SignUp from "./components/signup/SignUp";
+import AccountPage from "./components/accountpage/AccountPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App: React.FC = () => {
   return (
@@ -28,7 +30,17 @@ const App: React.FC = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <AccountPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/signup" element={<SignUp />} />
+
         <Route path="*" element={<ErrorPage />} />
       </Routes>
       <Footer />

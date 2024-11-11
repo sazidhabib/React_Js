@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
+import { GlobalContext } from "../../context/GlobalContext";
 
 const ProfileEdit: React.FC = () => {
-  return (
-    // (continuing from the previous ProfileEdit.tsx file)
+  const { user } = useContext(GlobalContext);
+  console.log("LoginUser: ", user);
 
+  return (
     <div className="flex flex-col ml-5 w-[81%] max-md:ml-0 max-md:w-full">
       <div className="flex overflow-hidden flex-col px-20 py-10 mx-auto w-full text-base bg-white rounded shadow-sm max-md:px-5 max-md:mt-10 max-md:max-w-full">
         <h2 className="self-start text-xl font-medium leading-snug text-red-500">
@@ -17,7 +19,9 @@ const ProfileEdit: React.FC = () => {
                 type="text"
                 id="firstName"
                 className="mt-2 px-4 py-3.5 rounded bg-neutral-100"
-                placeholder="Md"
+                placeholder="First Name"
+                value={user?.firstName || ""}
+                readOnly
               />
             </div>
             <div className="flex flex-col min-w-[240px] w-[330px]">
@@ -26,7 +30,9 @@ const ProfileEdit: React.FC = () => {
                 type="text"
                 id="lastName"
                 className="mt-2 px-4 py-3.5 rounded bg-neutral-100"
-                placeholder="Rimel"
+                placeholder="Last Name"
+                value={user?.lastName || ""}
+                readOnly
               />
             </div>
           </div>
@@ -37,7 +43,9 @@ const ProfileEdit: React.FC = () => {
                 type="email"
                 id="email"
                 className="mt-2 px-4 py-3.5 rounded bg-neutral-100"
-                placeholder="rimel1111@gmail.com"
+                placeholder="Email"
+                value={user?.email || ""}
+                readOnly
               />
             </div>
             <div className="flex flex-col min-w-[240px] w-[330px]">

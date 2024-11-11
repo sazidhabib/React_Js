@@ -56,27 +56,23 @@ const FlashSaleSection: React.FC = () => {
   ];
 
   return (
-    <section className="flex flex-col self-stretch mt-36 w-full max-md:mt-10 max-md:max-w-full">
-      <div className="flex flex-wrap gap-10 items-end self-start max-md:max-w-full">
-        <div className="flex flex-wrap gap-10 items-end min-w-[240px] max-md:max-w-full">
+    <section className="flex flex-col self-center mt-36 w-full px-4 mx-auto md:px-6 lg:px-8">
+      <div className="flex flex-wrap gap-6 items-end max-w-full justify-between">
+        <div className="flex flex-col min-w-[240px] md:min-w-[280px]">
           <div className="flex flex-col h-[103px]">
-            <div className="flex gap-4 items-center self-start">
-              <div className="flex flex-col self-stretch my-auto w-5">
-                <div className="flex shrink-0 h-10 bg-red-500 rounded"></div>
-              </div>
-              <h2 className="self-stretch my-auto text-base font-semibold leading-none text-red-500">
-                Today's
-              </h2>
+            <div className="flex gap-2 items-center">
+              <div className="h-10 w-5 bg-red-500 rounded"></div>
+              <h2 className="text-base font-semibold text-red-500">Today's</h2>
             </div>
-            <h3 className="mt-6 text-4xl font-semibold tracking-widest leading-none text-black">
+            <h3 className="mt-4 text-2xl font-semibold text-black md:text-3xl lg:text-4xl">
               Flash Sales
             </h3>
           </div>
-          <div className="flex gap-4 text-black whitespace-nowrap min-w-[240px] w-[302px]">
+          <div className="flex gap-4 text-black mt-4">
             {["Days", "Hours", "Minutes", "Seconds"].map((unit, index) => (
-              <div key={index} className="flex flex-col min-h-[50px]">
+              <div key={index} className="flex flex-col items-center">
                 <div className="text-xs font-medium">{unit}</div>
-                <div className="mt-1 text-3xl font-bold tracking-widest leading-none">
+                <div className="text-2xl font-bold mt-1 md:text-3xl">
                   {index === 0
                     ? "03"
                     : index === 1
@@ -85,19 +81,16 @@ const FlashSaleSection: React.FC = () => {
                     ? "19"
                     : "56"}
                 </div>
-                {index < 3 && (
-                  <div className="flex self-end mt-7 min-h-[16px]"></div>
-                )}
               </div>
             ))}
           </div>
         </div>
-        <div className="flex gap-2 items-start">
+        <div className="flex gap-2 mt-4">
           <button aria-label="Previous" className="focus:outline-none">
             <img
               loading="lazy"
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/6d46c131187bfff9eb633481579a064341b51d7196040ee40dd3f9577e445a5e?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              className="object-contain shrink-0 aspect-square w-[46px]"
+              className="object-contain w-10 md:w-12"
               alt=""
             />
           </button>
@@ -105,15 +98,20 @@ const FlashSaleSection: React.FC = () => {
             <img
               loading="lazy"
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/e88e31fcac886e936832d43b7fb2b7a3e219274da66d8e9d07a08a6cc7094c1b?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              className="object-contain shrink-0 aspect-square w-[46px]"
+              className="object-contain w-10 md:w-12"
               alt=""
             />
           </button>
         </div>
       </div>
-      <div className="flex overflow-x-auto gap-8 items-start mt-10 w-full">
+      <div className="flex overflow-x-auto gap-4 mt-6 pb-4 md:gap-6 md:mt-8 lg:gap-8 lg:mt-10">
         {flashSaleProducts.map((product, index) => (
-          <ProductCard key={index} {...product} />
+          <div
+            key={index}
+            className="min-w-[220px] sm:min-w-[260px] md:min-w-[280px] lg:min-w-[300px]"
+          >
+            <ProductCard {...product} />
+          </div>
         ))}
       </div>
     </section>

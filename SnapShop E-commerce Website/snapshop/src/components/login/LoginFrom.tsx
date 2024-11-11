@@ -21,7 +21,14 @@ const LoginForm: React.FC = () => {
       );
 
       if (user) {
-        setLogin(true);
+        console.log("which user log in: ", user);
+        setLogin(true, {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          firstName: user.name.firstname,
+          lastName: user.name.lastname,
+        });
         navigate("/"); // Redirect to homepage
       } else {
         alert("Invalid credentials!");

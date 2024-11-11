@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { GlobalContext } from "../context/GlobalContext";
 import { NavLink } from "react-router-dom";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { FaTimes } from "react-icons/fa";
 
 import { FaUserCircle } from "react-icons/fa";
 import SearchComponent from "./homepages/SearchComponent";
-//import AccountDropdown from "./homepages/AccountDropdown";
+import AccountDropdown from "./homepages/AccountDropdown";
 import LogoutDropdown from "./homepages/LogoutDropdown";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const { isLogin } = useContext(GlobalContext);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -112,7 +115,7 @@ const Navbar: React.FC = () => {
         </div>
         {isDropdownOpen && (
           <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-20">
-            <LogoutDropdown closeDropdown={() => setIsDropdownOpen(false)} />
+            <AccountDropdown closeDropdown={() => setIsDropdownOpen(false)} />
           </div>
         )}
 

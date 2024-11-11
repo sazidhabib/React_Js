@@ -1,13 +1,10 @@
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
 import AccountManagement from "./AccountManagement";
 import ProfileEdit from "./ProfileEdit";
 
 const AccountPage: React.FC = () => {
   return (
     <div className="flex flex-col bg-white">
-      <Header />
       <main className="flex flex-col items-center">
         <div className="flex flex-wrap gap-10 self-center mt-20 w-full text-sm max-w-[1170px] max-md:mt-10 max-md:max-w-full">
           <div className="flex flex-1 gap-3 items-center text-black">
@@ -25,7 +22,6 @@ const AccountPage: React.FC = () => {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 };

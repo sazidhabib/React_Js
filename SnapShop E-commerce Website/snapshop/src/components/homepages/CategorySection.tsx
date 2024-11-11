@@ -31,43 +31,42 @@ const CategorySection: React.FC = () => {
   ];
 
   return (
-    <section className="flex flex-col mt-20 max-md:mt-10 max-md:max-w-full">
-      <div className="flex flex-wrap gap-10 items-end max-md:max-w-full">
-        <div className="flex flex-col min-w-[240px]">
-          <div className="flex gap-4 items-center self-start">
-            <div className="flex flex-col self-stretch my-auto w-5">
-              <div className="flex shrink-0 h-10 bg-red-500 rounded"></div>
-            </div>
-            <h2 className="self-stretch my-auto text-base font-semibold leading-none text-red-500">
-              Categories
-            </h2>
+    <section className="flex flex-col items-center mt-20 px-4 md:px-6 lg:px-8">
+      <div className="flex flex-wrap gap-6 items-center justify-between w-full">
+        <div className="flex flex-col items-start">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-10 bg-red-500 rounded"></div>
+            <h2 className="text-base font-semibold text-red-500">Categories</h2>
           </div>
-          <h3 className="mt-5 text-4xl font-semibold tracking-widest leading-none text-black">
+          <h3 className="mt-4 text-2xl font-semibold md:text-3xl lg:text-4xl text-black">
             Browse By Category
           </h3>
         </div>
-        <div className="flex gap-2 items-start">
+        <div className="flex gap-2">
           <button aria-label="Previous category" className="focus:outline-none">
             <img
-              loading="lazy"
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/6d46c131187bfff9eb633481579a064341b51d7196040ee40dd3f9577e445a5e?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              className="object-contain shrink-0 aspect-square w-[46px]"
+              className="w-10 md:w-12"
               alt=""
             />
           </button>
           <button aria-label="Next category" className="focus:outline-none">
             <img
-              loading="lazy"
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/e88e31fcac886e936832d43b7fb2b7a3e219274da66d8e9d07a08a6cc7094c1b?placeholderIfAbsent=true&apiKey=f40e85373ac14970bb43d76751298eef"
-              className="object-contain shrink-0 aspect-square w-[46px]"
+              className="w-10 md:w-12"
               alt=""
             />
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap gap-8 items-start mt-16 text-base text-black whitespace-nowrap max-md:mt-10 max-md:max-w-full">
+      <div className="flex flex-wrap gap-4 mt-10 max-w-[1280px] w-full justify-center">
         {categories.map((category, index) => (
-          <CategoryCard key={index} {...category} />
+          <div
+            key={index}
+            className="min-w-[120px] sm:min-w-[160px] md:min-w-[180px] lg:min-w-[200px]"
+          >
+            <CategoryCard {...category} />
+          </div>
         ))}
       </div>
     </section>

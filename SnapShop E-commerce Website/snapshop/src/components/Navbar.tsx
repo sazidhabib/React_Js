@@ -24,7 +24,7 @@ const Navbar: React.FC = () => {
 
   return (
     <nav className="bg-white p-4 relative border-b-2 border-black">
-      <div className="container mx-auto flex justify-between items-center relative">
+      <div className="container mx-auto flex justify-between items-center">
         <div className="flex gap-6">
           <h1 className=" text-2xl font-bold">SnapShop</h1>
         </div>

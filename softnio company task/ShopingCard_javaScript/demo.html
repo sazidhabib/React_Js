@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dynamic Image Selection</title>
+    <!-- <link rel="stylesheet" href="styles.css" /> -->
+  </head>
+  <body>
+    <!-- Image Section -->
+    <div
+      class="flex-grow-0 flex-shrink-0 w-[630px] h-[720px] relative overflow-hidden rounded bg-[#ffa353]"
+      id="image-container"
+    >
+      <img
+        id="product-image"
+        class="w-[630px] h-[721px] absolute left-[-1px] top-[-1px]"
+        src="/image1.png"
+        alt="Product Image"
+      />
+    </div>
+
+    <!-- Band Color Section -->
+    <div
+      class="flex flex-col justify-start items-start self-stretch flex-grow-0 flex-shrink-0 relative gap-2.5 pt-5"
+    >
+      <p
+        class="flex-grow-0 flex-shrink-0 text-lg font-bold text-left text-[#364a63]"
+      >
+        Band Color
+      </p>
+      <div
+        class="flex justify-start items-center flex-grow-0 flex-shrink-0 relative gap-[19px]"
+        id="color-options"
+      >
+        <svg
+          data-image="/image1.png"
+          class="color-option flex-grow-0 flex-shrink-0 w-6 h-6 relative"
+          preserveAspectRatio="none"
+        >
+          <circle cx="12" cy="12.5" r="8" fill="#816BFF"></circle>
+          <circle
+            cx="12"
+            cy="12.5"
+            r="11"
+            stroke="#816BFF"
+            stroke-width="2"
+          ></circle>
+        </svg>
+        <svg
+          data-image="/image2.png"
+          class="color-option flex-grow-0 flex-shrink-0 w-4 h-4 relative"
+          preserveAspectRatio="none"
+        >
+          <circle cx="8" cy="8.5" r="8" fill="#1FCEC9"></circle>
+        </svg>
+        <svg
+          data-image="/image3.png"
+          class="color-option flex-grow-0 flex-shrink-0 w-4 h-4 relative"
+          preserveAspectRatio="none"
+        >
+          <circle cx="8" cy="8.5" r="8" fill="#4B97D3"></circle>
+        </svg>
+        <svg
+          data-image="/image4.png"
+          class="color-option flex-grow-0 flex-shrink-0 w-4 h-4 relative"
+          preserveAspectRatio="none"
+        >
+          <circle cx="8" cy="8.5" r="8" fill="#3B4747"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Shop Card</title>
+  </head>
+  <body>
+    <div class="w-full h-full bg-white items-center flex flex-col">
+      <div
+        class="w-full max-w-screen-2xl h-full px-12 pt-12 flex flex-col gap-12"
+      >
+        <!-- Product Display Section -->
+        <div class="flex flex-col lg:flex-row gap-10 items-center">
+          <div
+            class="max-w-md lg:max-w-xl bg-orange-400 rounded-md overflow-hidden border"
+          >
+            <img
+              id="product-image"
+              class="w-full h-auto xl:w-[630px] xl:h-[721px] bg-cover"
+              src="/image1.png"
+              alt="Product"
+            />
+          </div>
+          <div class="flex flex-1 flex-col items-start gap-6">
+            <h1
+              id="product-name"
+              class="text-gray-800 text-3xl font-bold text-left"
+            >
+              Classy Modern Smart Watch
+            </h1>
+            <div class="flex items-center gap-2">
+              <div class="text-yellow-500">Rating: 3.5</div>
+              <span class="text-gray-500 text-sm">(2 Reviews)</span>
+            </div>
+            <div class="flex items-end gap-2">
+              <span class="text-gray-500 text-lg line-through">$99.00</span>
+              <span id="product-price" class="text-[#6576ff] text-2xl font-bold"
+                >$69.00</span
+              >
+            </div>
+            <p class="text-gray-600 text-base text-left">
+              I must explain to you how all this mistaken idea of denouncing
+              pleasure and praising pain was born and I will give you a complete
+              account of the system, and expound the actual teachings.
+            </p>
+
+            <!-- Product Specifications -->
+            <div class="flex gap-12">
+              <div>
+                <h3 class="text-gray-500 text-sm text-left">Type</h3>
+                <p class="text-gray-800 text-base font-bold">Watch</p>
+              </div>
+              <div>
+                <h3 class="text-gray-500 text-sm text-left">Model Number</h3>
+                <p class="text-gray-800 text-base font-bold">
+                  Forerunner 290XT
+                </p>
+              </div>
+            </div>
+
+            <!-- Band Colors -->
+            <div
+              class="self-stretch h-[74px] pt-5 flex-col justify-start items-start gap-2.5 flex"
+            >
+              <div class="text-[#364a63] text-lg font-bold leading-tight">
+                Band Color
+              </div>
+              <div
+                id="band-colors"
+                class="justify-start items-center gap-[19px] inline-flex"
+              >
+                <button
+                  id="color-purple"
+                  class="w-8 h-8 rounded-full border-2 border-[#6576ff] bg-purple-600"
+                ></button>
+                <button
+                  id="color-cyan"
+                  class="w-8 h-8 rounded-full border bg-cyan-400"
+                ></button>
+                <button
+                  id="color-blue"
+                  class="w-8 h-8 rounded-full border bg-blue-500"
+                ></button>
+                <button
+                  id="color-black"
+                  class="w-8 h-8 rounded-full border bg-black"
+                ></button>
+              </div>
+            </div>
+
+            <!-- Size Options -->
+            <h3 class="text-gray-800 text-lg font-bold text-left">
+              Wrist Size
+            </h3>
+            <div id="size-options" class="flex items-center gap-2.5">
+              <!-- Size Options will be dynamically populated -->
+            </div>
+
+            <!-- Quantity and Add to Cart -->
+            <div class="flex items-center gap-4">
+              <div class="flex items-center border border-gray-300 rounded">
+                <button id="decrement" class="px-2 py-1 text-gray-500 border-r">
+                  -
+                </button>
+                <span
+                  id="quantity"
+                  class="px-[26px] py-[3px] text-[#364a63] text-sm"
+                  >1</span
+                >
+                <button id="increment" class="px-2 py-1 text-gray-500 border-l">
+                  +
+                </button>
+              </div>
+              <button
+                id="add-to-cart"
+                class="px-[18px] py-2 bg-[#6576ff] text-white font-bold text-[13px] rounded hover:bg-[#5765d9]"
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checkout Button -->
+        <div
+          class="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex justify-center"
+        >
+          <button
+            id="checkout"
+            class="flex items-center gap-2 px-6 py-2 bg-yellow-400 rounded-full shadow"
+          >
+            <span class="text-gray-800 text-sm font-bold">Checkout</span>
+            <span
+              id="total-quantity"
+              class="px-2 py-1 bg-white text-gray-800 text-xs font-bold rounded"
+              >0</span
+            >
+          </button>
+        </div>
+
+        <!-- Cart Modal (Initially Hidden) -->
+        <div
+          id="cart-modal"
+          class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
+        >
+          <div class="p-8 bg-white rounded-[20px] shadow-lg w-full max-w-3xl">
+            <!-- Header -->
+            <div class="text-[22px] text-[#364a63] font-bold mb-6 text-left">
+              Your Cart
+            </div>
+
+            <!-- Table Header -->
+            <div
+              class="flex justify-between border-b pb-2 border-[#dbdfea] text-sm text-[#8091a7] font-medium"
+            >
+              <div class="w-[278px] text-left">Item</div>
+              <div class="w-[100px] text-center">Color</div>
+              <div class="w-[80px] text-center">Size</div>
+              <div class="w-[80px] text-center">Qnt</div>
+              <div class="w-[100px] text-right">Price</div>
+            </div>
+
+            <!-- Scrollable Cart Items -->
+            <div id="cart-items" class="max-h-[300px] overflow-y-auto">
+              <!-- Cart items will be dynamically added here -->
+            </div>
+
+            <!-- Total Section -->
+            <div
+              class="flex justify-between items-center text-sm text-[#364a63] border-t pt-4 border-[#dbdfea] font-medium"
+            >
+              <div class="w-[278px] text-left text-[18px] font-semibold">
+                Total
+              </div>
+              <div class="w-[100px] text-center"></div>
+              <div class="w-[80px] text-right"></div>
+              <div class="w-[80px] text-center font-semibold text-[18px]">
+                <span id="total-items-count">0</span>
+              </div>
+              <div class="w-[100px] text-right font-semibold text-[18px]">
+                $<span id="total-price">0.00</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-4 mt-6">
+              <button
+                id="close-modal"
+                class="px-6 py-2 border border-[#8091a7] text-[#364a63] text-sm font-bold rounded-md hover:bg-gray-100"
+              >
+                Continue Shopping
+              </button>
+              <button
+                class="px-6 py-2 bg-[#6576ff] text-white text-sm font-bold rounded-md hover:bg-[#5765d9]"
+              >
+                Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- External JavaScript file -->
+    <script src="script.js"></script>
+  </body>
+</html>

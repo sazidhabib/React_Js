@@ -29,11 +29,14 @@ const Navbar = () => {
         scrolled ? "bg-sky-" : "bg-transparent"
       }`}
     >
+      <a href="index.html" className="text-white">
+        <img src="image/PonchoHub.jpg" height="30" width="147" alt="logo" />
+      </a>
       <nav className="container mx-auto flex items-center justify-between py-4 px-4 md:px-8 lg:px-16">
         {/* Logo */}
-        <a href="index.html" className="text-white">
+        {/* <a href="index.html" className="text-white">
           <img src="image/PonchoHub.jpg" height="30" width="147" alt="logo" />
-        </a>
+        </a> */}
 
         {/* Navbar toggler */}
         <button

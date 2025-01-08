@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import "./App.css";
+import Footer from "./component/Footer";
 
 function App() {
   const [logo, setLogo] = useState(null);
@@ -67,7 +68,7 @@ function App() {
 
   return (
     <>
-      <div className="overflow-hidden text-center mt-4">
+      <div className="overflow-hidden text-center my-8">
         <p className="text-xl  mb-4">
           Here in an input box that allows users to upload a logo design, and
           enable them to position the logo anywhere on the t-shirt image. and
@@ -84,7 +85,7 @@ function App() {
           >
             <h1 className="text-2xl font-bold mb-4">T-Shirt</h1>
             <img
-              src="https://unblast.com/wp-content/uploads/2024/03/Mens-T-shirt-Mockup-PSD.jpg"
+              src="https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/6458eca04768a679fa9125e5_Flat%20T-shirt%20Mockup.webp"
               alt="T-shirt"
               className="w-64 h-64"
             />
@@ -130,6 +131,7 @@ function App() {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }

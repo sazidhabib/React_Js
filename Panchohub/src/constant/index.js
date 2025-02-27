@@ -4,18 +4,21 @@ export const imgLink = "https://app.panchohub.com/storage/uploads";
 export const keyFeatures = [
   {
     title: "ডাক্তার",
-    path: "/doctors",
+    path: "doctors",
     icon: "https://img.icons8.com/?size=100&id=jnN8CxPfUgES&format=png&color=000000",
+    api: "https://app.panchohub.com/api/doctors",
   },
   {
     title: "হাসপাতাল",
-    path: "/hospitals",
+    path: "hospitals",
     icon: "https://img.icons8.com/?size=100&id=vmPQBtpsnX7W&format=png&color=000000",
+    api: "https://app.panchohub.com/api/hospitals",
   },
   {
     title: "বাসের সময়সূচী",
-    path: "/bus",
+    path: "bus",
     icon: "https://img.icons8.com/?size=100&id=F2WQPrFyyFwe&format=png&color=000000",
+    api: "https://app.panchohub.com/api/bus",
   },
   {
     title: "ট্রেনের সময়সূচী",

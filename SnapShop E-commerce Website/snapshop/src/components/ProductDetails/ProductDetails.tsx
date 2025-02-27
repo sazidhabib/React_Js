@@ -18,7 +18,7 @@ interface Product {
 }
 
 const ProductDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id  } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
 
   useEffect(() => {

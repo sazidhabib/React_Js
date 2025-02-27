@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import KeyFeatures from "./components/KeyFeatures";
-import FeatureDetail from "./components/FeatureDetail";
+import FeatureDetails from "./components/FeatureDetails";
 import Services from "./components/Services";
 import { plans } from "./constant";
 
@@ -20,7 +20,7 @@ function App() {
       <Slider />
       <Routes>
         <Route path="/" element={<KeyFeatures />} />
-        <Route path="/feature/:slug" element={<FeatureDetail />} />
+        <Route path="/feature/:slug" element={<FeatureDetails />} />
       </Routes>
       <Package plans={plans} />
       <Services />

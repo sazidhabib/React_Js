@@ -157,6 +157,13 @@ export const keyFeatures = [
   },
 ];
 
+export const doctorsCategories = [
+  {
+    title: "সাপোর্ট ",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+];
+
 export const plans = [
   {
     title: "Basic",

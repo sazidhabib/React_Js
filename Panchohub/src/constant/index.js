@@ -159,7 +159,117 @@ export const keyFeatures = [
 
 export const doctorsCategories = [
   {
-    title: "সাপোর্ট ",
+    title: "মনোরোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "হৃদরোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=breBx0FBYn5l&format=png&color=000000",
+  },
+  {
+    title: "পাইলস বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=fb2AbIj6lg2x&format=png&color=000000",
+  },
+  {
+    title: "ডেন্টিষ্ট",
+    icon: "https://img.icons8.com/?size=100&id=wSlueyScoMKb&format=png&color=000000",
+  },
+  {
+    title: "চর্ম ও যৌন রোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=AAdFGVF2v7NN&format=png&color=000000",
+  },
+  {
+    title: "ডায়াবেটিস ও হরমোন",
+    icon: "https://img.icons8.com/?size=100&id=L0GijLShQRl9&format=png&color=000000",
+  },
+
+  {
+    title: "নাক, কান ও গলা বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=OklwBsotsucB&format=png&color=000000",
+  },
+  {
+    title: "চক্ষু বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=huhTnQxqWZ9Z&format=png&color=000000",
+  },
+  {
+    title: "লিভার বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=zIOneD7N9zuH&format=png&color=000000",
+  },
+  {
+    title: "ইউরোলজি",
+    icon: "https://img.icons8.com/?size=100&id=Imh8fZ1GGUHy&format=png&color=000000",
+  },
+  {
+    title: "সার্জারি",
+    icon: "https://img.icons8.com/?size=100&id=LDdz09Qduoij&format=png&color=000000",
+  },
+  {
+    title: "গাইনি বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=QjhYwKsVHHaY&format=png&color=000000",
+  },
+  {
+    title: "রক্তরোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=cSatB7RYSpZi&format=png&color=000000",
+  },
+  {
+    title: "হোমিওপ্যাথী",
+    icon: "https://img.icons8.com/?size=100&id=RXeKo6aQhWDW&format=png&color=000000",
+  },
+  {
+    title: "লেজার সার্জারি",
+    icon: "https://img.icons8.com/?size=100&id=JasT8ohFmmWw&format=png&color=000000",
+  },
+  {
+    title: "মেডিসিন বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=GB876cORYLlT&format=png&color=000000",
+  },
+  {
+    title: "কিডনি রোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=4kkSwIOk4pLV&format=png&color=000000",
+  },
+
+  {
+    title: "নিউরো-সার্জারি",
+    icon: "https://img.icons8.com/?size=100&id=9oB8NOo85AZ0&format=png&color=000000",
+  },
+  {
+    title: "স্নায়ু রোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=ExBo0284KwQJ&format=png&color=000000",
+  },
+  {
+    title: "পুষ্টি বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=pgSd7J0R5LIG&format=png&color=000000",
+  },
+  {
+    title: "ক্যান্সার বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=G2STuXW6oEmw&format=png&color=000000",
+  },
+  {
+    title: "অর্থোপেডিক",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "ব্যথা বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "শিশু রোগ বিশেষজ্ঞ",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "ফিজিক্যাল মেডিসিন",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "ফিজিওথেরাপিস্ট",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "প্লাস্টিক সার্জারি",
+    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+  },
+  {
+    title: "যক্ষা, এ্যজমা ও বক্ষব্যাধি বিশেষজ্ঞ",
     icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
   },
 ];

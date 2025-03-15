@@ -246,31 +246,31 @@ export const doctorsCategories = [
   },
   {
     title: "অর্থোপেডিক",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=pzrn1jZ2KLDu&format=png&color=000000",
   },
   {
     title: "ব্যথা বিশেষজ্ঞ",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=v5KIlsRVujYc&format=png&color=000000",
   },
   {
     title: "শিশু রোগ বিশেষজ্ঞ",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=9HX1rdrZYKAc&format=png&color=000000",
   },
   {
     title: "ফিজিক্যাল মেডিসিন",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=QElW4oDGT0ae&format=png&color=000000",
   },
   {
     title: "ফিজিওথেরাপিস্ট",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=ZDRcjZ1b2Oh4&format=png&color=000000",
   },
   {
     title: "প্লাস্টিক সার্জারি",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=iIGg4UliDWF1&format=png&color=000000",
   },
   {
     title: "যক্ষা, এ্যজমা ও বক্ষব্যাধি বিশেষজ্ঞ",
-    icon: "https://img.icons8.com/?size=100&id=ukx1bi9e5hrb&format=png&color=000000",
+    icon: "https://img.icons8.com/?size=100&id=ntXkPwE8oUqf&format=png&color=000000",
   },
 ];
 

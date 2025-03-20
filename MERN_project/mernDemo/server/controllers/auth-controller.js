@@ -1,5 +1,6 @@
 const User = require("../models/user-model");
 
+
 //Home logic
 
 const home = async (req, res) => {
@@ -23,13 +24,19 @@ const register = async (req, res) => {
     if (userExist) {
       return res.status(400).json({ msg: "User already exist" });
     }
-    const newUser = await User.create({
+
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(password, salt);
+
+
+    const userCreated = await User.create({
       username,
       email,
       phone,
       password,
     });
-    res.status(200).json({ user: newUser });
+    //jwt jason web token 
+    res.status(200).json({ msg: userCreated, token: await userCreated.generateToken(),userId: userCreated._id.toString() });
   } catch (error) {
     res.status(500).json("Internal server error");
   }

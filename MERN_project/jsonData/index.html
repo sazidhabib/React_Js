@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #ffffff;
+}
+</style>
+</head>
+<body>
+    <h2>Data Table</h2>
+
+    <table id="newsTable">
+        <tr>
+            <th>Date</th>
+            <th>Edition</th>
+            <th>Headline</th>
+            <th>Author</th>
+        </tr>
+    </table>
+    <script>
+        // Function to Fetch JSON Data
+        async function fetchNewsData() {
+            try {
+                const response = await fetch('data.json'); // Load external JSON file
+                const jsonData = await response.json();
+    
+                // Select the table
+                const table = document.getElementById("newsTable");
+    
+                // Loop through JSON data
+                jsonData.forEach(entry => {
+                    entry.allTextOnPage.forEach(news => {
+                        let row = table.insertRow();
+                        
+                        // Check if newsText is null and fallback to combinedNewsText
+                        const headline = news.newsText ? news.newsText.headline : news.combinedNewsText?.headline || "N/A";
+                        const author = news.newsText ? news.newsText.author : news.combinedNewsText?.author || "N/A";
+    
+                        row.insertCell(0).textContent = entry.date.split("T")[0]; // Extract date part
+                        row.insertCell(1).textContent = entry.edition;
+                        row.insertCell(2).textContent = headline;
+                        row.insertCell(3).textContent = author;
+                    });
+                });
+            } catch (error) {
+                console.error("Error fetching JSON data:", error);
+            }
+        }
+    
+        // Call the function on page load
+        fetchNewsData();
+    </script>
+    
+</body>
+</html>

@@ -1,13 +1,51 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const URL = "http://localhost:5000/api/auth/login";
+
 function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+  });
+
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleInput = (e) => {
+    let name = e.target.name;
+    let value = e.target.value;
+
+    setUser({
+      ...user,
+      [name]: value,
+    });
+  }
+
+  const handleLogin = async (e) => {
     e.preventDefault();
+    console.log(user);
+    try {
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+      console.log("Login: ", response);
+
+      if (response.ok) {
+        const responseData = await response.json();
+        alert("Login successful");
+        setUser({ email: "", password: "" });
+        console.log(responseData);
+      } else {
+        alert("Login failed");
+        console.log("error inside response ", "error");
+      }
+    } catch (error) {
+      console.log("error");
+    }
     // Add your login logic here
     console.log("Logging in with:", username, password);
     // Redirect to another page after login (e.g., dashboard)
@@ -19,15 +57,16 @@ function Login() {
       <h2 className="text-center mb-4">Login</h2>
       <form onSubmit={handleLogin}>
         <div className="mb-3">
-          <label htmlFor="username" className="form-label">
-            Username
+          <label htmlFor="email" className="form-label">
+            Email
           </label>
           <input
-            type="text"
+            type="email"
+            name="email"
             className="form-control"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="email"
+            value={user.email}
+            onChange={handleInput}
             required
           />
         </div>
@@ -38,9 +77,10 @@ function Login() {
           <input
             type="password"
             className="form-control"
+            name="password"
             id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={user.password}
+            onChange={handleInput}
             required
           />
         </div>

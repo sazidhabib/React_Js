@@ -1,5 +1,6 @@
-import "bootstrap/dist/css/bootstrap.min.css";
+
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import '../index.css';
 
 const Header = () => {
   return (
@@ -12,9 +13,9 @@ const Header = () => {
               id="menubar"
               className="col-md-2 col-12 leftsidebar text-left d-flex flex-column justify-content-center align-items-center"
             >
-              <ul className="navm flex-column">
+              <ul className="navh font-weight-bold flex-column">
                 <li className="nav-item">
-                  <a href="#home" className="nav-link">
+                  <a href="#home" className="nav-link font-weight-bold">
                     হোম
                   </a>
                 </li>
@@ -71,6 +72,7 @@ const Header = () => {
             <div className="col-md-4 col-12 middelsidebar text-center d-flex flex-column justify-content-center align-items-center p-4">
               <p className="helloi">হ্যালো, আমি</p>
               <h2 className="name">কামরুল হাসান</h2>
+
               <p className="desination">গণমাধ্যম কর্মী (সাংবাদিক)</p>
             </div>
 
@@ -80,7 +82,7 @@ const Header = () => {
                 <img
                   src="/images/কামরুল হাসান .jpg"
                   alt="কামরুল হাসান"
-                  className="img-fluid"
+                  className="img-fluid profile-image"
                 />
               </div>
             </div>

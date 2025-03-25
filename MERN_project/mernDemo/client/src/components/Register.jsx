@@ -2,39 +2,62 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Register() {
-    const [user, setUser] = useState({
-        username: "",
-        email: "",
-        phone: "",
-        password: "",
-    });
-  
+  const [user, setUser] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
   const navigate = useNavigate();
 
-//handling the input values
-const handleInput = (e) => {
+  //handling the input values
+  const handleInput = (e) => {
     console.log(e);
     let name = e.target.name;
     let value = e.target.value;
-    
+
     setUser({
       ...user,
       [name]: value,
     });
-};
+  };
 
-
-  const handleRegister = (e) => {
+  //handling the from submission
+  const handleRegister = async (e) => {
     e.preventDefault();
     console.log(user);
-    // Add your registration logic here
-    console.log("Registering with:", username, email, phone, password);
+
     // Redirect to login page after registration
     navigate("/login");
+
+    // Add your register logic here or fetch API post request
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(user),
+      });
+      console.log("Register: ", response);
+
+      if (response.ok) {
+        const responseData = await response.json();
+        alert("registration successful");
+        setUser({ username: "", email: "", phone: "", password: "" });
+        console.log(responseData);
+      } else {
+        console.log("error inside response ", "error");
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-   
+
     <div className="container col-md-4 card p-4">
       <h2 className="text-center mb-4">Register</h2>
       <form onSubmit={handleRegister}>
@@ -108,7 +131,7 @@ const handleInput = (e) => {
         </button>
       </p>
     </div>
-    
+
   );
 }
 

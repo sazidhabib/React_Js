@@ -7,31 +7,27 @@ function Register() {
     email: "",
     phone: "",
     password: "",
+    isAdmin: true, // Added isAdmin field with default false
   });
 
   const navigate = useNavigate();
 
   //handling the input values
   const handleInput = (e) => {
-    console.log(e);
-    let name = e.target.name;
-    let value = e.target.value;
+    const { name, type, checked, value } = e.target;
 
-    setUser({
-      ...user,
-      [name]: value,
-    });
+    setUser((prevUser) => ({
+      ...prevUser,
+      [name]: type === "checkbox" ? checked : value, // ✅ Always send boolean for checkboxes
+    }));
   };
+
 
   //handling the from submission
   const handleRegister = async (e) => {
     e.preventDefault();
     console.log(user);
 
-    // Redirect to login page after registration
-    navigate("/login");
-
-    // Add your register logic here or fetch API post request
     try {
       const response = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
@@ -45,8 +41,10 @@ function Register() {
       if (response.ok) {
         const responseData = await response.json();
         alert("registration successful");
-        setUser({ username: "", email: "", phone: "", password: "" });
+        setUser({ username: "", email: "", phone: "", password: "", isAdmin: true });
         console.log(responseData);
+        // Redirect to login page after successful registration
+        navigate("/login");
       } else {
         console.log("error inside response ", "error");
       }
@@ -57,7 +55,6 @@ function Register() {
   };
 
   return (
-
     <div className="container col-md-4 card p-4">
       <h2 className="text-center mb-4">Register</h2>
       <form onSubmit={handleRegister}>
@@ -117,6 +114,19 @@ function Register() {
             required
           />
         </div>
+        <div className="mb-3 form-check">
+          <input
+            type="checkbox"
+            name="isAdmin"
+            className="form-check-input"
+            id="isAdmin"
+            checked={user.isAdmin}
+            onChange={handleInput}
+          />
+          <label className="form-check-label" htmlFor="isAdmin">
+            Register as admin
+          </label>
+        </div>
         <button type="submit" className="btn btn-primary w-100">
           Register
         </button>
@@ -131,7 +141,6 @@ function Register() {
         </button>
       </p>
     </div>
-
   );
 }
 

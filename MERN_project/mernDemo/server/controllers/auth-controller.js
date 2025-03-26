@@ -17,29 +17,38 @@ const home = async (req, res) => {
 //register logic
 const register = async (req, res) => {
   try {
-    //console.log(req.body);
-    const { username, email, phone, password } = req.body;
+    console.log("Received data:", req.body); // ✅ Log incoming request data
+
+    const { username, email, phone, password, isAdmin } = req.body;
+
+    console.log("Parsed isAdmin:", isAdmin); // ✅ Check if it is received correctly
 
     const userExist = await User.findOne({ email: email });
 
     if (userExist) {
-      return res.status(400).json({ msg: "User already exist" });
+      return res.status(400).json({ msg: "User already exists" });
     }
 
-    // const salt = await bcrypt.genSalt(10);
-    // const hashedPassword = await bcrypt.hash(password, salt);
+    // Ensure isAdmin is correctly parsed as a Boolean
+    const isAdminValue = isAdmin === true || isAdmin === "true"; // ✅ Converts "true" (string) to true
 
+    console.log("Final isAdmin value:", isAdminValue); // ✅ Verify before saving to DB
 
     const userCreated = await User.create({
       username,
       email,
       phone,
       password,
+      isAdmin: isAdminValue, // ✅ Use the corrected value
     });
-    //jwt jason web token 
-    res.status(200).json({ msg: "user Created.", 
+
+    res.status(200).json({
+      msg: "User Created.",
       token: await userCreated.generateToken(),
-      userId: userCreated._id.toString() });
+      userId: userCreated._id.toString(),
+      isAdmin: userCreated.isAdmin, // ✅ Return isAdmin to confirm
+    });
+
   } catch (error) {
     //res.status(500).json("Internal server error");
     next(error);
@@ -48,30 +57,32 @@ const register = async (req, res) => {
 
 
 //user login logic
-const login = async (req, res) =>{
-  try{
-    const{email, password} = req.body;
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-    const userExist = await User.findOne({email});
+    const userExist = await User.findOne({ email });
 
-    if(!userExist){
-      return res.status(400).json({msg: "Invalid credentials"});
+    if (!userExist) {
+      return res.status(400).json({ msg: "Invalid credentials" });
     }
 
     //const isPasswordValid = await bcrypt.compare(password, userExist.password);
     const isPasswordValid = await userExist.comparePassword(password);
 
-    if(isPasswordValid){
-      return res.status(200).json({msg: "Login success", 
-        token: await userExist.generateToken(), 
-        userId: userExist._id.toString()});
+    if (isPasswordValid) {
+      return res.status(200).json({
+        msg: "Login success",
+        token: await userExist.generateToken(),
+        userId: userExist._id.toString()
+      });
     } else {
-      
-      return res.status(400).json({msg: "Invalid email or password"});
+
+      return res.status(400).json({ msg: "Invalid email or password" });
     }
 
-    
-  }catch (error) {
+
+  } catch (error) {
     res.status(500).json("Internal server error");
   }
 }

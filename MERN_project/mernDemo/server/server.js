@@ -2,6 +2,8 @@ require("dotenv").config();
 const cors = require("cors");
 const express = require("express");
 const connectDB = require("./db/connect");
+
+
 //connect to database
 connectDB();
 
@@ -12,7 +14,9 @@ const errorMiddleware = require("./middlewares/error-middleware");
 
 //article router
 const articleRouter = require("./router/article-router");
-app.use("/api/articles", articleRouter);
+//blog router
+const blogRouter = require("./router/blog-router");
+
 
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -24,6 +28,24 @@ app.use(cors(corsOptions));
 
 //json middleware for use json data
 app.use(express.json());
+
+
+//article router middleware at the below json middleware
+app.use("/api/articles", articleRouter);
+
+//server image & blog route at the below json middleware
+app.use("/uploads", express.static("uploads")); // Serve images
+app.use("/api/blogs", blogRouter);
+
+//if upload folder not found then create a new folder
+const fs = require("fs");
+const path = require("path");
+// Ensure "uploads" folder exists
+const uploadDir = path.join(__dirname, "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir);
+}
 
 app.get("/", (req, res) => {
   res.status(200).send("Hello World my name is Sazid");

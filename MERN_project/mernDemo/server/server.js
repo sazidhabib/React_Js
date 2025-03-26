@@ -10,6 +10,9 @@ const router = require("./router/auth-router");
 const e = require("express");
 const errorMiddleware = require("./middlewares/error-middleware");
 
+//article router
+const articleRouter = require("./router/article-router");
+app.use("/api/articles", articleRouter);
 
 const corsOptions = {
   origin: "http://localhost:5173",

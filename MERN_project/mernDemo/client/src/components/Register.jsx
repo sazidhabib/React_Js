@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/auth";
 
 function Register() {
   const [user, setUser] = useState({
@@ -10,7 +11,10 @@ function Register() {
     isAdmin: true, // Added isAdmin field with default false
   });
 
+
   const navigate = useNavigate();
+
+  const { storeTokenInLS } = useAuth();
 
   //handling the input values
   const handleInput = (e) => {
@@ -41,6 +45,7 @@ function Register() {
       if (response.ok) {
         const responseData = await response.json();
         alert("registration successful");
+        storeTokenInLS(responseData.token);
         setUser({ username: "", email: "", phone: "", password: "", isAdmin: true });
         console.log(responseData);
         // Redirect to login page after successful registration

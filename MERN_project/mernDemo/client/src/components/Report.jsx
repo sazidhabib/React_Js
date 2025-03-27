@@ -1,30 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-
-const reports = [
-  {
-    id: 1,
-    title: "অবশেষে মুচলেকায় মিলল মুক্তি",
-    description:
-      "নভেম্বরের ঠান্ডাটা তখনো জেঁকে বসেনি, কিছুটা তুলতুলে। গায়ে হালকা শীতের কাপড়। মোটরবাইক জোরে চালালেই ঠান্ডা লাগছে। বাইকের পেছনে সহকর্মী বন্ধু আহমেদ দীপু, পায়ের চিকিৎসা করিয়ে...",
-    image: "/images/news.JPG",
-  },
-  {
-    id: 2,
-    title: "অবশেষে মুচলেকায় মিলল মুক্তি",
-    description:
-      "নভেম্বরের ঠান্ডাটা তখনো জেঁকে বসেনি, কিছুটা তুলতুলে। গায়ে হালকা শীতের কাপড়। মোটরবাইক জোরে চালালেই ঠান্ডা লাগছে। বাইকের পেছনে সহকর্মী বন্ধু আহমেদ দীপু, পায়ের চিকিৎসা করিয়ে...",
-    image: "/images/news.JPG",
-  },
-  {
-    id: 3,
-    title: "অবশেষে মুচলেকায় মিলল মুক্তি",
-    description:
-      "নভেম্বরের ঠান্ডাটা তখনো জেঁকে বসেনি, কিছুটা তুলতুলে। গায়ে হালকা শীতের কাপড়। মোটরবাইক জোরে চালালেই ঠান্ডা লাগছে। বাইকের পেছনে সহকর্মী বন্ধু আহমেদ দীপু, পায়ের চিকিৎসা করিয়ে...",
-    image: "/images/news.JPG",
-  },
-];
 
 const ReportCard = ({ title, description, image }) => {
   return (
@@ -49,20 +26,48 @@ const ReportCard = ({ title, description, image }) => {
 };
 
 const Report = () => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPublishedReports = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/blogs");
+        // Filter reports where status is true
+        const publishedReports = response.data.filter(report => report.status === true);
+        setReports(publishedReports);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPublishedReports();
+  }, []);
+
+  if (loading) return <div className="text-center">Loading reports...</div>;
+  if (error) return <div className="alert alert-danger">Error: {error}</div>;
+
   return (
     <>
-    <section className="publishedreport" id="publishedreport">
-      <div className="container">
-        <h2 className="publishedreport-sty">প্রকাশিত রিপোর্ট</h2>
-        <div className="row">
-          {reports.map((report) => (
-            <ReportCard key={report.id} {...report} />
-          ))}
+      <section className="publishedreport" id="publishedreport">
+        <div className="container">
+          <h2 className="publishedreport-sty">প্রকাশিত রিপোর্ট</h2>
+          <div className="row">
+            {reports.map((report) => (
+              <ReportCard
+                key={report._id}
+                title={report.title}
+                description={report.description}
+                image={`http://localhost:5000/${report.image}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
-    <div className="commonmenusty">
-    </div>
+      </section>
+      <div className="commonmenusty"></div>
     </>
   );
 };

@@ -11,6 +11,10 @@ const app = express();
 const router = require("./router/auth-router");
 const e = require("express");
 const errorMiddleware = require("./middlewares/error-middleware");
+const path = require("path");
+
+// Add this before your routes
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 //article router
 const articleRouter = require("./router/article-router");
@@ -37,15 +41,15 @@ app.use("/api/articles", articleRouter);
 app.use("/uploads", express.static("uploads")); // Serve images
 app.use("/api/blogs", blogRouter);
 
-//if upload folder not found then create a new folder
-const fs = require("fs");
-const path = require("path");
-// Ensure "uploads" folder exists
-const uploadDir = path.join(__dirname, "uploads");
+// //if upload folder not found then create a new folder
+// const fs = require("fs");
+// const path = require("path");
+// // Ensure "uploads" folder exists
+// const uploadDir = path.join(__dirname, "uploads");
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir);
+// }
 
 app.get("/", (req, res) => {
   res.status(200).send("Hello World my name is Sazid");

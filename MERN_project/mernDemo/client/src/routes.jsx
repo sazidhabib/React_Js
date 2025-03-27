@@ -7,6 +7,8 @@ import Register from "./components/Register";
 import AdminDashboard from "./admin/AdminDashboard";
 import ArticleDashboard from "./admin/ArticleDashboard";
 import BlogPostDashboard from "./admin/BlogPostDashboard";
+import Logout from "./components/Logout";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 
 const AppRoutes = () => {
@@ -16,10 +18,11 @@ const AppRoutes = () => {
         {/* Home Page Layout */}
         <Route path="/" element={<HomeLayout />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<Register />} />
 
         {/* Admin Panel Layout */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="/admin/table" element={<AdminTable />} />
           <Route path="/admin/article" element={<ArticleDashboard />} />

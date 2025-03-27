@@ -1,25 +1,5 @@
-import React from "react";
-
-const stories = [
-  {
-    id: 1,
-    title: "অবশেষে মুচলেকায় মিলল মুক্তি",
-    description:
-      "নভেম্বরের ঠান্ডাটা তখনো জেঁকে বসেনি, কিন্তু তুলনামূলক গায়ে হালকা শীতের কাপড়। মোটরবাইক জোরে চালালেই ঠান্ডা লাগছে। বাইকের পেছনে সহকর্মী বন্ধু আহমেদ দীপু, পায়ের চিকিৎসা করিয়ে কিছুদিন আগে ভারত থেকে ফিরেছে।",
-  },
-  {
-    id: 2,
-    title: "অবশেষে মুচলেকায় মিলল মুক্তি",
-    description:
-      "নভেম্বরের ঠান্ডাটা তখনো জেঁকে বসেনি, কিন্তু তুলনামূলক গায়ে হালকা শীতের কাপড়। মোটরবাইক জোরে চালালেই ঠান্ডা লাগছে। বাইকের পেছনে সহকর্মী বন্ধু আহমেদ দীপু, পায়ের চিকিৎসা করিয়ে কিছুদিন আগে ভারত থেকে ফিরেছে।",
-  },
-  {
-    id: 3,
-    title: "অবশেষে মুচলেকায় মিলল মুক্তি",
-    description:
-      "নভেম্বরের ঠান্ডাটা তখনো জেঁকে বসেনি, কিন্তু তুলনামূলক গায়ে হালকা শীতের কাপড়। মোটরবাইক জোরে চালালেই ঠান্ডা লাগছে। বাইকের পেছনে সহকর্মী বন্ধু আহমেদ দীপু, পায়ের চিকিৎসা করিয়ে কিছুদিন আগে ভারত থেকে ফিরেছে।",
-  },
-];
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const Story = ({ title, description }) => {
   return (
@@ -39,30 +19,58 @@ const Story = ({ title, description }) => {
 };
 
 const Asarernoy = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch published articles (status: true)
+  useEffect(() => {
+    const fetchPublishedArticles = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/articles");
+        // Filter articles where status is true
+        const publishedArticles = response.data.filter(article => article.status === true);
+        setArticles(publishedArticles);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPublishedArticles();
+  }, []);
+
+  if (loading) return <div>Loading articles...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <>
-    <section className="asarernoy" id="asarernoy">
-      <div className="container d-flex align-items-center justify-content-center">
-        <div className="row w-100 mx-3">
-          <div className="col-4">
-            <div className="col-12 text-center">
-              <img
-                className="asarernoy-img img-fluid header-image"
-                src="/images/আষাঢ়ে নয়.jpg"
-                alt="Header Image"
-              />
+      <section className="asarernoy" id="asarernoy">
+        <div className="container d-flex align-items-center justify-content-center">
+          <div className="row w-100 mx-3">
+            <div className="col-4">
+              <div className="col-12 text-center">
+                <img
+                  className="asarernoy-img img-fluid header-image"
+                  src="/images/আষাঢ়ে নয়.jpg"
+                  alt="Header Image"
+                />
+              </div>
+            </div>
+            <div>
+              {articles.map((article) => (
+                <Story
+                  key={article._id}
+                  title={article.title}
+                  description={article.description}
+                />
+              ))}
             </div>
           </div>
-          <div>
-            {stories.map((story) => (
-              <Story key={story.id} {...story} />
-            ))}
-          </div>
         </div>
-      </div>
-    </section>
-    <div className="commonmenusty">
-    </div>
+      </section>
+      <div className="commonmenusty"></div>
     </>
   );
 };

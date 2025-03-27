@@ -1,35 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
-const BlogPostDashboard = () => {
-    const [blogs, setBlogs] = useState([
-        {
-            id: 1,
-            title: "First Blog",
-            description: "This is the first blog post",
-            status: true,
-            image: null,
-        },
-        {
-            id: 2,
-            title: "Second Blog",
-            description: "Another blog post example",
-            status: false,
-            image: null,
-        },
-    ]);
+const API_URL = "http://localhost:5000/api/blogs"; // Adjust this to your actual endpoint
 
+const BlogPostDashboard = () => {
+    const [blogs, setBlogs] = useState([]);
     const [newBlog, setNewBlog] = useState({
         title: "",
         description: "",
         status: false,
         image: null,
     });
-
     const [editingId, setEditingId] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    // Fetch all blogs on component mount
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(API_URL);
+                setBlogs(response.data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBlogs();
+    }, []);
 
     // Handle Input Change
     const handleChange = (e) => {
@@ -50,52 +54,103 @@ const BlogPostDashboard = () => {
     };
 
     // Add or Edit Blog Post
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (newBlog.title.trim() === "" || newBlog.description.trim() === "") {
             alert("Title and Description are required!");
             return;
         }
 
-        if (editingId !== null) {
-            // Edit existing blog
-            setBlogs(
-                blogs.map((blog) =>
-                    blog.id === editingId
-                        ? { ...newBlog, id: editingId }
-                        : blog
-                )
-            );
-            setEditingId(null);
-        } else {
-            // Add new blog
-            setBlogs([...blogs, { ...newBlog, id: blogs.length + 1 }]);
-        }
+        try {
+            setLoading(true);
+            const formData = new FormData();
+            formData.append("title", newBlog.title);
+            formData.append("description", newBlog.description);
+            formData.append("status", newBlog.status);
+            if (newBlog.image) {
+                formData.append("image", newBlog.image);
+            }
 
-        setNewBlog({ title: "", description: "", status: false, image: null });
-        setImagePreview(null);
+            if (editingId !== null) {
+                // Update existing blog
+                const response = await axios.patch(`${API_URL}/${editingId}`, formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
+                });
+                setBlogs(blogs.map(blog => blog._id === editingId ? response.data.blog : blog));
+                setEditingId(null);
+            } else {
+                // Create new blog
+                const response = await axios.post(API_URL, formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
+                });
+                setBlogs([...blogs, response.data.blog]);
+            }
+
+            setNewBlog({ title: "", description: "", status: false, image: null });
+            setImagePreview(null);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Edit Blog Post
     const handleEdit = (blog) => {
-        setNewBlog(blog);
-        setEditingId(blog.id);
-        setImagePreview(blog.image ? URL.createObjectURL(blog.image) : null);
+        setNewBlog({
+            title: blog.title,
+            description: blog.description,
+            status: blog.status,
+            image: null, // Reset image to null when editing
+        });
+        setEditingId(blog._id);
+        setImagePreview(blog.image ? `http://localhost:5000/${blog.image}` : null);
     };
 
     // Delete Blog Post
-    const handleDelete = (id) => {
-        setBlogs(blogs.filter((blog) => blog.id !== id));
+    const handleDelete = async (id) => {
+        try {
+            setLoading(true);
+            await axios.delete(`${API_URL}/${id}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            });
+            setBlogs(blogs.filter(blog => blog._id !== id));
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Toggle Status
-    const handleToggleStatus = (id) => {
-        setBlogs(
-            blogs.map((blog) =>
-                blog.id === id ? { ...blog, status: !blog.status } : blog
-            )
-        );
+    const handleToggleStatus = async (id, currentStatus) => {
+        try {
+            setLoading(true);
+            const response = await axios.put(
+                `${API_URL}/${id}`,
+                { status: !currentStatus },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                }
+            );
+            setBlogs(blogs.map(blog => blog._id === id ? response.data.blog : blog));
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (loading) return <div className="text-center my-5">Loading...</div>;
+    if (error) return <div className="alert alert-danger">Error: {error}</div>;
 
     return (
         <div className="container mt-4">
@@ -178,12 +233,12 @@ const BlogPostDashboard = () => {
                 </thead>
                 <tbody>
                     {blogs.map((blog, index) => (
-                        <tr key={blog.id}>
+                        <tr key={blog._id}>
                             <td>{index + 1}</td>
                             <td>
                                 {blog.image ? (
                                     <img
-                                        src={URL.createObjectURL(blog.image)}
+                                        src={`http://localhost:5000/${blog.image}`}
                                         alt="Blog"
                                         className="img-thumbnail"
                                         style={{ width: "80px", height: "50px" }}
@@ -198,7 +253,7 @@ const BlogPostDashboard = () => {
                                 <Form.Check
                                     type="switch"
                                     checked={blog.status}
-                                    onChange={() => handleToggleStatus(blog.id)}
+                                    onChange={() => handleToggleStatus(blog._id, blog.status)}
                                     label={blog.status ? "Visible" : "Hidden"}
                                 />
                             </td>
@@ -214,7 +269,7 @@ const BlogPostDashboard = () => {
                                 <Button
                                     variant="danger"
                                     size="sm"
-                                    onClick={() => handleDelete(blog.id)}
+                                    onClick={() => handleDelete(blog._id)}
                                 >
                                     🗑️ Delete
                                 </Button>

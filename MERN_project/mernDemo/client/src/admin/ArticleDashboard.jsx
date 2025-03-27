@@ -1,21 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+import axios from "axios";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import { useAuth } from "../store/auth";
+
+const API_URL = "http://localhost:5000/api/articles";
 
 const ArticleDashboard = () => {
-    const [articles, setArticles] = useState([
-        { id: 1, title: "First Article", description: "This is the first article", status: true },
-        { id: 2, title: "Second Article", description: "Another article example", status: false }
-    ]);
-
-    const [newArticle, setNewArticle] = useState({
-        title: "",
-        description: "",
-        status: false,
-    });
-
+    const [articles, setArticles] = useState([]);
+    const [newArticle, setNewArticle] = useState({ title: "", description: "", status: false });
     const [editingId, setEditingId] = useState(null);
+
+    // ✅ Fetch Articles from Backend
+    useEffect(() => {
+        axios.get(API_URL)
+            .then(response => setArticles(response.data))
+            .catch(error => console.error("Error fetching articles:", error));
+    }, []);
+
+
+
 
     // Handle Input Change
     const handleChange = (e) => {
@@ -26,45 +32,89 @@ const ArticleDashboard = () => {
         });
     };
 
+    const { token } = useAuth();
+
     // Add or Edit Article
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (newArticle.title.trim() === "" || newArticle.description.trim() === "") {
             alert("Title and Description are required!");
             return;
         }
 
-        if (editingId !== null) {
-            // Edit existing article
-            setArticles(articles.map(article =>
-                article.id === editingId ? { ...newArticle, id: editingId } : article
-            ));
-            setEditingId(null);
-        } else {
-            // Add new article
-            setArticles([...articles, { ...newArticle, id: articles.length + 1 }]);
+        try {
+            if (editingId !== null) {
+                // ✅ Fixed: Add headers to PATCH request
+                const response = await axios.patch(
+                    `${API_URL}/${editingId}`,
+                    newArticle,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${localStorage.getItem("token")}`
+                        }
+                    }
+                );
+                setArticles(articles.map(article =>
+                    article._id === editingId ? response.data.article : article
+                ));
+                setEditingId(null);
+            } else {
+                // POST request (unchanged)
+                const response = await axios.post(API_URL, newArticle, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    },
+                });
+                setArticles([...articles, response.data.article]);
+            }
+            setNewArticle({ title: "", description: "", status: false });
+        } catch (error) {
+            console.error("Error saving article:", error);
         }
-
-        setNewArticle({ title: "", description: "", status: false });
     };
+
 
     // Edit Article
     const handleEdit = (article) => {
         setNewArticle(article);
-        setEditingId(article.id);
+        setEditingId(article._id);
     };
 
     // Delete Article
-    const handleDelete = (id) => {
-        setArticles(articles.filter(article => article.id !== id));
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`${API_URL}/${id}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            });
+            setArticles(articles.filter(article => article._id !== id));
+        } catch (error) {
+            console.error("Error deleting article:", error);
+        }
     };
 
+
     // Toggle Status
-    const handleToggleStatus = (id) => {
-        setArticles(articles.map(article =>
-            article.id === id ? { ...article, status: !article.status } : article
-        ));
+    const handleToggleStatus = async (id, currentStatus) => {
+        try {
+            const response = await axios.put(
+                `${API_URL}/${id}`,
+                { status: !currentStatus },
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                    }
+                }
+            );
+            setArticles(articles.map(article =>
+                article._id === id ? response.data.article : article
+            ));
+        } catch (error) {
+            console.error("Error updating article status:", error);
+        }
     };
+
 
     return (
         <div className="container mt-4">
@@ -125,7 +175,7 @@ const ArticleDashboard = () => {
                 </thead>
                 <tbody>
                     {articles.map((article, index) => (
-                        <tr key={article.id}>
+                        <tr key={article._id}>
                             <td>{index + 1}</td>
                             <td>{article.title}</td>
                             <td>{article.description}</td>
@@ -133,7 +183,7 @@ const ArticleDashboard = () => {
                                 <Form.Check
                                     type="switch"
                                     checked={article.status}
-                                    onChange={() => handleToggleStatus(article.id)}
+                                    onChange={() => handleToggleStatus(article._id, article.status)}
                                     label={article.status ? "Visible" : "Hidden"}
                                 />
                             </td>
@@ -141,7 +191,7 @@ const ArticleDashboard = () => {
                                 <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(article)}>
                                     ✏️ Edit
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(article.id)}>
+                                <Button variant="danger" size="sm" onClick={() => handleDelete(article._id)}>
                                     🗑️ Delete
                                 </Button>
                             </td>
@@ -149,6 +199,7 @@ const ArticleDashboard = () => {
                     ))}
                 </tbody>
             </Table>
+
         </div>
     );
 };

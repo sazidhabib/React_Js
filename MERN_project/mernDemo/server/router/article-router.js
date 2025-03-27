@@ -10,7 +10,7 @@ router.post("/", authMiddleware, createArticle);
 router.get("/", getAllArticles);
 
 // ✅ Update an Article (Only Admins)
-router.put("/:id", authMiddleware, updateArticle);
+router.patch("/:id", authMiddleware, updateArticle);
 
 // ✅ Delete an Article (Only Admins)
 router.delete("/:id", authMiddleware, deleteArticle);

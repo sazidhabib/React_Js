@@ -9,7 +9,7 @@ const createBlog = async (req, res) => {
 
         const { title, description, status } = req.body;
         const newBlog = await Blog.create({
-            image: req.file.path,
+            image: `/uploads/${req.file.filename}`,
             title,
             description,
             status

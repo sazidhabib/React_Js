@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../store/auth";
 
 const URL = "http://localhost:5000/api/auth/login";
 
 function Login() {
   const [user, setUser] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
   const navigate = useNavigate();
+
+  const { storeTokenInLS } = useAuth();
 
   const handleInput = (e) => {
     let name = e.target.name;
@@ -32,24 +35,31 @@ function Login() {
         },
         body: JSON.stringify(user),
       });
-      console.log("Login: ", response);
 
       if (response.ok) {
         const responseData = await response.json();
         alert("Login successful");
+
+        if (!responseData.hasOwnProperty("isAdmin")) {
+          console.error("isAdmin is missing from the server response:", responseData);
+          alert("Error: Admin status is missing from the server response.");
+          return;
+        }
+        // Ensure responseData includes 'isAdmin' (adjust if API uses another field name)
+        storeTokenInLS(responseData.token, responseData.isAdmin);
+
         setUser({ email: "", password: "" });
-        console.log(responseData);
+        navigate("/admin");
       } else {
         alert("Login failed");
-        console.log("error inside response ", "error");
       }
     } catch (error) {
       console.log("error");
     }
     // Add your login logic here
-    console.log("Logging in with:", username, password);
+    console.log("Logging in with:", email, password);
     // Redirect to another page after login (e.g., dashboard)
-    navigate("/dashboard"); // Replace with your desired route
+    navigate("/admin"); // Replace with your desired route
   };
 
   return (

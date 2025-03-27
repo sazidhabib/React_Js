@@ -67,24 +67,22 @@ const login = async (req, res) => {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
-    //const isPasswordValid = await bcrypt.compare(password, userExist.password);
     const isPasswordValid = await userExist.comparePassword(password);
 
     if (isPasswordValid) {
       return res.status(200).json({
         msg: "Login success",
         token: await userExist.generateToken(),
-        userId: userExist._id.toString()
+        userId: userExist._id.toString(),
+        isAdmin: userExist.isAdmin,  // ✅ Include isAdmin in response
       });
     } else {
-
       return res.status(400).json({ msg: "Invalid email or password" });
     }
-
-
   } catch (error) {
-    res.status(500).json("Internal server error");
+    res.status(500).json({ msg: "Internal server error" });
   }
-}
+};
+
 
 module.exports = { home, register, login };

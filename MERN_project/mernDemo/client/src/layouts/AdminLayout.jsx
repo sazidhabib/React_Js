@@ -1,24 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminNavbar from "../admin/AdminNavbar";
 import AdminSidebar from "../admin/AdminSidebar";
 
-const AdminPanel = () => {
-  return (
-    <div className="sb-nav-fixed">
-      <AdminNavbar />
-      <div className="container-fluid">
-        <div className="row">
-          {/* Sidebar */}
-          <div className="col-md-2 col-lg-2 bg-dark text-white vh-100" id="layoutSidenav_nav">
-            <AdminSidebar />
-          </div>
+const AdminPanel = ({ children }) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
 
-          {/* Content */}
-          <div className="col-md-10 col-lg-10 p-4" id="layoutSidenav_content">
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
+  return (
+    <div className="vh-100 d-flex flex-column">
+      {/* Navbar */}
+      <AdminNavbar toggleSidebar={toggleSidebar} />
+
+      <div className="d-flex flex-grow-1">
+        {/* Sidebar */}
+        <AdminSidebar isSidebarOpen={isSidebarOpen} />
+
+        {/* Main Content - Centered */}
+        <main className="d-flex flex-grow-1 justify-content-center">
+          <div>
             <Outlet />
+            {children}
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

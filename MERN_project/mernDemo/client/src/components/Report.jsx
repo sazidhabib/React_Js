@@ -36,7 +36,10 @@ const Report = () => {
         const response = await axios.get("http://localhost:5000/api/blogs");
         // Filter reports where status is true
         const publishedReports = response.data.filter(report => report.status === true);
-        setReports(publishedReports);
+
+        // Sort reports in descending order based on a date field (e.g., createdAt)
+        const sortedReports = publishedReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setReports(sortedReports);
       } catch (err) {
         setError(err.message);
       } finally {

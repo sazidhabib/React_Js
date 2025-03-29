@@ -1,8 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-
 body {
     font-family: VarendraAP, sans-serif;
     line-height: 1.6;
@@ -91,6 +86,17 @@ body {
 .navh {
     margin-top: 255px;
     margin-left: 40px;
+    --bs-nav-link-padding-x: 1rem;
+    --bs-nav-link-padding-y: 0.5rem;
+    --bs-nav-link-font-weight: ;
+    --bs-nav-link-color: var(--bs-link-color);
+    --bs-nav-link-hover-color: var(--bs-link-hover-color);
+    --bs-nav-link-disabled-color: var(--bs-secondary-color);
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 0;
+    margin-bottom: 0;
+    list-style: none;
 }
 
 .nav-link {
@@ -104,6 +110,38 @@ body {
 
 .active {
     color: #41ad47;
+}
+
+/* Pagination css */
+.pagination {
+    --bs-pagination-color: #87c26b;
+    --bs-pagination-hover-color: #41ad47;
+    --bs-pagination-hover-bg: var(--bs-tertiary-bg);
+    --bs-pagination-hover-border-color: var(--bs-border-color);
+    --bs-pagination-focus-color: var(--bs-link-hover-color);
+    --bs-pagination-focus-bg: var(--bs-secondary-bg);
+    --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(94, 242, 178, 0.25);
+    --bs-pagination-active-color: #fff;
+    --bs-pagination-active-bg: #41ad47;
+    --bs-pagination-active-border-color: #a7f1c4;
+    --bs-pagination-disabled-color: var(--bs-secondary-color);
+    --bs-pagination-disabled-bg: var(--bs-secondary-bg);
+    --bs-pagination-disabled-border-color: var(--bs-border-color);
+}
+
+.dropdown-menu {
+    margin-left: -57px;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    transition: all 0.3s ease-in-out;
+}
+
+.sidebar.closed {
+    width: 0;
+    overflow: hidden;
 }
 
 .social-icons {

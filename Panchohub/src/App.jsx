@@ -11,6 +11,7 @@ import SwiperSlider from "./components/SwiperSlider";
 import Slider from "./components/Slider";
 import NewsScrolling from "./components/NewsScrolling";
 import Package from "./components/Package";
+import DoctorCategories from "./components/DoctorCategoris";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
       </Routes>
       <Package plans={plans} />
       <Services />
+      <DoctorCategories />
     </Router>
   );
 }

@@ -25,7 +25,7 @@ const blogRouter = require("./router/blog-router");
 const corsOptions = {
   origin: "http://localhost:5173",
   methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
-  Credentials: true,
+  credentials: true,
 };
 //cors middleware for use cross origin
 app.use(cors(corsOptions));

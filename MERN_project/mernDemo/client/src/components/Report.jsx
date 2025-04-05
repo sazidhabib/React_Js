@@ -3,22 +3,22 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+// Swiper imports
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+
 const ReportCard = ({ title, description, image }) => {
   return (
-    <div className="col-md-4">
-      <div id="news-slider" className="owl-carousel">
-        <div className="post-slide">
-          <div className="post-img">
-            <a href="#">
-              <img src={image} alt={title} />
-            </a>
-          </div>
-          <div className="post-content">
-            <h3 className="post-title">
-              <a href="#">{title}</a>
-            </h3>
-            <p className="post-description">{description}</p>
-          </div>
+    <div id="news-slider" className=" owl-carousel">
+      <div className="post-slide">
+        <div className="post-img">
+          <img src={image} className="card-img-to " alt={title} />
+        </div>
+        <div className=" post-content">
+          <h3 className="post-title"><a href="#">{title}</a></h3>
+          <p className="post-description">{description}</p>
         </div>
       </div>
     </div>
@@ -30,15 +30,16 @@ const Report = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const BASE_URL = "http://localhost:5000";
+
   useEffect(() => {
     const fetchPublishedReports = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/blogs");
-        // Filter reports where status is true
         const publishedReports = response.data.filter(report => report.status === true);
-
-        // Sort reports in descending order based on a date field (e.g., createdAt)
-        const sortedReports = publishedReports.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const sortedReports = publishedReports.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
         setReports(sortedReports);
       } catch (err) {
         setError(err.message);
@@ -55,19 +56,33 @@ const Report = () => {
 
   return (
     <>
-      <section className="publishedreport" id="publishedreport">
+      <section className="publishedreport py-4" id="publishedreport">
         <div className="container">
-          <h2 className="publishedreport-sty">প্রকাশিত রিপোর্ট</h2>
-          <div className="row">
+          <h2 className="publishedreport-sty mb-4">প্রকাশিত রিপোর্ট</h2>
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            spaceBetween={20}
+            slidesPerView={3}
+            autoplay={{ delay: 3000 }}
+            pagination={{ clickable: true }}
+            loop={true}
+            breakpoints={{
+              0: { slidesPerView: 1 },
+              576: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              992: { slidesPerView: 3 },
+            }}
+          >
             {reports.map((report) => (
-              <ReportCard
-                key={report._id}
-                title={report.title}
-                description={report.description}
-                image={`http://localhost:5000/${report.image}`}
-              />
+              <SwiperSlide key={report._id}>
+                <ReportCard
+                  title={report.title}
+                  description={report.description}
+                  image={`${BASE_URL}${report.image.startsWith("/") ? "" : "/"}${report.image}`}
+                />
+              </SwiperSlide>
             ))}
-          </div>
+          </Swiper>
         </div>
       </section>
       <div className="commonmenusty"></div>

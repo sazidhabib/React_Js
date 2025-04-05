@@ -5,6 +5,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
 const API_URL = "http://localhost:5000/api/blogs"; // Adjust this to your actual endpoint
+const IMG_URL = "http://localhost:5000"; //image URL base
 
 const BlogPostDashboard = () => {
     const [blogs, setBlogs] = useState([]);
@@ -110,7 +111,7 @@ const BlogPostDashboard = () => {
             image: null, // Reset image to null when editing
         });
         setEditingId(blog._id);
-        setImagePreview(blog.image ? `http://localhost:5000/${blog.image}` : null);
+        setImagePreview(blog.image ? `${IMG_URL}${blog.image.startsWith("/") ? "" : "/"}${blog.image}` : null);
     };
 
     // Delete Blog Post
@@ -238,7 +239,7 @@ const BlogPostDashboard = () => {
                             <td>
                                 {blog.image ? (
                                     <img
-                                        src={`http://localhost:5000/${blog.image}`}
+                                        src={`${IMG_URL}${blog.image.startsWith("/") ? "" : "/"}${blog.image}`}
                                         alt="Blog"
                                         className="img-thumbnail"
                                         style={{ width: "80px", height: "50px" }}

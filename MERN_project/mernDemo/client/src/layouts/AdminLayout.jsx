@@ -20,12 +20,13 @@ const AdminPanel = ({ children }) => {
         <AdminSidebar isSidebarOpen={isSidebarOpen} />
 
         {/* Main Content - Centered */}
-        <main className="d-flex flex-grow-1 justify-content-center">
-          <div>
+        <main className="d-flex flex-grow-1 p-3">
+          <div className="w-100">
             <Outlet />
             {children}
           </div>
         </main>
+
       </div>
     </div>
   );

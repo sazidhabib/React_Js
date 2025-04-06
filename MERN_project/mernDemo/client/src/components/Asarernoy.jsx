@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is imported
+import "bootstrap/dist/css/bootstrap.min.css";
+import DetailModal from "./DetailModal";
 
-const Story = ({ title, description }) => {
+const truncateByChars = (text, limit) => {
+  if (!text) return "";
+  return text.length > limit ? text.slice(0, limit) + "..." : text;
+};
+
+
+const Story = ({ title, description, onClick }) => {
   return (
-    <div className="common-story">
+    <div className="common-story" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="row">
         <div className="col-md-4">
           <div className="news-item p-3 mb-4">
-            <h4 className="news-title">{title}</h4>
+            <h4 className="news-title">{truncateByChars(title, 50)}</h4>
           </div>
         </div>
         <div className="col-md-8">
-          <p className="news-description">{description}</p>
+          <p className="news-description">{truncateByChars(description, 150)}</p>
         </div>
       </div>
     </div>
   );
 };
+
+
 
 const Asarernoy = () => {
   const [articles, setArticles] = useState([]);
@@ -25,6 +34,21 @@ const Asarernoy = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 3; // Show 3 articles per page
+
+  // Add in component state:
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  // Modal handlers:
+  const handleOpenModal = (article) => {
+    setSelectedArticle(article);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedArticle(null);
+  };
 
   useEffect(() => {
     const fetchPublishedArticles = async () => {
@@ -70,8 +94,19 @@ const Asarernoy = () => {
           </div>
           <div className="col-md-12">
             {currentArticles.map((article) => (
-              <Story key={article._id} title={article.title} description={article.description} />
+              <Story
+                key={article._id}
+                title={article.title}
+                description={article.description}
+                onClick={() => handleOpenModal(article)}
+              />
             ))}
+
+            <DetailModal
+              show={showModal}
+              handleClose={handleCloseModal}
+              item={selectedArticle}
+            />
 
             {/* Bootstrap Pagination */}
             <nav aria-label="Article Pagination">

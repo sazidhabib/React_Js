@@ -8,27 +8,48 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
+import DetailModal from "./DetailModal";
 
-const ReportCard = ({ title, description, image }) => {
+const truncateByChars = (text, limit) => {
+  if (!text) return "";
+  return text.length > limit ? text.slice(0, limit) + "..." : text;
+};
+
+
+const ReportCard = ({ title, description, image, onClick }) => {
   return (
-    <div id="news-slider" className=" owl-carousel">
+    <div id="news-slider" className="owl-carousel" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="post-slide">
         <div className="post-img">
-          <img src={image} className="card-img-to " alt={title} />
+          <img src={image} className="card-img-to" alt={title} />
         </div>
-        <div className=" post-content">
-          <h3 className="post-title"><a href="#">{title}</a></h3>
-          <p className="post-description">{description}</p>
+        <div className="post-content">
+          <h2 className="post-title">{truncateByChars(title, 50)}</h2>
+          <p className="post-description">{truncateByChars(description, 150)}</p>
         </div>
       </div>
     </div>
   );
 };
 
+
 const Report = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = (report) => {
+    setSelectedReport(report);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedReport(null);
+  };
 
   const BASE_URL = "http://localhost:5000";
 
@@ -79,10 +100,22 @@ const Report = () => {
                   title={report.title}
                   description={report.description}
                   image={`${BASE_URL}${report.image.startsWith("/") ? "" : "/"}${report.image}`}
+                  onClick={() =>
+                    handleOpenModal({
+                      title: report.title,
+                      description: report.description,
+                      image: `${BASE_URL}${report.image.startsWith("/") ? "" : "/"}${report.image}`,
+                    })
+                  }
                 />
               </SwiperSlide>
             ))}
           </Swiper>
+          <DetailModal
+            show={showModal}
+            handleClose={handleCloseModal}
+            item={selectedReport}
+          />
         </div>
       </section>
       <div className="commonmenusty"></div>

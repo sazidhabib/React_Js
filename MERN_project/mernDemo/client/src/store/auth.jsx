@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
+
 
 export const AuthContext = createContext();
 
@@ -14,26 +16,52 @@ export const AuthProvider = ({ children }) => {
         }
     });
 
-    // Store token and admin status in localStorage
-    const storeTokenInLS = (serverToken, adminStatus) => {
-        localStorage.setItem("token", serverToken);
-        localStorage.setItem("isAdmin", JSON.stringify(!!adminStatus)); // Store true/false properly
-        setToken(serverToken);
-        setIsAdmin(!!adminStatus);
-    };
+    const [loggedOut, setLoggedOut] = useState(false); // 👈 NEW
 
     const isLoggedIn = !!token;
 
-    // Logout function
     const LogoutUser = () => {
         setToken("");
         setIsAdmin(false);
         localStorage.removeItem("token");
         localStorage.removeItem("isAdmin");
+        setLoggedOut(true); // 👈 trigger redirect from a component
+    };
+
+    useEffect(() => {
+        if (!token) return;
+
+        try {
+            const decoded = jwtDecode(token);
+            const expTime = decoded.exp * 1000;
+
+            if (Date.now() >= expTime) {
+                LogoutUser();
+            } else {
+                const timeout = expTime - Date.now();
+                const timer = setTimeout(() => {
+                    LogoutUser();
+                    alert("Session expired. You have been logged out.");
+                }, timeout);
+
+                return () => clearTimeout(timer);
+            }
+        } catch (error) {
+            console.error("Invalid token:", error);
+            LogoutUser();
+        }
+    }, [token]);
+
+    const storeTokenInLS = (serverToken, adminStatus) => {
+        localStorage.setItem("token", serverToken);
+        localStorage.setItem("isAdmin", JSON.stringify(!!adminStatus));
+        setToken(serverToken);
+        setIsAdmin(!!adminStatus);
+        setLoggedOut(false); // Reset if logging in
     };
 
     return (
-        <AuthContext.Provider value={{ token, isLoggedIn, isAdmin, storeTokenInLS, LogoutUser }}>
+        <AuthContext.Provider value={{ token, isLoggedIn, isAdmin, storeTokenInLS, LogoutUser, loggedOut }}>
             {children}
         </AuthContext.Provider>
     );

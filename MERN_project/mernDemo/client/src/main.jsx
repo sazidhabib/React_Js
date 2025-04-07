@@ -6,11 +6,14 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import App from './App.jsx'
 import { AuthProvider } from './store/auth.jsx';
+import Logout from './components/Logout.jsx';
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
+
     <StrictMode>
       <App />
     </StrictMode>
+
   </AuthProvider>,
 )

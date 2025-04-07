@@ -14,6 +14,7 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 const AppRoutes = () => {
   return (
     <Router>
+
       <Routes>
         {/* Home Page Layout */}
         <Route path="/" element={<HomeLayout />} />
@@ -29,6 +30,7 @@ const AppRoutes = () => {
           <Route path="/admin/blog" element={<BlogPostDashboard />} />
         </Route>
       </Routes>
+
     </Router>
   );
 };

@@ -26,7 +26,7 @@ const ListeningMusicSection = () => {
           </div>
           <div className="col-md-6">
             <div className="jetuku-img">
-              <img src="/images/music_1.png" alt="Music" />
+              <img src="/images/music_1.png" alt="Music" className="img-fluid" />
             </div>
           </div>
         </div>

@@ -10,7 +10,7 @@ const JetukuBoliniAga = () => {
           <div className="col-md-6">
             <div className="icon-content">
               <div className="icon">
-                <img src="./images/quote_icon.png" alt="" />
+                <img src="./images/quote_icon.png" alt="quote_icon" />
               </div>
               <div className="main-text">
                 <p>
@@ -28,7 +28,7 @@ const JetukuBoliniAga = () => {
           </div>
           <div className="col-md-6">
             <div className="jetuku-img">
-              <img src="./images/কামরুল হাসান যেটুকু বলিনি আগে.jpg" alt="" />
+              <img src="./images/কামরুল হাসান যেটুকু বলিনি আগে.jpg" alt="কামরুল হাসান" className="img-fluid" />
             </div>
           </div>
         </div>

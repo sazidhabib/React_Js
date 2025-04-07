@@ -21,7 +21,7 @@ const BookReadingSection = () => {
           </div>
           <div className="col-md-6">
             <div className="jetuku-img">
-              <img src="/images/Book.JPG" alt="Book" />
+              <img src="/images/Book.JPG" alt="Book" className="img-fluid" />
             </div>
           </div>
         </div>

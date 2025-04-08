@@ -15,7 +15,7 @@ const Story = ({ title, description, onClick }) => {
       <div className="row">
         <div className="col-md-4">
           <div className="news-item p-3 mb-4">
-            <h4 className="news-title">{truncateByChars(title, 50)}</h4>
+            <h4 className="news-title">{truncateByChars(title, 40)}</h4>
           </div>
         </div>
         <div className="col-md-8">

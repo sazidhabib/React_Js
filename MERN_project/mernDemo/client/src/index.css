@@ -38,9 +38,8 @@ body {
 
 @media (max-width: 768px) {
     #menubar {
-        display: none;
-        visibility: hidden;
-        height: 0px;
+
+        height: auto;
     }
 }
 
@@ -99,6 +98,56 @@ body {
     list-style: none;
 }
 
+.swiper-pagination {
+
+    /* You can adjust this value as needed */
+    position: relative !important;
+    bottom: 10px !important;
+    /* This pushes the dots down */
+}
+
+/* Topbar: Hidden on desktop, shown on sm/md */
+.mobile-topbar {
+    display: none !important;
+    background-color: #000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+}
+
+/* Show topbar only on screens less than 992px (Bootstrap md) */
+@media (max-width: 991.98px) {
+    .mobile-topbar {
+        display: flex !important;
+    }
+
+    .header {
+        margin-top: 60px;
+        /* Prevent overlap due to fixed topbar */
+    }
+
+    /* Override Bootstrap d-md-flex */
+    #menubar.d-none {
+        display: none !important;
+    }
+
+    #menubar.d-flex {
+        display: flex !important;
+    }
+
+    .nav-link {
+        font-size: 25px !important;
+    }
+
+    .social-icons a {
+        display: none;
+    }
+
+}
+
+
 .nav-link {
     font-size: 30px;
     color: white;
@@ -148,15 +197,30 @@ body {
     margin-left: 40px;
 }
 
-@media (max-width: 768px) {
-    .social-icons {
-        margin-left: 0px;
-        padding: 10px;
-    }
-}
+
 
 .social-icons a {
     font-size: 1.5rem;
+}
+
+.social-iconst {
+    margin-left: 40px;
+}
+
+
+
+.social-iconst a {
+    font-size: 1.5rem;
+}
+
+.social-iconst i {
+    background-color: #87c26b;
+    border-radius: 50px;
+    width: 45px;
+    height: 45px;
+    padding-top: 13px;
+    text-align: center;
+    font-size: 22px;
 }
 
 @media (max-width: 768px) {

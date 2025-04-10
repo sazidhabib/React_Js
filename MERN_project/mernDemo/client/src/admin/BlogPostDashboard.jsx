@@ -4,8 +4,8 @@ import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
-const API_URL = "http://localhost:5000/api/blogs"; // Adjust this to your actual endpoint
-const IMG_URL = "http://localhost:5000"; //image URL base
+const API_URL = import.meta.env.VITE_BLOG_API_URL;
+const IMG_URL = import.meta.env.VITE_IMG_BASE_URL;
 
 const BlogPostDashboard = () => {
     const [blogs, setBlogs] = useState([]);

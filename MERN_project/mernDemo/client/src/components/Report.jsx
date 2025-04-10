@@ -51,12 +51,13 @@ const Report = () => {
     setSelectedReport(null);
   };
 
-  const BASE_URL = "http://localhost:5000";
+  const API_URL = import.meta.env.VITE_BLOG_API_URL;
+  const BASE_URL = import.meta.env.VITE_IMG_BASE_URL;
 
   useEffect(() => {
     const fetchPublishedReports = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/blogs");
+        const response = await axios.get(API_URL);
         const publishedReports = response.data.filter(report => report.status === true);
         const sortedReports = publishedReports.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

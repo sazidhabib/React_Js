@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { useAuth } from "../store/auth";
 
-const API_URL = "http://localhost:5000/api/articles";
+const API_URL = import.meta.env.VITE_ARTICLE_API_URL;
 
 const ArticleDashboard = () => {
     const [articles, setArticles] = useState([]);

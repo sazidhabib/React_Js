@@ -39,6 +39,8 @@ const Asarernoy = () => {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+  const API_URL = import.meta.env.VITE_ARTICLE_API_URL;
+
   // Modal handlers:
   const handleOpenModal = (article) => {
     setSelectedArticle(article);
@@ -53,7 +55,7 @@ const Asarernoy = () => {
   useEffect(() => {
     const fetchPublishedArticles = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/articles");
+        const response = await axios.get(API_URL);
 
         // Filter articles where status is true
         const publishedArticles = response.data.filter(article => article.status === true);

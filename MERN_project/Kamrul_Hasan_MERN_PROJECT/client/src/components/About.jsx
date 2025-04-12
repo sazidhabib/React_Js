@@ -4,8 +4,6 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 const About = () => {
   return (
     <>
-      <div className="commonmenusty">
-      </div>
       <section className="about-us" id="about-us">
         <div className="container-fluid d-flex align-items-center justify-content-center min-vh-100">
           <div className="row align-items-center w-100">
@@ -33,8 +31,6 @@ const About = () => {
           </div>
         </div>
       </section>
-      <div className="commonmenusty">
-      </div>
     </>
   );
 };

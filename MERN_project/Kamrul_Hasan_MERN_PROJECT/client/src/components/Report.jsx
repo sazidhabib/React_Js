@@ -119,7 +119,7 @@ const Report = () => {
           />
         </div>
       </section>
-      <div className="commonmenusty"></div>
+
     </>
   );
 };

@@ -6,16 +6,16 @@ body {
 
 @font-face {
     font-family: "VarendraAP";
-    src: url("./fonts/VarendraAP-Black_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-BlackOblique_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-Bold_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-BoldOblique_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-Light_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-LightOblique_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-Oblique_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-Regular_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-Semibold_v7.ttf") format("truetype"),
-        url("./fonts/VarendraAP-SemiboldOblique_v7.ttf") format("truetype");
+    src: url("/assets/fonts/VarendraAP-Black_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-BlackOblique_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-Bold_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-BoldOblique_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-Light_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-LightOblique_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-Oblique_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-Regular_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-Semibold_v7.ttf") format("truetype"),
+        url("/assets/fonts/VarendraAP-SemiboldOblique_v7.ttf") format("truetype");
 }
 
 @media (min-width: 768px) {
@@ -91,6 +91,16 @@ body {
     }
 }
 
+.fixed-toplarge {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1050;
+    background-color: #343a40;
+    transition: top 0.3s ease-in-out;
+}
+
 #fixed-top {
     position: sticky;
     top: 0;
@@ -109,7 +119,7 @@ body {
 }
 
 .navh {
-    margin-top: 255px;
+    margin-top: 10px;
     margin-left: 40px;
     --bs-nav-link-padding-x: 1rem;
     --bs-nav-link-padding-y: 0.5rem;
@@ -175,6 +185,21 @@ body {
         font-size: 100px !important;
     }
 
+    .nav-link {
+        font-size: 25px !important;
+    }
+
+}
+
+@media (max-width: 1300px) {
+
+    .nav-link {
+        font-size: 25px !important;
+    }
+
+    .name {
+        font-size: 100px !important;
+    }
 }
 
 
@@ -450,6 +475,13 @@ footer {
     width: 58%;
 }
 
+@media (max-width: 992px) {
+    .description {
+        font-size: 23px;
+        margin: 0px auto;
+    }
+}
+
 @media (max-width: 768px) {
     .profile-image {
         max-width: 100%;
@@ -463,14 +495,12 @@ footer {
         font-size: 1.5rem;
     }
 
-    .description {
-        font-size: 1rem;
-        margin: 0px auto;
-    }
+
 }
 
 .about-us {
     background-color: #eef3f6;
+    padding-bottom: 20px;
 }
 
 .asarernoy {
@@ -772,7 +802,7 @@ footer {
     margin-left: 50px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
     .jetuku-img img {
         width: 100%;
         margin-top: 0px;

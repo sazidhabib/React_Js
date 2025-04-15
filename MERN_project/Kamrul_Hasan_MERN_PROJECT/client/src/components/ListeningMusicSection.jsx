@@ -7,7 +7,7 @@ const ListeningMusicSection = () => {
         <h3 className="subheading">গান শোনা</h3>
         <h2 className="mainheading">আজ রাতে কোনো রূপকথা নেই</h2>
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-lg-6">
             <div className="icon-content">
               <div className="icon">
                 <img src="/images/Song_Icon.png" alt="Song Icon" />
@@ -24,7 +24,7 @@ const ListeningMusicSection = () => {
               </div>
             </div>
           </div>
-          <div className="col-md-6">
+          <div className="col-lg-6">
             <div className="jetuku-img">
               <img src="/images/music_1.png" alt="Music" className="img-fluid" />
             </div>

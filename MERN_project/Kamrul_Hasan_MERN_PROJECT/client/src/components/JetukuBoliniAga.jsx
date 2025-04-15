@@ -7,7 +7,7 @@ const JetukuBoliniAga = () => {
         <h3 className="subheading">যেটুকু বলিনি আগে</h3>
         <h2 className="mainheading">অবশেষে মুচলেকায় মিলল মুক্তি</h2>
         <div className="row">
-          <div className="col-md-6">
+          <div className="col-lg-6 order-1 order-lg-1">
             <div className="icon-content">
               <div className="icon">
                 <img src="./images/quote_icon.png" alt="quote_icon" />
@@ -26,12 +26,17 @@ const JetukuBoliniAga = () => {
               </div>
             </div>
           </div>
-          <div className="col-md-6">
+          <div className="col-lg-6 order-2 order-lg-2">
             <div className="jetuku-img">
-              <img src="./images/kamrulhasan_jetukuboli_age.jpg" alt="kamrulhasan_jetukuboli_age" className="img-fluid" />
+              <img
+                src="./images/kamrulhasan_jetukuboli_age.jpg"
+                alt="kamrulhasan_jetukuboli_age"
+                className="img-fluid"
+              />
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );

@@ -1,4 +1,3 @@
-// src/components/ScrollToHashElement.jsx
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 

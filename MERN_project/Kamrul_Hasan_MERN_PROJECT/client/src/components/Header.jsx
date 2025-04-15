@@ -6,6 +6,7 @@ import { HashLink } from "react-router-hash-link";
 const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(window.innerWidth < 992);
+  const [showTopNavbar, setShowTopNavbar] = useState(false);
 
   // Track screen size on resize
   useEffect(() => {
@@ -13,9 +14,25 @@ const Header = () => {
       setIsMediumOrSmaller(window.innerWidth < 992);
     };
 
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setShowTopNavbar(scrollTop > 400);
+    };
+
+    window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    // Initial call to ensure correct state on first load
+    handleResize();
+    handleScroll();
+
+    // Clean up both event listeners
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
+
 
   const toggleSidebar = () => {
     if (isMediumOrSmaller) {
@@ -49,13 +66,13 @@ const Header = () => {
               </div>
               <div className="modal-body d-flex flex-column align-items-start">
                 <ul className="nav flex-column w-100">
-                  <li className="nav-item"><HashLink smooth to="#home" className="nav-link text-white">হোম</HashLink></li>
-                  <li className="nav-item"><HashLink smooth to="#about-us" className="nav-link text-white">আমার আমি</HashLink></li>
-                  <li className="nav-item"><HashLink smooth to="#asarernoy" className="nav-link text-white">আষাঢ়ে নয়</HashLink></li>
-                  <li className="nav-item"><HashLink smooth to="#publishedreport" className="nav-link text-white">প্রকাশিত রিপোর্ট</HashLink></li>
-                  <li className="nav-item"><HashLink smooth to="#jetukuboliniaga" className="nav-link text-white">যেটুকু বলিনি আগে</HashLink></li>
-                  <li className="nav-item"><HashLink smooth to="#bookreading" className="nav-link text-white">বইপড়া</HashLink></li>
-                  <li className="nav-item"><HashLink smooth to="#listeningmusic" className="nav-link text-white">গান শোনা</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#home" className="nav-link text-white" onClick={() => setShowSidebar(false)}>হোম</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#about-us" className="nav-link text-white" onClick={() => setShowSidebar(false)}>আমার আমি</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#asarernoy" className="nav-link text-white" onClick={() => setShowSidebar(false)}>আষাঢ়ে নয়</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#publishedreport" className="nav-link text-white" onClick={() => setShowSidebar(false)}>প্রকাশিত রিপোর্ট</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#jetukuboliniaga" className="nav-link text-white" onClick={() => setShowSidebar(false)}>যেটুকু বলিনি আগে</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#bookreading" className="nav-link text-white" onClick={() => setShowSidebar(false)}>বইপড়া</HashLink></li>
+                  <li className="nav-item"><HashLink smooth to="#listeningmusic" className="nav-link text-white" onClick={() => setShowSidebar(false)}>গান শোনা</HashLink></li>
                 </ul>
 
                 <div className="social-icons mt-3">
@@ -67,6 +84,20 @@ const Header = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {!isMediumOrSmaller && showTopNavbar && (
+        <div className="fixed-toplarge bg-dark d-flex justify-content-center py-2 shadow z-3">
+          <ul className="nav text-white">
+            <li className="nav-item"><HashLink smooth to="#home" className="nav-link text-white">হোম</HashLink></li>
+            <li className="nav-item"><HashLink smooth to="#about-us" className="nav-link text-white">আমার আমি</HashLink></li>
+            <li className="nav-item"><HashLink smooth to="#asarernoy" className="nav-link text-white">আষাঢ়ে নয়</HashLink></li>
+            <li className="nav-item"><HashLink smooth to="#publishedreport" className="nav-link text-white">প্রকাশিত রিপোর্ট</HashLink></li>
+            <li className="nav-item"><HashLink smooth to="#jetukuboliniaga" className="nav-link text-white">যেটুকু বলিনি আগে</HashLink></li>
+            <li className="nav-item"><HashLink smooth to="#bookreading" className="nav-link text-white">বইপড়া</HashLink></li>
+            <li className="nav-item"><HashLink smooth to="#listeningmusic" className="nav-link text-white">গান শোনা</HashLink></li>
+          </ul>
         </div>
       )}
 

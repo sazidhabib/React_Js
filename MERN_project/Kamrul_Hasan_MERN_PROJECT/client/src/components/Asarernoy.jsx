@@ -14,7 +14,7 @@ const Story = ({ title, description, onClick }) => {
     <div className="common-story" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="row">
         <div className="col-md-4">
-          <div className="news-item p-3 mb-4">
+          <div className="news-item p-3 ">
             <h4 className="news-title">{truncateByChars(title, 40)}</h4>
           </div>
         </div>
@@ -114,7 +114,7 @@ const Asarernoy = () => {
             <nav aria-label="Article Pagination">
               <ul className="pagination justify-content-center mt-4">
                 <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>Previous</button>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>আগে</button>
                 </li>
                 {[...Array(totalPages).keys()].map((page) => (
                   <li key={page} className={`page-item ${currentPage === page + 1 ? "active" : ""}`}>
@@ -122,7 +122,7 @@ const Asarernoy = () => {
                   </li>
                 ))}
                 <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>Next</button>
+                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>পরে</button>
                 </li>
               </ul>
             </nav>

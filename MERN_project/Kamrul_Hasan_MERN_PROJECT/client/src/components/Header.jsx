@@ -127,18 +127,22 @@ const Header = () => {
             )}
 
             {/* Middle Content */}
-            <div
+            <div id="home"
               className={`col-12 ${isMediumOrSmaller ? "col-md-6" : "col-md-4"
-                } middelsidebar text-center d-flex flex-column justify-content-center align-items-center p-4`}
+                } middelsidebar text-center d-flex flex-column  justify-content-center`}
             >
-              <p className="helloi">হ্যালো, আমি</p>
-              <h2 className="name">কামরুল হাসান</h2>
-              <p className="desination">গণমাধ্যম কর্মী (সাংবাদিক)</p>
+              <div className="">
+                <p className="helloi">হ্যালো, আমি</p>
+                <p className="name">কামরুল হাসান</p>
+                <p class="align-baseline desination text-end">গণমাধ্যম কর্মী (সাংবাদিক)</p>
+              </div>
+
+              {/* <p className="desination text-end">গণমাধ্যম কর্মী (সাংবাদিক)</p> */}
             </div>
 
             {/* Right Content */}
-            <div className="col-md-6 col-12 rightsidebar text-center d-flex flex-column justify-content-center align-items-center p-4">
-              <div className="image-wrapper mt-4">
+            <div className="col-md-6 col-12 rightsidebar text-center d-flex flex-column justify-content-center align-items-center">
+              <div className="image-wrapper">
                 <img src="/images/kamrulhasan.jpg" alt="kamrulhasan" className="img-fluid profile-image" />
               </div>
             </div>

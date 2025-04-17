@@ -17,7 +17,7 @@ const AppRoutes = () => {
 
       <Routes>
         {/* Home Page Layout */}
-        <Route path="/" element={<HomeLayout />} />
+        <Route path="/*" element={<HomeLayout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<Register />} />

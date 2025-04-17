@@ -5,12 +5,12 @@ import Asarernoy from "../components/Asarernoy";
 import JetukuBoliniAga from "../components/JetukuBoliniAga";
 import BookReadingSection from "../components/BookReadingSection";
 import ListeningMusicSection from "../components/ListeningMusicSection";
-import ScrollToHashElement from "../components/ScrollToHashElement";
+import ScrollToSection from "../components/ScrollToSection";
 
 const HomeLayout = () => {
   return (
     <>
-      <ScrollToHashElement />
+      <ScrollToSection />
       <Header />
       <About />
       <Asarernoy />

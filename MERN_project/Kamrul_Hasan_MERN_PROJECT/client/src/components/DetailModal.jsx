@@ -26,7 +26,7 @@ const DetailModal = ({ show, handleClose, item }) => {
                         className="img-fluid mb-3 rounded"
                     />
                 )}
-                <p className="modal-description">{item.description}</p>
+                <pre className="modal-description text-start" style={{ whiteSpace: "pre-wrap" }}>{item.description}</pre>
             </Modal.Body>
             <Modal.Footer className="justify-content-center">
                 <Button variant="secondary" onClick={handleClose}>

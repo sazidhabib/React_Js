@@ -22,12 +22,26 @@ body {
     .onlyphone {
         display: none;
     }
+
+
+}
+
+@media (max-width: 576px) {
+
+    .header_contentent,
+    .asarernoy {
+        height: 100vh;
+    }
+
+
 }
 
 @media (max-width: 768px) {
     .onlyphone {
         background-color: #26272e;
     }
+
+
 }
 
 .header_contentent {
@@ -850,6 +864,15 @@ footer {
     padding: 0px 15px 25px 15px;
   }
   } */
+
+@media (max-width: 1300px) {
+
+    .jetukuboliniaga,
+    .gansona,
+    .boipora {
+        height: auto !important;
+    }
+}
 
 .jetukuboliniaga {
     --dot-bg: #d7e4eb;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "../index.css";
 import { Link, useLocation } from 'react-router-dom';
@@ -12,60 +12,51 @@ const Header = () => {
 
 
 
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [showScrollingNavbar, setShowScrollingNavbar] = useState(true);
+  const lastScrollY = useRef(window.scrollY);
+  const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
 
-  const shouldShowMobileSidebar = isMediumOrSmaller && showSidebar && showScrollingNavbar;
+
 
 
   // Track screen size on resize
   useEffect(() => {
-    let timeout;
-
     const handleResize = () => {
       setIsMediumOrSmaller(window.innerWidth < 992);
     };
 
     const handleScroll = () => {
-      clearTimeout(timeout);
+      const currentScrollY = window.scrollY;
 
-      timeout = setTimeout(() => {
-        const currentScrollY = window.scrollY;
+      if (showSidebar && currentScrollY > lastScrollY.current) {
+        setShowSidebar(false);
+      }
 
-        if (initialLoad) {
-          setShowScrollingNavbar(true);
-          setInitialLoad(false); // Only for the first scroll
-        } else {
-          if (currentScrollY > 500) {
-            if (currentScrollY < lastScrollY) {
-              setShowScrollingNavbar(true);
-            } else if (currentScrollY > lastScrollY) {
-              setShowScrollingNavbar(false);
-            }
-          } else {
-            setShowScrollingNavbar(false);
-          }
-        }
+      if (currentScrollY < 400) {
+        setShowScrollingNavbar(false);
+      } else if (currentScrollY < lastScrollY.current) {
+        // scrolling up
+        setShowScrollingNavbar(true);
+      } else {
+        // scrolling down
+        setShowScrollingNavbar(false);
+      }
 
-
-        setLastScrollY(currentScrollY);
-      }, 50); // 50ms debounce
+      lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleResize);
 
     handleResize();
-    handleScroll();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
-      clearTimeout(timeout);
     };
-  }, [lastScrollY]);
+  }, [showSidebar]);
 
 
+  const shouldShowMobileSidebar = isMediumOrSmaller && showSidebar;
 
   const toggleSidebar = () => {
     if (isMediumOrSmaller) {
@@ -74,7 +65,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-dark">
+    <header className="header_contentent">
 
       {isMediumOrSmaller && (
         <div
@@ -122,7 +113,7 @@ const Header = () => {
           className="modal d-block bg-dark bg-opacity-75"
           tabIndex="-1"
           onClick={toggleSidebar}
-          style={{ top: showScrollingNavbar ? "0" : "-100px", transition: "top 0.3s, opacity 0.3s", opacity: showScrollingNavbar ? 1 : 0 }}
+          style={{ top: showSidebar ? "0" : "-100px", transition: "top 0.3s, opacity 0.3s", opacity: showSidebar ? 1 : 0 }}
         >
           <div
             className="modal-dialog"
@@ -157,7 +148,7 @@ const Header = () => {
         </div>
       )}
 
-      {!isMediumOrSmaller && showScrollingNavbar && (
+      {!isMediumOrSmaller && (
         <div
           className="fixed-toplarge bg-dark d-flex justify-content-center py-2 shadow z-3"
           style={{ top: showScrollingNavbar ? "0" : "-100px", opacity: showScrollingNavbar ? 1 : 0, position: "fixed", width: "100%", zIndex: 1050 }}
@@ -206,9 +197,13 @@ const Header = () => {
                 } middelsidebar text-center d-flex flex-column  justify-content-center`}
             >
               <div>
-                <p className="helloi">হ্যালো, আমি</p>
-                <p className="name">কামরুল হাসান</p>
-                <p className="align-baseline desination text-end">গণমাধ্যম কর্মী (সাংবাদিক)</p>
+
+                <div className="text-container">
+                  <div className="helloi">হ্যালো, আমি</div>
+                  <div className="main-text">কামরুল হাসান</div>
+                  <div className="sub-text">গণমাধ্যম কর্মী (সাংবাদিক)</div>
+                </div>
+
               </div>
 
               {/* <p className="desination text-end">গণমাধ্যম কর্মী (সাংবাদিক)</p> */}

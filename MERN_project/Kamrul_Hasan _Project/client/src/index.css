@@ -672,8 +672,7 @@ footer {
 }
 
 .publishedreport {
-    background-color: #e0f9f4;
-    /* --dot-bg: #d7e4eb;
+    --dot-bg: #d7e4eb;
     --dot-color: #e9eef2;
     --dot-size: 1px;
     --dot-space: 4px;
@@ -682,7 +681,7 @@ footer {
             transparent 1%) center / var(--dot-space) var(--dot-space),
         linear-gradient(var(--dot-bg) calc(var(--dot-space) - var(--dot-size)),
             transparent 1%) center / var(--dot-space) var(--dot-space),
-        var(--dot-color); */
+        var(--dot-color);
     padding-bottom: 50px;
     height: 100vh;
 }
@@ -876,7 +875,7 @@ footer {
 }
 
 .jetukuboliniaga {
-    --dot-bg: #e0e8f5;
+    --dot-bg: #d7e4eb;
     /* Background color */
     --dot-color: #e9eef2;
     /* Dot color */

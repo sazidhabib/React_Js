@@ -78,7 +78,7 @@ const Header = () => {
           <div className="social-iconst">
             <a href="#" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
             <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a href="https://www.facebook.com/kamrul.hasan.75286" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+            <a href="#" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
             <a href="#" className="text-white"><i className="fa-brands fa-instagram"></i></a>
           </div>
         </div>

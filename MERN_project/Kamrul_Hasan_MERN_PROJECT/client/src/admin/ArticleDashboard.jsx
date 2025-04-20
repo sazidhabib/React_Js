@@ -178,7 +178,7 @@ const ArticleDashboard = () => {
                         <tr key={article._id}>
                             <td>{index + 1}</td>
                             <td>{article.title}</td>
-                            <td>{article.description}</td>
+                            <td>{article.description.length > 200 ? `${article.description.slice(0, 200)}...` : article.description}</td>
                             <td>
                                 <Form.Check
                                     type="switch"
@@ -197,6 +197,7 @@ const ArticleDashboard = () => {
                             </td>
                         </tr>
                     ))}
+
                 </tbody>
             </Table>
 

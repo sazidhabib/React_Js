@@ -249,7 +249,8 @@ const BlogPostDashboard = () => {
                                 )}
                             </td>
                             <td>{blog.title}</td>
-                            <td>{blog.description}</td>
+
+                            <td>{blog.description.length > 200 ? `${blog.description.slice(0, 200)}...` : blog.description}</td>
                             <td>
                                 <Form.Check
                                     type="switch"

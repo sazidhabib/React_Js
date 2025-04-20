@@ -75,6 +75,7 @@ function Register() {
             name="username"
             className="form-control"
             id="username"
+            placeholder="Username must be at least 3 chars."
             value={user.username}
             onChange={handleInput}
             required
@@ -89,6 +90,7 @@ function Register() {
             name="email"
             className="form-control"
             id="email"
+            placeholder="Email must be at least 3 chars."
             value={user.email}
             onChange={handleInput}
             required
@@ -103,6 +105,7 @@ function Register() {
             name="phone"
             className="form-control"
             id="phone"
+            placeholder="Phone must be at least 11 chars."
             value={user.phone}
             onChange={handleInput}
             required
@@ -117,6 +120,7 @@ function Register() {
             name="password"
             className="form-control"
             id="password"
+            placeholder="Password must be at least 7 chars."
             value={user.password}
             onChange={handleInput}
             required

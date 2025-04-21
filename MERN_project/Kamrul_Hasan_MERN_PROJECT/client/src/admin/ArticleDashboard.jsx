@@ -117,7 +117,7 @@ const ArticleDashboard = () => {
 
 
     return (
-        <div className="container mt-4">
+        <div className="container custom-font-initial mt-4">
             <h2 className="mb-3">📝 Article Dashboard</h2>
 
             {/* Article Input Form */}

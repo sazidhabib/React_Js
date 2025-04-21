@@ -63,7 +63,7 @@ function Register() {
   };
 
   return (
-    <div className="container col-md-4 card p-4 mt-5">
+    <div className="container custom-font-initial col-md-4 card p-4 mt-5">
       <h2 className="text-center mb-4">Register</h2>
       <form onSubmit={handleRegister}>
         <div className="mb-3">

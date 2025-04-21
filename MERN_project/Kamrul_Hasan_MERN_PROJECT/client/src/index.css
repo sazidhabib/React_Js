@@ -18,6 +18,24 @@ body {
         url("/assets/fonts/VarendraAP-SemiboldOblique_v7.ttf") format("truetype");
 }
 
+@font-face {
+    font-family: 'kalpurush';
+    src: local('kalpurush'), url('/assets/fonts/kalpurush ANSI.ttf') format('truetype'),
+        url('/assets/fonts/kalpurush.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.custom-font {
+    font-family: 'kalpurush';
+}
+
+.custom-font-initial {
+    font-family: 'Roboto', sans-serif;
+
+}
+
+
 @media (min-width: 768px) {
     .onlyphone {
         display: none;
@@ -613,7 +631,7 @@ footer {
 .asarernoy {
     --dot-bg: #d7e4eb;
     /* Background color */
-    --dot-color: #e9eef2;
+    --dot-color: #ffff;
     /* Dot color */
     --dot-size: 1px;
     --dot-space: 4px;
@@ -876,9 +894,9 @@ footer {
 }
 
 .jetukuboliniaga {
-    --dot-bg: #e0e8f5;
+    --dot-bg: #dfe5ff;
     /* Background color */
-    --dot-color: #e9eef2;
+    --dot-color: #ffff;
     /* Dot color */
     --dot-size: 1px;
     --dot-space: 4px;

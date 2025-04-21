@@ -76,10 +76,10 @@ const Header = () => {
             <i className="fas fa-bars text-white fs-4"></i>
           </div>
           <div className="social-iconst">
-            <a href="#" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
             <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a href="https://www.facebook.com/kamrul.hasan.75286" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a href="#" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
           </div>
         </div>
       )}
@@ -98,10 +98,10 @@ const Header = () => {
             <i className="fas fa-bars text-white fs-4"></i>
           </div>
           <div className="social-iconst">
-            <a href="#" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
             <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a href="#" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a href="#" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
           </div>
         </div>
       )}
@@ -137,10 +137,10 @@ const Header = () => {
                 </ul>
 
                 <div className="social-icons mt-3">
-                  <a href="#" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+                  <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
                   <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-                  <a href="#" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-                  <a href="#" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+                  <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+                  <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
                 </div>
               </div>
             </div>
@@ -183,10 +183,10 @@ const Header = () => {
                   <li className="nav-item"><Link to="/listeningmusic" className="nav-link">গান শোনা</Link></li>
                 </ul>
                 <div className="social-icons mt-4">
-                  <a href="#" className="text-white me-1"><i className="fa-brands fa-linkedin-in"></i></a>
+                  <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-linkedin-in"></i></a>
                   <a href="#" className="text-white me-1"><i className="fa-brands fa-x-twitter"></i></a>
-                  <a href="#" className="text-white me-1"><i className="fa-brands fa-facebook-f"></i></a>
-                  <a href="#" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+                  <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-facebook-f"></i></a>
+                  <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
                 </div>
               </div>
             )}

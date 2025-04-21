@@ -3,7 +3,7 @@ import { MdEmail } from 'react-icons/md';
 
 const Footer = () => {
     return (
-        <footer className="bg-dark text-white text-center py-3 mt-auto">
+        <footer className="bg-dark text-white text-center py-3 mt-auto custom-font-initial">
             <div className="container d-flex flex-column flex-md-row justify-content-center align-items-center gap-2">
                 <div className="d-flex align-items-center gap-2">
                     <MdEmail className="text-info" size={20} />
@@ -11,10 +11,10 @@ const Footer = () => {
                         href="mailto:me@kamrulhasan.info"
                         className="text-info text-decoration-none"
                     >
-                        kamrulhasan.info
+                        kamrulhasan.info |
                     </a>
                 </div>
-                <span className="text-white ms-md-3">
+                <span className="text-white ">
                     &copy; {new Date().getFullYear()} কামরুল হাসান। সকল অধিকার সংরক্ষিত।
                 </span>
             </div>

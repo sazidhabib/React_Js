@@ -13,7 +13,7 @@ function AdminNavbar({ toggleSidebar }) {  // Accept toggleSidebar function as a
   };
 
   return (
-    <nav className="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <nav className="sb-topnav custom-font-initial navbar navbar-expand navbar-dark bg-dark">
       <a className="navbar-brand ps-3" href="#">
         Admin Panel
       </a>

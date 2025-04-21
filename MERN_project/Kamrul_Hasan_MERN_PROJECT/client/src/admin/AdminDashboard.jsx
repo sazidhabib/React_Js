@@ -19,7 +19,7 @@ const AdminDashboard = () => {
 
 
     return (
-        <div className="container-fluid px-4">
+        <div className="container-fluid custom-font-initial px-4">
             <div className="row">
                 <div className="col-lg-10 ms-0">
                     <h1 className="mt-4">📊 Admin Dashboard</h1>

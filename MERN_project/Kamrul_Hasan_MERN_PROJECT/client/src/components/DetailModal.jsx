@@ -26,11 +26,11 @@ const DetailModal = ({ show, handleClose, item }) => {
                         className="img-fluid mb-3 rounded"
                     />
                 )}
-                <pre className="modal-description text-start" style={{ whiteSpace: "pre-wrap" }}>{item.description}</pre>
+                <pre className="modal-description custom-font text-start" style={{ whiteSpace: "pre-wrap" }}>{item.description}</pre>
             </Modal.Body>
             <Modal.Footer className="justify-content-center">
                 <Button variant="secondary" onClick={handleClose}>
-                    Close
+                    বন্ধ করুন
                 </Button>
             </Modal.Footer>
         </Modal>

@@ -154,7 +154,7 @@ const BlogPostDashboard = () => {
     if (error) return <div className="alert alert-danger">Error: {error}</div>;
 
     return (
-        <div className="container mt-4">
+        <div className="container custom-font-initial mt-4">
             <h2 className="mb-3">📝 Blog Post Dashboard</h2>
 
             {/* Blog Input Form */}

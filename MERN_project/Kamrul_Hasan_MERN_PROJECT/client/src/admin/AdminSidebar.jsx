@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 function AdminSidebar({ isSidebarOpen }) {  // Accept state as a prop
   return (
-    <div className={`sidebar bg-dark ${isSidebarOpen ? "open" : "closed"}`}>
+    <div className={`sidebar custom-font-initial bg-dark ${isSidebarOpen ? "open" : "closed"}`}>
       <ul className="nav flex-column">
         <li className="nav-item">
           <NavLink to="/admin" className="nav-link text-white">

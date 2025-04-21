@@ -23,7 +23,7 @@ const blogRouter = require("./router/blog-router");
 
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://kamrulhasanbd.net"], // ✅ Allow both local and deployed frontend
+  origin: ["http://localhost:5173", "https://kamrulhasanbd.net"], //Allow both local and deployed frontend
   methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
   credentials: true,
 };

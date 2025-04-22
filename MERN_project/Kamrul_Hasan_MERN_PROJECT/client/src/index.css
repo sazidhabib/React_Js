@@ -19,15 +19,15 @@ body {
 }
 
 @font-face {
-    font-family: 'kalpurush';
-    src: local('kalpurush'), url('/assets/fonts/kalpurush ANSI.ttf') format('truetype'),
-        url('/assets/fonts/kalpurush.ttf') format('truetype');
+    font-family: 'custom_font';
+    src: local('custom_font'), url('/assets/fonts/VarendraAP-Regular_v7.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 .custom-font {
-    font-family: 'kalpurush';
+    font-family: 'custom_font';
+    font-size: 18px;
 }
 
 .custom-font-initial {
@@ -49,6 +49,10 @@ body {
     .header_contentent,
     .asarernoy {
         height: 100vh;
+    }
+
+    .custom-font {
+        font-size: 16px;
     }
 
 

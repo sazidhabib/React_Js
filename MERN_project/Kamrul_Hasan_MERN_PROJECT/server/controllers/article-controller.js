@@ -1,22 +1,25 @@
 const Article = require("../models/article-model");
 
+const fs = require("fs");
+const path = require("path");
+
 // ✅ Create Article
 const createArticle = async (req, res, next) => {
     try {
-        console.log("Request Body:", req.body);
-        console.log("User:", req.user);
-
         const { title, description, status } = req.body;
 
         if (!title || !description) {
             return res.status(400).json({ message: "Title and Description are required" });
         }
 
+        const imagePath = req.file ? req.file.filename : null;
+
         const newArticle = await Article.create({
             title,
             description,
             status,
-            author: req.user._id, // Associate article with admin user
+            author: req.user._id,
+            image: imagePath,
         });
 
         res.status(201).json({ message: "Article Created", article: newArticle });
@@ -25,6 +28,7 @@ const createArticle = async (req, res, next) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // ✅ Get All Articles
 const getAllArticles = async (req, res) => {
@@ -40,9 +44,28 @@ const getAllArticles = async (req, res) => {
 const updateArticle = async (req, res) => {
     try {
         const { title, description, status } = req.body;
-        const article = await Article.findByIdAndUpdate(req.params.id, { title, description, status }, { new: true });
 
-        if (!article) return res.status(404).json({ message: "Article Not Found" });
+        const existingArticle = await Article.findById(req.params.id);
+        if (!existingArticle) {
+            return res.status(404).json({ message: "Article Not Found" });
+        }
+
+        // Delete old image if new one is uploaded
+        if (req.file && existingArticle.image) {
+            const oldImagePath = path.join(__dirname, "..", "uploads", existingArticle.image);
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath);
+            }
+        }
+
+        const updatedFields = {
+            title,
+            description,
+            status,
+            image: req.file ? req.file.filename : existingArticle.image,
+        };
+
+        const article = await Article.findByIdAndUpdate(req.params.id, updatedFields, { new: true });
 
         res.status(200).json({ message: "Article Updated", article });
     } catch (error) {
@@ -57,10 +80,19 @@ const deleteArticle = async (req, res) => {
 
         if (!article) return res.status(404).json({ message: "Article Not Found" });
 
+        // Delete image from disk
+        if (article.image) {
+            const imagePath = path.join(__dirname, "..", "uploads", article.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
         res.status(200).json({ message: "Article Deleted" });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 module.exports = { createArticle, getAllArticles, updateArticle, deleteArticle };

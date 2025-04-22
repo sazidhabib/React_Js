@@ -1,18 +1,25 @@
 const express = require("express");
 const router = express.Router();
-const { createArticle, getAllArticles, updateArticle, deleteArticle } = require("../controllers/article-controller");
+const upload = require("../middlewares/multer-config");
+const {
+    createArticle,
+    getAllArticles,
+    updateArticle,
+    deleteArticle,
+} = require("../controllers/article-controller");
 const authMiddleware = require("../middlewares/auth-middleware");
 
-// ✅ Create an Article (Only Admins)
-router.post("/", authMiddleware, createArticle);
+// ✅ Create an Article (with image)
+router.post("/", authMiddleware, upload.single("image"), createArticle);
 
 // ✅ Get All Articles (Public)
 router.get("/", getAllArticles);
 
-// ✅ Update an Article (Only Admins)
-router.patch("/:id", authMiddleware, updateArticle);
+// ✅ Update an Article (optional new image)
+router.patch("/:id", authMiddleware, upload.single("image"), updateArticle);
 
-// ✅ Delete an Article (Only Admins)
+// ✅ Delete an Article (delete image also)
 router.delete("/:id", authMiddleware, deleteArticle);
+
 
 module.exports = router;

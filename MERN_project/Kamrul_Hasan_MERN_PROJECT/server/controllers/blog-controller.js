@@ -34,11 +34,15 @@ const getAllBlogs = async (req, res) => {
 // ✅ Update Blog
 const updateBlog = async (req, res) => {
     try {
+
+        console.log("req.user:", req.user);
+        console.log("req.body:", req.body);
+        console.log("req.file:", req.file);
         const { title, description, status } = req.body;
         const updateData = { title, description, status };
 
         if (req.file) {
-            updateData.image = req.file.path;
+            updateData.image = `/uploads/${req.file.filename}`;
         }
 
         const blog = await Blog.findByIdAndUpdate(req.params.id, updateData, { new: true });

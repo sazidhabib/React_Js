@@ -1,36 +1,65 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import axios from "axios";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { useAuth } from "../store/auth";
+import { toast } from "react-toastify";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/articles`;
 
 const ArticleDashboard = () => {
     const [articles, setArticles] = useState([]);
-    const [newArticle, setNewArticle] = useState({ title: "", description: "", status: false });
+    const [newArticle, setNewArticle] = useState({
+        title: "",
+        description: "",
+        status: false,
+        image: null // 🆕 added for storing the file
+    });
     const [editingId, setEditingId] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null); // added for image preview
+    const fileInputRef = useRef(null);
 
     // ✅ Fetch Articles from Backend
     useEffect(() => {
         axios.get(API_URL)
-            .then(response => setArticles(response.data))
+            .then(response => {
+                console.log("API response:", response.data); // 👀 Check this
+                setArticles(response.data);
+            })
             .catch(error => console.error("Error fetching articles:", error));
     }, []);
 
 
 
 
+
     // Handle Input Change
     const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setNewArticle({
-            ...newArticle,
-            [name]: type === "checkbox" ? checked : value,
-        });
+        const { name, value, type, checked, files } = e.target;
+
+        if (type === "file") {
+            const file = files[0];
+            if (file) {
+                setNewArticle(prev => ({ ...prev, image: file }));
+
+                // Clean up old URL before setting a new one
+                if (imagePreview?.startsWith("blob:")) {
+                    URL.revokeObjectURL(imagePreview);
+                }
+
+                setImagePreview(URL.createObjectURL(file));
+            }
+        } else {
+            setNewArticle({
+                ...newArticle,
+                [name]: type === "checkbox" ? checked : value,
+            });
+        }
     };
+
+
 
     const { token } = useAuth();
 
@@ -43,44 +72,74 @@ const ArticleDashboard = () => {
         }
 
         try {
+            const formData = new FormData();
+            formData.append("title", newArticle.title);
+            formData.append("description", newArticle.description);
+            formData.append("status", newArticle.status);
+            if (newArticle.image) {
+                formData.append("image", newArticle.image); // 🆕
+            }
+
             if (editingId !== null) {
-                // ✅ Fixed: Add headers to PATCH request
                 const response = await axios.patch(
                     `${API_URL}/${editingId}`,
-                    newArticle,
+                    formData,
                     {
                         headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${localStorage.getItem("token")}`
-                        }
+                            "Content-Type": "multipart/form-data",
+                            Authorization: `Bearer ${token}`,
+                        },
                     }
                 );
                 setArticles(articles.map(article =>
                     article._id === editingId ? response.data.article : article
                 ));
                 setEditingId(null);
+                toast.success("Article updated successfully");
             } else {
-                // POST request (unchanged)
-                const response = await axios.post(API_URL, newArticle, {
+                const response = await axios.post(API_URL, formData, {
                     headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`,
                     },
                 });
                 setArticles([...articles, response.data.article]);
+                toast.success("Article added successfully");
             }
-            setNewArticle({ title: "", description: "", status: false });
+
+            // Reset
+            setNewArticle({ title: "", description: "", status: false, image: null });
+            setImagePreview(null); // 🆕 reset preview
+            setEditingId(null);
+            fileInputRef.current.value = ""; // ✅ clears the file input manually
         } catch (error) {
-            console.error("Error saving article:", error);
+            if (error.response?.status === 409) {
+                toast.error(error.response.data.message || "Duplicate article title!");
+            } else {
+                console.error("Error saving article:", error);
+                toast.error("Something went wrong. Please try again.");
+            }
         }
     };
 
 
+
     // Edit Article
     const handleEdit = (article) => {
-        setNewArticle(article);
+        setNewArticle({
+            title: article.title,
+            description: article.description,
+            status: article.status,
+            image: null, // We'll reset this, the image is not a File object
+        });
+
+        setImagePreview(article.image
+            ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${article.image}`
+            : null
+        );
         setEditingId(article._id);
     };
+
 
     // Delete Article
     const handleDelete = async (id) => {
@@ -148,6 +207,29 @@ const ArticleDashboard = () => {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
+                    <Form.Label>Upload Image</Form.Label>
+                    <Form.Control
+                        type="file"
+                        name="image"
+                        accept="image/*"
+                        onChange={handleChange}
+                        ref={fileInputRef} // added ref for file input
+                    />
+                </Form.Group>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                    <div className="mb-3">
+                        <img
+                            src={imagePreview}
+                            alt="Preview"
+                            className="img-thumbnail"
+                            style={{ width: "150px", height: "100px" }}
+                        />
+                    </div>
+                )}
+
+                <Form.Group className="mb-3">
                     <Form.Check
                         type="checkbox"
                         label="Show on Homepage"
@@ -156,6 +238,8 @@ const ArticleDashboard = () => {
                         onChange={handleChange}
                     />
                 </Form.Group>
+
+
 
                 <Button variant={editingId !== null ? "warning" : "primary"} type="submit">
                     {editingId !== null ? "Update Article" : "Add Article"}
@@ -167,6 +251,7 @@ const ArticleDashboard = () => {
                 <thead className="table-dark">
                     <tr>
                         <th>#</th>
+                        <th>Image</th>
                         <th>Title</th>
                         <th>Description</th>
                         <th>Status</th>
@@ -177,6 +262,17 @@ const ArticleDashboard = () => {
                     {articles.map((article, index) => (
                         <tr key={article._id}>
                             <td>{index + 1}</td>
+                            <td>
+                                {article.image && (
+                                    <img
+                                        src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${article.image}`}
+                                        alt="Article"
+                                        width="60"
+                                        height="60"
+                                        style={{ objectFit: "cover", borderRadius: "5px" }}
+                                    />
+                                )}
+                            </td>
                             <td>{article.title}</td>
                             <td>{article.description.length > 200 ? `${article.description.slice(0, 200)}...` : article.description}</td>
                             <td>

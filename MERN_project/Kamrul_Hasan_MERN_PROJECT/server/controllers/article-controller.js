@@ -12,6 +12,12 @@ const createArticle = async (req, res, next) => {
             return res.status(400).json({ message: "Title and Description are required" });
         }
 
+        // ❗ Check for duplicate title
+        const existing = await Article.findOne({ title });
+        if (existing) {
+            return res.status(409).json({ message: "An article with this title already exists." });
+        }
+
         const imagePath = req.file ? req.file.filename : null;
 
         const newArticle = await Article.create({
@@ -30,6 +36,7 @@ const createArticle = async (req, res, next) => {
 };
 
 
+
 // ✅ Get All Articles
 const getAllArticles = async (req, res) => {
     try {
@@ -41,6 +48,7 @@ const getAllArticles = async (req, res) => {
 };
 
 // ✅ Update Article
+
 const updateArticle = async (req, res) => {
     try {
         const { title, description, status } = req.body;
@@ -48,6 +56,12 @@ const updateArticle = async (req, res) => {
         const existingArticle = await Article.findById(req.params.id);
         if (!existingArticle) {
             return res.status(404).json({ message: "Article Not Found" });
+        }
+
+        // ❗ Check if another article with the same title exists
+        const duplicate = await Article.findOne({ title, _id: { $ne: req.params.id } });
+        if (duplicate) {
+            return res.status(409).json({ message: "Another article with this title already exists." });
         }
 
         // Delete old image if new one is uploaded
@@ -72,6 +86,7 @@ const updateArticle = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // ✅ Delete Article
 const deleteArticle = async (req, res) => {

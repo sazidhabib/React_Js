@@ -5,7 +5,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/blogs`;
-const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
+const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const BlogPostDashboard = () => {
     const [blogs, setBlogs] = useState([]);
@@ -19,6 +19,8 @@ const BlogPostDashboard = () => {
     const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    console.log("Token being sent:", localStorage.getItem("token"));
 
     // Fetch all blogs on component mount
     useEffect(() => {
@@ -95,6 +97,7 @@ const BlogPostDashboard = () => {
 
             setNewBlog({ title: "", description: "", status: false, image: null });
             setImagePreview(null);
+            setEditingId(null);
         } catch (error) {
             setError(error.message);
         } finally {

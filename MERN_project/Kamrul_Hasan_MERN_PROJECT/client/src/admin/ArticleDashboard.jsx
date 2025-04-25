@@ -6,6 +6,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { useAuth } from "../store/auth";
 import { toast } from "react-toastify";
+import ConfirmationModal from "./ConfirmationModal";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/articles`;
 
@@ -20,6 +21,8 @@ const ArticleDashboard = () => {
     const [editingId, setEditingId] = useState(null);
     const [imagePreview, setImagePreview] = useState(null); // added for image preview
     const fileInputRef = useRef(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     // ✅ Fetch Articles from Backend
     useEffect(() => {
@@ -33,6 +36,21 @@ const ArticleDashboard = () => {
 
 
 
+    const confirmDelete = async () => {
+        try {
+            await axios.delete(`${API_URL}/${deleteId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setArticles(prev => prev.filter(article => article._id !== deleteId));
+            toast.success("Article deleted successfully.");
+        } catch (error) {
+            console.error("Error deleting article:", error);
+            toast.error("Failed to delete article.");
+        } finally {
+            setShowConfirm(false);
+            setDeleteId(null);
+        }
+    };
 
 
     // Handle Input Change
@@ -287,7 +305,7 @@ const ArticleDashboard = () => {
                                 <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(article)}>
                                     ✏️ Edit
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => handleDelete(article._id)}>
+                                <Button variant="danger" size="sm" onClick={() => { setDeleteId(article._id); setShowConfirm(true); }}>
                                     🗑️ Delete
                                 </Button>
                             </td>
@@ -296,6 +314,13 @@ const ArticleDashboard = () => {
 
                 </tbody>
             </Table>
+            <ConfirmationModal
+                show={showConfirm}
+                onHide={() => setShowConfirm(false)}
+                onConfirm={confirmDelete}
+                title="Delete Article"
+                body="Are you sure you want to delete this article?"
+            />
 
         </div>
     );

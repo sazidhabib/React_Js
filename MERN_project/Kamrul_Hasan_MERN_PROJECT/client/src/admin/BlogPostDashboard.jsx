@@ -3,9 +3,12 @@ import axios from "axios";
 import Table from "react-bootstrap/Table";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import { toast } from "react-toastify";
+import ConfirmationModal from "./ConfirmationModal";
+
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/blogs`;
-const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}`;
+const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/`;
 
 const BlogPostDashboard = () => {
     const [blogs, setBlogs] = useState([]);
@@ -20,7 +23,11 @@ const BlogPostDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    console.log("Token being sent:", localStorage.getItem("token"));
+    const [showModal, setShowModal] = useState(false);
+    const [selectedBlogId, setSelectedBlogId] = useState(null);
+
+
+
 
     // Fetch all blogs on component mount
     useEffect(() => {
@@ -46,6 +53,25 @@ const BlogPostDashboard = () => {
             [name]: type === "checkbox" ? checked : value,
         });
     };
+
+
+    const confirmDelete = async () => {
+        try {
+            setLoading(true);
+            await axios.delete(`${API_URL}/${selectedBlogId}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            });
+            setBlogs(blogs.filter(blog => blog._id !== selectedBlogId));
+            toast.success("Blog deleted successfully!");
+        } catch (error) {
+            toast.error(`Failed to delete: ${error.message}`);
+        } finally {
+            setLoading(false);
+            setShowModal(false);
+            setSelectedBlogId(null);
+        }
+    };
+
 
     // Handle Image Upload
     const handleImageUpload = (e) => {
@@ -97,9 +123,17 @@ const BlogPostDashboard = () => {
 
             setNewBlog({ title: "", description: "", status: false, image: null });
             setImagePreview(null);
+            toast.success(editingId ? "Blog updated!" : "Blog added!");
             setEditingId(null);
         } catch (error) {
-            setError(error.message);
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("An unexpected error occurred.");
+            }
+
+            // setError(error.response?.data?.message || "Something went wrong");
+
         } finally {
             setLoading(false);
         }
@@ -118,25 +152,13 @@ const BlogPostDashboard = () => {
     };
 
     // Delete Blog Post
-    const handleDelete = async (id) => {
-        try {
-            setLoading(true);
-            await axios.delete(`${API_URL}/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            });
-            setBlogs(blogs.filter(blog => blog._id !== id));
-        } catch (error) {
-            setError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+
 
     // Toggle Status
     const handleToggleStatus = async (id, currentStatus) => {
         try {
             setLoading(true);
-            const response = await axios.put(
+            const response = await axios.patch(
                 `${API_URL}/${id}`,
                 { status: !currentStatus },
                 {
@@ -274,15 +296,27 @@ const BlogPostDashboard = () => {
                                 <Button
                                     variant="danger"
                                     size="sm"
-                                    onClick={() => handleDelete(blog._id)}
+                                    onClick={() => {
+                                        setSelectedBlogId(blog._id);
+                                        setShowModal(true);
+                                    }}
                                 >
                                     🗑️ Delete
                                 </Button>
+
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </Table>
+
+            <ConfirmationModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                onConfirm={confirmDelete}
+                title="Delete Blog"
+                body="Are you sure you want to delete this blog post?"
+            />
         </div>
     );
 };

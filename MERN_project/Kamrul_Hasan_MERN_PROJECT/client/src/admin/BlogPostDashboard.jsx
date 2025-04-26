@@ -243,6 +243,16 @@ const BlogPostDashboard = () => {
                 <Button variant={editingId !== null ? "warning" : "primary"} type="submit">
                     {editingId !== null ? "Update Blog" : "Add Blog"}
                 </Button>
+
+                {/* Add a Cancel button to reset */}
+                {editingId !== null && <Button variant="secondary" className="mx-2" onClick={() => {
+                    setNewBlog({ title: "", description: "", status: false, image: null });
+                    setEditingId(null);
+                    setImagePreview(null);
+                }}>
+                    Cancel
+                </Button>}
+
             </Form>
 
             {/* Blogs Table */}
@@ -264,7 +274,7 @@ const BlogPostDashboard = () => {
                             <td>
                                 {blog.image ? (
                                     <img
-                                        src={`${IMG_URL}${blog.image.startsWith("/") ? "" : "/"}${blog.image}`}
+                                        src={`${IMG_URL}${blog.image.replace(/^\/+/, "")}`}
                                         alt="Blog"
                                         className="img-thumbnail"
                                         style={{ width: "80px", height: "50px" }}

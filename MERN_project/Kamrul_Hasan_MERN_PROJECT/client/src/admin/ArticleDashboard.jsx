@@ -28,7 +28,7 @@ const ArticleDashboard = () => {
     useEffect(() => {
         axios.get(API_URL)
             .then(response => {
-                console.log("API response:", response.data); // 👀 Check this
+                //console.log("API response:", response.data); // 👀 Check this
                 setArticles(response.data);
             })
             .catch(error => console.error("Error fetching articles:", error));
@@ -262,6 +262,15 @@ const ArticleDashboard = () => {
                 <Button variant={editingId !== null ? "warning" : "primary"} type="submit">
                     {editingId !== null ? "Update Article" : "Add Article"}
                 </Button>
+
+                {/* Add a Cancel button to reset */}
+                {editingId !== null && <Button variant="secondary" className="mx-2" onClick={() => {
+                    setNewArticle({ title: "", description: "", status: false, image: null });
+                    setEditingId(null);
+                    setImagePreview(null);
+                }}>
+                    Cancel
+                </Button>}
             </Form>
 
             {/* Articles Table */}

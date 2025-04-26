@@ -17,6 +17,7 @@ const truncateByChars = (text, limit) => {
 
 
 const ReportCard = ({ title, description, image, onClick }) => {
+
   return (
     <div id="news-slider" className="owl-carousel" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="post-slide">
@@ -52,7 +53,7 @@ const Report = () => {
   };
 
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/blogs`;
-  const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
+  const fullImageUrl = `${import.meta.env.VITE_API_BASE_URL}/uploads/`;
 
   useEffect(() => {
     const fetchPublishedReports = async () => {
@@ -100,12 +101,12 @@ const Report = () => {
                 <ReportCard
                   title={report.title}
                   description={report.description}
-                  image={`${BASE_URL}${report.image.startsWith("/") ? "" : "/"}${report.image}`}
+                  image={`${fullImageUrl}${report.image.startsWith("/") ? "" : "/"}${report.image}`}
                   onClick={() =>
                     handleOpenModal({
                       title: report.title,
                       description: report.description,
-                      image: `${BASE_URL}${report.image.startsWith("/") ? "" : "/"}${report.image}`,
+                      image: `${fullImageUrl}${report.image.startsWith("/") ? "" : "/"}${report.image}`,
                     })
                   }
                 />

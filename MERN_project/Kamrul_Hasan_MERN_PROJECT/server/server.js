@@ -20,7 +20,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // CORS config
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://kamrulhasanbd.net"],
+  origin: ["http://localhost:5173", "https://kamrulhasan.info"],
   methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
   credentials: true,
 };

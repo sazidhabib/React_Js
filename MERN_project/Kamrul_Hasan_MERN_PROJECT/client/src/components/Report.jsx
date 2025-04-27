@@ -79,8 +79,8 @@ const Report = () => {
 
   return (
     <>
-      <section className="publishedreport py-4" id="publishedreport">
-        <div className="container">
+      <section className="publishedreport py-5" id="publishedreport">
+        <div className="container py-5">
           <h2 className="publishedreport-sty mb-4">প্রকাশিত রিপোর্ট</h2>
           <Swiper
             modules={[Autoplay, Pagination]}

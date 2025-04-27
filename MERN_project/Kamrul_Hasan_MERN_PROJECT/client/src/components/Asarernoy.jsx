@@ -16,10 +16,10 @@ const Story = ({ title, description, image, onClick }) => {
     <div className="common-story" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="news-item p-3">
 
-        <h4 className="news-title">{truncateByChars(title, 40)}</h4>
+        <h4 className="news-title d-block d-md-none">{truncateByChars(title, 40)}</h4>
       </div>
       <div className="row">
-        <div className="col-md-4">
+        <div className="col-4 d-block d-md-none">
           {image && (
             <img
               src={fullImageUrl}
@@ -30,13 +30,13 @@ const Story = ({ title, description, image, onClick }) => {
           )}
         </div>
 
-        <div className="col-md-6">
+        <div className="col-6 d-block d-md-none">
           <p className="news-description">{truncateByChars(description, 150)}</p>
         </div>
 
-        {/* <div className="col-md-3 d-flex align-items-center justify-content-center"> */}
-        {/* Add the image here */}
-        {/* {image && (
+        <div className="col-md-3 d-flex align-items-center d-none d-md-block py-3">
+          {/* Add the image here */}
+          {image && (
             <img
               src={fullImageUrl}
               alt={title}
@@ -44,16 +44,16 @@ const Story = ({ title, description, image, onClick }) => {
               style={{ maxHeight: "200px", objectFit: "cover", width: "100%" }}
             />
           )}
-        </div> */}
-        {/* <div className="col-md-3">
-          <div className="news-item p-3">
+        </div>
+        <div className="col-md-3 d-none d-md-block">
+          <div className="news-item py-3 text-center">
 
             <h4 className="news-title">{truncateByChars(title, 40)}</h4>
           </div>
         </div>
-        <div className="col-md-6">
+        <div className="col-md-6 d-none d-md-block">
           <p className="news-description">{truncateByChars(description, 150)}</p>
-        </div> */}
+        </div>
       </div>
     </div>
   );
@@ -78,9 +78,14 @@ const Asarernoy = () => {
 
   // Modal handlers:
   const handleOpenModal = (article) => {
-    setSelectedArticle(article);
+    const fullArticle = {
+      ...article,
+      image: `${import.meta.env.VITE_API_BASE_URL}/uploads/${article.image}`,
+    };
+    setSelectedArticle(fullArticle);
     setShowModal(true);
   };
+
 
   const handleCloseModal = () => {
     setShowModal(false);

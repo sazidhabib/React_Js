@@ -212,7 +212,8 @@ const Header = () => {
             {/* Right Content */}
             <div className="col-md-6 col-12 rightsidebar text-center d-flex flex-column justify-content-center align-items-center">
               <div className="image-wrapper">
-                <img src="/images/kamrulhasan.jpg" alt="kamrulhasan" className="img-fluid profile-image" />
+                <img src="/images/kamrulhasan.webp
+                " alt="kamrulhasan" className="img-fluid profile-image" />
               </div>
             </div>
           </div>

@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const connectDB = require("./db/connect");
 const errorMiddleware = require("./middlewares/error-middleware");
+const songRoutes = require('./router/songsRoutes'); // Correct import for song routes
 
 connectDB();
 const app = express();
@@ -33,6 +34,7 @@ app.use(express.json());
 app.use("/api/auth", require("./router/auth-router"));
 app.use("/api/articles", require("./router/article-router"));
 app.use("/api/blogs", require("./router/blog-router"));
+app.use('/api/songs', songRoutes);
 
 // Test Routes
 app.get("/", (req, res) => {

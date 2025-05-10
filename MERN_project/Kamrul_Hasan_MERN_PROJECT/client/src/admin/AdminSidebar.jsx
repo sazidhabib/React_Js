@@ -20,6 +20,11 @@ function AdminSidebar({ isSidebarOpen }) {  // Accept state as a prop
             Blog
           </NavLink>
         </li>
+        <li className="nav-item">
+          <NavLink to="/admin/songs" className="nav-link text-white">
+            Songs
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

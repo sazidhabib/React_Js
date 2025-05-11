@@ -39,7 +39,7 @@ exports.updateSong = async (req, res) => {
 
         if (title && title !== song.title) {
             const duplicate = await Song.findOne({ title });
-            if (duplicate) return res.status(400).json({ message: 'Duplicate title not allowed' });
+            if (duplicate) return res.status(409).json({ message: 'Duplicate title not allowed' });
         }
 
         song.title = title || song.title;

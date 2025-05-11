@@ -59,27 +59,26 @@ const SongDashboard = () => {
             const payload = {
                 title: newSong.title,
                 youtubeUrl: newSong.youtubeUrl,
-                position: newSong.position || 9999,
+                position: newSong.position !== "" ? Number(newSong.position) : 9999,
             };
+
 
             const config = {
                 headers: {
-                    Authorization: `Bearer ${token}`, // ✅ Only if your route is protected
+                    Authorization: `Bearer ${token}`,
                 },
             };
 
             if (editId) {
-                const res = await axios.patch(`${API_BASE_URL}/${editId}`, payload, config);
-                setSongs(songs.map((song) => (song._id === editId ? res.data : song)));
+                await axios.patch(`${API_BASE_URL}/${editId}`, payload, config);
                 toast.success("Song updated successfully");
             } else {
-                const res = await axios.post(API_BASE_URL, payload, config);
-                setSongs([...songs, res.data]);
+                await axios.post(API_BASE_URL, payload, config);
                 toast.success("Song added successfully");
             }
 
-            setNewSong({ title: "", youtubeUrl: "", position: "" });
-            setEditId(null);
+            await fetchSongs(); // ✅ Refresh list
+            resetForm(); // ✅ Clear form
         } catch (error) {
             if (error.response?.status === 409 || error.response?.status === 400) {
                 toast.error(error.response.data.message || "Duplicate title not allowed!");
@@ -91,6 +90,7 @@ const SongDashboard = () => {
             }
         }
     };
+
 
 
     const handleEdit = (song) => {
@@ -117,7 +117,7 @@ const SongDashboard = () => {
     };
 
     return (
-        <div className="container mt-5">
+        <div className="container custom-font-initial mt-5">
             <h2 className="mb-4">{editId ? 'Edit Song' : 'Add New Song'}</h2>
             <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">

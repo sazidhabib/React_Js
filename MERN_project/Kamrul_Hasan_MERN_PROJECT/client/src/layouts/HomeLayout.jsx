@@ -6,7 +6,9 @@ import JetukuBoliniAga from "../components/JetukuBoliniAga";
 import BookReadingSection from "../components/BookReadingSection";
 import ListeningMusicSection from "../components/ListeningMusicSection";
 import ScrollToSection from "../components/ScrollToSection";
+
 import Footer from "../components/Footer";
+import PhotoGallery from "../components/PhotoGallery";
 
 const HomeLayout = () => {
   return (
@@ -18,6 +20,7 @@ const HomeLayout = () => {
       <Report />
       <JetukuBoliniAga />
       <BookReadingSection />
+      <PhotoGallery />
       <ListeningMusicSection />
       <Footer />
     </>

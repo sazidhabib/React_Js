@@ -15,45 +15,117 @@ const ListeningMusicSection = () => {
   const [songs, setSongs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const songsPerPage = 8;
 
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/songs`;
 
-  // Fetch songs from backend
+  // Fetch songs
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const response = await axios.get(API_URL); // Replace with your actual API
+        const response = await axios.get(API_URL);
         setSongs(response.data);
       } catch (error) {
         console.error('Failed to fetch songs:', error);
       }
     };
-
     fetchSongs();
   }, []);
 
-  const handlePlayPause = (index) => {
+
+
+  // Update progress
+  useEffect(() => {
+    let interval;
+    if (isPlaying && playerRef.current) {
+      interval = setInterval(() => {
+        const player = playerRef.current;
+        if (player && player.getCurrentTime && player.getDuration) {
+          const currentTime = player.getCurrentTime();
+          const duration = player.getDuration();
+          if (duration > 0) {
+            setProgress((currentTime / duration) * 100);
+          }
+        }
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+
+  const indexOfLastSong = currentPage * songsPerPage;
+  const indexOfFirstSong = indexOfLastSong - songsPerPage;
+  const currentSongs = songs.slice(indexOfFirstSong, indexOfLastSong);
+  const totalPages = Math.ceil(songs.length / songsPerPage);
+
+  const getPageNumbers = () => {
+    const pages = [];
+
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push('...');
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - 2) pages.push('...');
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+
+  const handlePlayPause = async (index) => {
     if (currentIndex === index) {
       if (isPlaying) {
-        playerRef.current?.internalPlayer.pauseVideo();
+        playerRef.current.pauseVideo();
         setIsPlaying(false);
       } else {
-        playerRef.current?.internalPlayer.playVideo();
+        playerRef.current.playVideo();
         setIsPlaying(true);
       }
     } else {
       setCurrentIndex(index);
-      setIsPlaying(true);
+      setProgress(0);
     }
   };
 
+  const handlePlayerReady = (event) => {
+    playerRef.current = event.target;
+    playerRef.current.playVideo();
+    setIsPlaying(true);
+    setProgress(0);
+  };
+
   const handleEnd = () => {
-    if (currentIndex !== null && currentIndex + 1 < songs.length) {
+    if (currentIndex + 1 < songs.length) {
       setCurrentIndex(currentIndex + 1);
-      setIsPlaying(true);
+      setProgress(0);
     } else {
       setCurrentIndex(null);
       setIsPlaying(false);
+    }
+  };
+
+  const handleSeek = (e) => {
+    const bar = e.currentTarget;
+    const rect = bar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const percentage = clickX / width;
+
+    const player = playerRef.current;
+    if (player && player.getDuration) {
+      const duration = player.getDuration();
+      const seekTime = duration * percentage;
+      player.seekTo(seekTime, true);
+      setProgress(percentage * 100);
     }
   };
 
@@ -69,27 +141,80 @@ const ListeningMusicSection = () => {
                 <img src="/images/Song_Icon.png" alt="Song Icon" />
               </div>
               <div className="kobite-text">
-                {songs.map((song, index) => {
-                  const isCurrent = index === currentIndex;
+                {currentSongs.map((song, index) => {
+                  const actualIndex = indexOfFirstSong + index;
+                  const isCurrent = currentIndex === actualIndex; // ✅ define it here
+
                   return (
                     <div
                       key={index}
                       className={`d-flex flex-column p-2 mb-3 rounded ${isCurrent ? 'bg-primary text-white' : 'bg-light'}`}
                       style={{ cursor: 'pointer', transition: '0.3s' }}
-                      onClick={() => handlePlayPause(index)}
+                      onClick={() => handlePlayPause(actualIndex)} // ✅ use actualIndex here
                     >
                       <div className="d-flex align-items-center">
                         {isCurrent && isPlaying ? (
-                          <FaPauseCircle className="me-2 animate__animated animate__pulse animate__infinite" style={{ fontSize: '26px', color: '#ffffff' }} />
+                          <FaPauseCircle
+                            className="me-2 animate__animated animate__pulse animate__infinite"
+                            style={{ fontSize: '26px', color: '#ffffff' }}
+                          />
                         ) : (
-                          <FaPlayCircle className="me-2" style={{ fontSize: '26px', color: '#87c26b' }} />
+                          <FaPlayCircle
+                            className="me-2"
+                            style={{ fontSize: '26px', color: '#87c26b' }}
+                          />
                         )}
                         <p style={{ margin: 0 }}>{song.title}</p>
                       </div>
+
+                      {isCurrent && (
+                        <div
+                          className="progress mt-2"
+                          style={{ height: '6px', cursor: 'pointer' }}
+                          onClick={handleSeek}
+                        >
+                          <div
+                            className="progress-bar bg-info"
+                            role="progressbar"
+                            style={{ width: `${progress}%` }}
+                            aria-valuenow={progress}
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
+
               </div>
+
+
+            </div>
+            <div className="d-flex justify-content-center mt-4">
+              <nav>
+                <ul className="pagination">
+                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                    <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>&laquo;</button>
+                  </li>
+
+                  {getPageNumbers().map((num, idx) =>
+                    num === '...' ? (
+                      <li key={idx} className="page-item disabled">
+                        <span className="page-link">...</span>
+                      </li>
+                    ) : (
+                      <li key={idx} className={`page-item ${num === currentPage ? 'active' : ''}`}>
+                        <button className="page-link" onClick={() => setCurrentPage(num)}>{num}</button>
+                      </li>
+                    )
+                  )}
+
+                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                    <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>&raquo;</button>
+                  </li>
+                </ul>
+              </nav>
             </div>
           </div>
 
@@ -105,10 +230,7 @@ const ListeningMusicSection = () => {
       {currentIndex !== null && songs[currentIndex] && (
         <YouTube
           videoId={extractVideoId(songs[currentIndex].youtubeUrl)}
-          onReady={(e) => {
-            playerRef.current = e.target;
-            e.target.playVideo();
-          }}
+          onReady={handlePlayerReady}
           onEnd={handleEnd}
           opts={{
             height: '0',

@@ -105,16 +105,22 @@ const SongDashboard = () => {
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`${API_BASE_URL}/${deleteId}`);
+            await axios.delete(`${API_BASE_URL}/${deleteId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             toast.success('Song deleted');
             fetchSongs();
         } catch (error) {
+            console.error(error);
             toast.error('Failed to delete song');
         } finally {
             setShowConfirm(false);
             setDeleteId(null);
         }
     };
+
 
     return (
         <div className="container custom-font-initial mt-5">

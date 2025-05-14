@@ -69,6 +69,16 @@ const Asarernoy = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const articlesPerPage = 3; // Show 3 articles per page
 
+
+
+
+
+
+
+  // Calculate total pages
+  const totalPages = Math.ceil(articles.length / articlesPerPage);
+
+
   // Add in component state:
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -116,11 +126,16 @@ const Asarernoy = () => {
     fetchPublishedArticles();
   }, []);
 
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [articles, totalPages, currentPage]);
+
   if (loading) return <div className="text-center mt-4">Loading articles...</div>;
   if (error) return <div className="text-center text-danger mt-4">Error: {error}</div>;
 
-  // Calculate total pages
-  const totalPages = Math.ceil(articles.length / articlesPerPage);
 
   // Get current articles for the page
   const indexOfLastArticle = currentPage * articlesPerPage;
@@ -155,19 +170,63 @@ const Asarernoy = () => {
             {/* Bootstrap Pagination */}
             <nav aria-label="Article Pagination">
               <ul className="pagination justify-content-center mt-4">
+                {/* Previous button */}
                 <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>আগে</button>
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                  >
+                    আগে
+                  </button>
                 </li>
-                {[...Array(totalPages).keys()].map((page) => (
-                  <li key={page} className={`page-item ${currentPage === page + 1 ? "active" : ""}`}>
-                    <button className="page-link" onClick={() => setCurrentPage(page + 1)}>{page + 1}</button>
-                  </li>
-                ))}
+
+                {/* First page */}
+                {currentPage > 3 && (
+                  <>
+                    <li className={`page-item ${currentPage === 1 ? "active" : ""}`}>
+                      <button className="page-link" onClick={() => setCurrentPage(1)}>1</button>
+                    </li>
+                    <li className="page-item disabled"><span className="page-link">...</span></li>
+                  </>
+                )}
+
+                {/* Pages around current page */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page =>
+                    page === 1 ||
+                    Math.abs(currentPage - page) <= 1
+                  )
+                  .map(page => (
+                    <li key={page} className={`page-item ${currentPage === page ? "active" : ""}`}>
+                      <button className="page-link" onClick={() => setCurrentPage(page)}>
+                        {page}
+                      </button>
+                    </li>
+                  ))}
+
+                {/* Ellipsis before last page */}
+                {currentPage < totalPages - 2 && (
+                  <>
+                    <li className="page-item disabled"><span className="page-link">...</span></li>
+                    <li className={`page-item ${currentPage === totalPages ? "active" : ""}`}>
+                      <button className="page-link" onClick={() => setCurrentPage(totalPages)}>{totalPages}</button>
+                    </li>
+                  </>
+                )}
+
+                {/* Next button */}
                 <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                  <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>পরে</button>
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                  >
+                    পরে
+                  </button>
                 </li>
               </ul>
+
             </nav>
+
           </div>
         </div>
       </div>

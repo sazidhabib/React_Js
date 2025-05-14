@@ -24,6 +24,56 @@ const ArticleDashboard = () => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const articlesPerPage = 10;
+
+    const indexOfLastArticle = currentPage * articlesPerPage;
+    const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
+    const currentArticles = articles.slice(indexOfFirstArticle, indexOfLastArticle);
+    const totalPages = Math.ceil(articles.length / articlesPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const getPaginationButtons = () => {
+        const pages = [];
+
+        if (totalPages <= 7) {
+            // If there are 7 or fewer total pages, show all
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            // Always show the first page
+            pages.push(1);
+
+            if (currentPage > 4) {
+                pages.push("...");
+            }
+
+            // Middle pages
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+
+            if (currentPage < totalPages - 3) {
+                pages.push("...");
+            }
+
+            // Always show the last page
+            pages.push(totalPages);
+        }
+
+        return pages;
+    };
+
+
+
+
     // ✅ Fetch Articles from Backend
     useEffect(() => {
         axios.get(API_URL)
@@ -34,6 +84,11 @@ const ArticleDashboard = () => {
             .catch(error => console.error("Error fetching articles:", error));
     }, []);
 
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(totalPages);
+        }
+    }, [articles, totalPages, currentPage]);
 
 
     const confirmDelete = async () => {
@@ -286,9 +341,11 @@ const ArticleDashboard = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {articles.map((article, index) => (
+                    {currentArticles.map((article, index) => (
+
                         <tr key={article._id}>
-                            <td>{index + 1}</td>
+                            <td>{indexOfFirstArticle + index + 1}</td>
+
                             <td>
                                 {article.image && (
                                     <img
@@ -323,6 +380,41 @@ const ArticleDashboard = () => {
 
                 </tbody>
             </Table>
+            <div className="d-flex justify-content-center my-3">
+                <Button
+                    variant="secondary"
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="me-2"
+                >
+                    Previous
+                </Button>
+
+                {getPaginationButtons().map((page, idx) =>
+                    page === "..." ? (
+                        <span key={idx} className="mx-2 align-self-center">...</span>
+                    ) : (
+                        <Button
+                            key={page}
+                            variant={page === currentPage ? "primary" : "outline-primary"}
+                            onClick={() => handlePageChange(page)}
+                            className="me-2"
+                        >
+                            {page}
+                        </Button>
+                    )
+                )}
+
+                <Button
+                    variant="secondary"
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                >
+                    Next
+                </Button>
+            </div>
+
+
             <ConfirmationModal
                 show={showConfirm}
                 onHide={() => setShowConfirm(false)}

@@ -10,6 +10,8 @@ import BlogPostDashboard from "./admin/BlogPostDashboard";
 import Logout from "./components/Logout";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import SongDashboard from "./admin/SongDashboard";
+import AlbumDashboard from "./admin/AlbumDashboard";
+import PhotoDashboard from "./admin/PhotoDashboard";
 
 
 const AppRoutes = () => {
@@ -29,6 +31,8 @@ const AppRoutes = () => {
           <Route path="/admin/table" element={<AdminTable />} />
           <Route path="/admin/article" element={<ArticleDashboard />} />
           <Route path="/admin/blog" element={<BlogPostDashboard />} />
+          <Route path="/admin/album" element={<AlbumDashboard />} />
+          <Route path="/admin/photos" element={<PhotoDashboard />} />
           <Route path="/admin/songs" element={<SongDashboard />} />
         </Route>
       </Routes>

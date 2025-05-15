@@ -133,7 +133,8 @@ const ListeningMusicSection = () => {
     <section className="gansona" id="listeningmusic">
       <div className="container">
         <h3 className="subheading">গান শোনা</h3>
-        <h2 className="mainheading">আজ রাতে কোনো রূপকথা নেই</h2>
+        <h2 className="mainheading">জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,</h2>
+        <h2 className="mainheading">জানি না লালন শুনে ভাসে কেন বুকের আঙিনা</h2>
         <div className="row">
           <div className="col-lg-6">
             <div className="icon-content">

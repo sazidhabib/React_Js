@@ -133,6 +133,7 @@ const Header = () => {
                   <li className="nav-item"><Link to="/publishedreport" className="nav-link text-white" onClick={() => setShowSidebar(false)}>প্রকাশিত রিপোর্ট</Link></li>
                   <li className="nav-item"><Link to="/jetukuboliniaga" className="nav-link text-white" onClick={() => setShowSidebar(false)}>যেটুকু বলিনি আগে</Link></li>
                   <li className="nav-item"><Link to="/bookreading" className="nav-link text-white" onClick={() => setShowSidebar(false)}>বইপড়া</Link></li>
+                  <li className="nav-item"><Link to="/photography" className="nav-link text-white" onClick={() => setShowSidebar(false)}>ফটোগ্রাফি</Link></li>
                   <li className="nav-item"><Link to="/listeningmusic" className="nav-link text-white" onClick={() => setShowSidebar(false)}>গান শোনা</Link></li>
                 </ul>
 
@@ -161,6 +162,7 @@ const Header = () => {
             <li className="nav-item"><Link to="/publishedreport" className="nav-link text-white">প্রকাশিত রিপোর্ট</Link></li>
             <li className="nav-item"><Link to="/jetukuboliniaga" className="nav-link text-white">যেটুকু বলিনি আগে</Link></li>
             <li className="nav-item"><Link to="/bookreading" className="nav-link text-white">বইপড়া</Link></li>
+            <li className="nav-item"><Link to="/photography" className="nav-link text-white">ফটোগ্রাফি</Link></li>
             <li className="nav-item"><Link to="/listeningmusic" className="nav-link text-white">গান শোনা</Link></li>
           </ul>
         </div>
@@ -180,6 +182,7 @@ const Header = () => {
                   <li className="nav-item"><Link to="/publishedreport" className="nav-link">প্রকাশিত রিপোর্ট</Link></li>
                   <li className="nav-item"><Link to="/jetukuboliniaga" className="nav-link">যেটুকু বলিনি আগে</Link></li>
                   <li className="nav-item"><Link to="/bookreading" className="nav-link">বইপড়া</Link></li>
+                  <li className="nav-item"><Link to="/photography" className="nav-link">ফটোগ্রাফি</Link></li>
                   <li className="nav-item"><Link to="/listeningmusic" className="nav-link">গান শোনা</Link></li>
                 </ul>
                 <div className="social-icons mt-4">

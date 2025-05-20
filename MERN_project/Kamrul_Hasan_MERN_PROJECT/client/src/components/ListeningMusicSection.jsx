@@ -133,8 +133,8 @@ const ListeningMusicSection = () => {
     <section className="gansona" id="listeningmusic">
       <div className="container">
         <h3 className="subheading">গান শোনা</h3>
-        <h2 className="mainheading">জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,</h2>
-        <h2 className="mainheading">জানি না লালন শুনে ভাসে কেন বুকের আঙিনা</h2>
+        <h2 className="lisenmainheading">জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,</h2>
+        <h2 className="lisenmainheading">জানি না লালন শুনে ভাসে কেন বুকের আঙিনা</h2>
         <div className="row">
           <div className="col-lg-6">
             <div className="icon-content">
@@ -149,7 +149,7 @@ const ListeningMusicSection = () => {
                   return (
                     <div
                       key={index}
-                      className={`d-flex flex-column p-2 mb-3 rounded ${isCurrent ? 'bg-primary text-white' : 'bg-light'}`}
+                      className={`d-flex flex-column p-2 mb-3 rounded ${isCurrent ? 'music-bg text-white' : 'bg-light'}`}
                       style={{ cursor: 'pointer', transition: '0.3s' }}
                       onClick={() => handlePlayPause(actualIndex)} // ✅ use actualIndex here
                     >
@@ -175,7 +175,7 @@ const ListeningMusicSection = () => {
                           onClick={handleSeek}
                         >
                           <div
-                            className="progress-bar bg-info"
+                            className="progress-bar bg-green"
                             role="progressbar"
                             style={{ width: `${progress}%` }}
                             aria-valuenow={progress}

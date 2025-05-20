@@ -42,6 +42,12 @@ body {
 
 }
 
+.custom-bgcolor {
+    background-color: #f7e6ea;
+}
+
+
+
 
 @media (min-width: 768px) {
     .onlyphone {
@@ -49,6 +55,30 @@ body {
     }
 
 
+}
+
+.margin-photo {
+    margin-top: 10%;
+}
+
+.list-group-item.active {
+    background-color: #41ad47;
+    border-color: #56bb5b;
+    color: white;
+}
+
+/* Optional: Hover effect */
+.list-group-item-action:hover {
+    background-color: #a0f1a6;
+    /* Light hover color */
+}
+
+.bg-green {
+    background-color: #5bd85b;
+}
+
+.music-bg {
+    background-color: #41ad47;
 }
 
 @media (max-width: 576px) {
@@ -838,13 +868,18 @@ footer {
     font-size: 17px;
 }
 
+.photography {
+    height: 100vh;
+}
+
 
 
 @media (max-width: 1550px) {
 
     .jetukuboliniaga,
     .gansona,
-    .boipora {
+    .boipora,
+    .photography {
         height: auto !important;
     }
 }
@@ -876,6 +911,10 @@ footer {
 
 .mainheading {
     font-size: 50px;
+}
+
+.lisenmainheading {
+    font-size: 30px;
 }
 
 .icon-content {

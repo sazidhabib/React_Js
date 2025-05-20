@@ -31,6 +31,14 @@ exports.uploadPhoto = async (req, res, next) => {
     }
 };
 
+exports.getAllPhotos = async (req, res, next) => {
+    try {
+        const photos = await Photo.find().populate('album');
+        res.status(200).json(photos);
+    } catch (error) {
+        next(error);
+    }
+};
 
 exports.getPhotosByAlbum = async (req, res, next) => {
     try {

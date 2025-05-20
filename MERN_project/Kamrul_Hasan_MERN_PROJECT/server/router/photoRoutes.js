@@ -21,6 +21,7 @@ router.delete('/photos/:id', authMiddleware, photoController.deletePhoto);
 
 // Photo GET - no auth required
 router.get('/photos/:albumId', photoController.getPhotosByAlbum);
+router.get('/photos', photoController.getAllPhotos);
 
 
 module.exports = router;

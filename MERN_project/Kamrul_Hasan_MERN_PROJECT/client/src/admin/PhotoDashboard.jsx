@@ -1,10 +1,12 @@
-// PhotoDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { Button, Table, Spinner, Image } from "react-bootstrap";
 import { toast } from "react-toastify";
 import axios from "axios";
 import PhotoFormModal from "./PhotoFormModal";
 import ConfirmationModal from "./ConfirmationModal";
+import { useAuth } from "../store/auth"; // Adjust path as needed
+
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/photos`;
 
 const PhotoDashboard = () => {
     const [photos, setPhotos] = useState([]);
@@ -15,15 +17,18 @@ const PhotoDashboard = () => {
     const [photoToDelete, setPhotoToDelete] = useState(null);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const { token } = useAuth();
 
     const fetchPhotos = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/photos?page=${page}`);
-            setPhotos(res.data.photos);
-            setTotalPages(res.data.totalPages);
+            const res = await axios.get(API_URL);
+            // Adjust based on your actual API response structure
+            setPhotos(res.data); // or res.data.photos if your backend returns { photos, totalPages }
+            setTotalPages(res.data.totalPages || 1);
         } catch (err) {
             toast.error("Failed to fetch photos");
+            console.error("Fetch error:", err);
         } finally {
             setLoading(false);
         }
@@ -35,12 +40,42 @@ const PhotoDashboard = () => {
 
     const handleDelete = async () => {
         try {
-            await axios.delete(`/api/photos/${photoToDelete}`);
+            await axios.delete(`${API_URL}/${photoToDelete}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             toast.success("Photo deleted successfully");
             setConfirmModalShow(false);
             fetchPhotos();
         } catch (err) {
-            toast.error("Failed to delete photo");
+            toast.error(err.response?.data?.message || "Failed to delete photo");
+            console.error("Delete error:", err);
+        }
+    };
+
+    // Handle create/update through modal
+    const handlePhotoSubmit = async (photoData) => {
+        try {
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            };
+
+            if (editPhoto) {
+                await axios.patch(`${API_URL}/${editPhoto._id}`, photoData, config);
+                toast.success("Photo updated successfully");
+            } else {
+                await axios.post(API_URL, photoData, config);
+                toast.success("Photo created successfully");
+            }
+            setModalShow(false);
+            fetchPhotos();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Operation failed");
+            console.error("Submit error:", err);
         }
     };
 
@@ -67,14 +102,19 @@ const PhotoDashboard = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {photos.map((photo, index) => (
+                        {photos && photos.map((photo, index) => (
                             <tr key={photo._id}>
                                 <td>{index + 1}</td>
-                                <td>{photo.albumId?.title || 'N/A'}</td>
+                                <td>{photo.album?.name || 'N/A'}</td>
                                 <td>
-                                    <Image src={photo.image} thumbnail width={80} height={60} />
+                                    <Image
+                                        src={`${import.meta.env.VITE_API_BASE_URL}/${photo.imageUrl}`}
+                                        thumbnail
+                                        width={80}
+                                        height={60}
+                                    />
                                 </td>
-                                <td>{photo.status}</td>
+                                <td>{photo.status || 'active'}</td>
                                 <td>
                                     <Button
                                         variant="warning"
@@ -116,7 +156,7 @@ const PhotoDashboard = () => {
             <PhotoFormModal
                 show={modalShow}
                 onHide={() => setModalShow(false)}
-                refresh={fetchPhotos}
+                onSubmit={handlePhotoSubmit}
                 editPhoto={editPhoto}
             />
             <ConfirmationModal

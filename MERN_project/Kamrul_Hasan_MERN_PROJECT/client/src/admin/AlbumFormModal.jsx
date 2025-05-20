@@ -2,36 +2,25 @@
 import React, { useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
 import axios from "axios";
 
-const AlbumFormModal = ({ show, onHide, refresh, editAlbum }) => {
-    const { register, handleSubmit, reset, setValue } = useForm();
+const AlbumFormModal = ({ show, onHide, onSubmit, editAlbum }) => {
+    const {
+        register,
+        handleSubmit,
+        reset,
+        setValue,
+        formState: { errors }
+    } = useForm();
 
     useEffect(() => {
         if (editAlbum) {
-            setValue("title", editAlbum.title);
+            setValue("name", editAlbum.name);  // Changed from "title" to "name" to match your backend
             setValue("status", editAlbum.status);
         } else {
             reset();
         }
     }, [editAlbum, setValue, reset]);
-
-    const onSubmit = async (data) => {
-        try {
-            if (editAlbum) {
-                await axios.patch(`/api/albums/${editAlbum._id}`, data);
-                toast.success("Album updated");
-            } else {
-                await axios.post("/api/albums", data);
-                toast.success("Album created");
-            }
-            onHide();
-            refresh();
-        } catch (err) {
-            toast.error("Failed to save album");
-        }
-    };
 
     return (
         <Modal show={show} onHide={onHide} centered>
@@ -41,17 +30,47 @@ const AlbumFormModal = ({ show, onHide, refresh, editAlbum }) => {
             <Modal.Body>
                 <Form onSubmit={handleSubmit(onSubmit)}>
                     <Form.Group className="mb-3">
-                        <Form.Label>Title</Form.Label>
-                        <Form.Control {...register("title", { required: true })} />
+                        <Form.Label>Album Name</Form.Label>
+                        <Form.Control
+                            {...register("name", {
+                                required: "Album name is required",
+                                minLength: {
+                                    value: 3,
+                                    message: "Album name must be at least 3 characters"
+                                }
+                            })}
+                            isInvalid={!!errors.name}
+                        />
+                        {errors.name && (
+                            <Form.Control.Feedback type="invalid">
+                                {errors.name.message}
+                            </Form.Control.Feedback>
+                        )}
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>Status</Form.Label>
-                        <Form.Select {...register("status", { required: true })}>
+                        <Form.Select
+                            {...register("status", { required: "Status is required" })}
+                            isInvalid={!!errors.status}
+                        >
+                            <option value="">Select status</option>
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </Form.Select>
+                        {errors.status && (
+                            <Form.Control.Feedback type="invalid">
+                                {errors.status.message}
+                            </Form.Control.Feedback>
+                        )}
                     </Form.Group>
-                    <Button type="submit">{editAlbum ? "Update" : "Create"}</Button>
+                    <div className="d-flex justify-content-end gap-2">
+                        <Button variant="secondary" onClick={onHide}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" variant="primary">
+                            {editAlbum ? "Update" : "Create"}
+                        </Button>
+                    </div>
                 </Form>
             </Modal.Body>
         </Modal>

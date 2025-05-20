@@ -5,6 +5,9 @@ import { toast } from "react-toastify";
 import AlbumFormModal from "./AlbumFormModal";
 import ConfirmationModal from "./ConfirmationModal";
 import axios from "axios";
+import { useAuth } from "../store/auth";
+
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/albums`;
 
 const AlbumDashboard = () => {
     const [albums, setAlbums] = useState([]);
@@ -16,15 +19,21 @@ const AlbumDashboard = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
+    const { token } = useAuth();
+
+
     // Fetch albums
     const fetchAlbums = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`/api/albums?page=${page}`);
-            setAlbums(res.data.albums);
+            const res = await axios.get(API_URL, {
+                params: { page }
+            });
+            setAlbums(res.data);
             setTotalPages(res.data.totalPages);
         } catch (err) {
             toast.error("Failed to fetch albums");
+            console.error("Fetch error:", err);
         } finally {
             setLoading(false);
         }
@@ -34,15 +43,43 @@ const AlbumDashboard = () => {
         fetchAlbums();
     }, [page]);
 
+    const handleAlbumSubmit = async (albumData) => {
+        try {
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            };
+
+            if (editAlbum) {
+                await axios.patch(`${API_URL}/${editAlbum._id}`, albumData, config);
+                toast.success("Album updated successfully");
+            } else {
+                await axios.post(API_URL, albumData, config);
+                toast.success("Album created successfully");
+            }
+            setModalShow(false);
+            fetchAlbums();
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Operation failed");
+            console.error("Submit error:", err);
+        }
+    };
+
     // Handle delete
     const handleDelete = async () => {
         try {
-            await axios.delete(`/api/albums/${albumToDelete}`);
+            await axios.delete(`${API_URL}/${albumToDelete}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
             toast.success("Album deleted successfully");
             setConfirmModalShow(false);
             fetchAlbums();
         } catch (err) {
             toast.error("Failed to delete album");
+            console.error("Delete error:", err);
         }
     };
 
@@ -71,7 +108,7 @@ const AlbumDashboard = () => {
                         {albums.map((album, index) => (
                             <tr key={album._id}>
                                 <td>{index + 1}</td>
-                                <td>{album.title}</td>
+                                <td>{album.name}</td>
                                 <td>{album.status}</td>
                                 <td>
                                     <Button
@@ -114,7 +151,7 @@ const AlbumDashboard = () => {
             <AlbumFormModal
                 show={modalShow}
                 onHide={() => setModalShow(false)}
-                refresh={fetchAlbums}
+                onSubmit={handleAlbumSubmit}
                 editAlbum={editAlbum}
             />
             <ConfirmationModal

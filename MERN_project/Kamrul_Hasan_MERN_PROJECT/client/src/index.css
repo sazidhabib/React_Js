@@ -296,7 +296,8 @@ body {
         display: flex !important;
     }
 
-    .nav-link {
+    .nav-link,
+    .adnav-link {
         font-size: 25px !important;
     }
 
@@ -308,15 +309,14 @@ body {
         font-size: 80px !important;
     }
 
-    .nav-link {
-        font-size: 25px !important;
-    }
+
 
 }
 
 @media (max-width: 1300px) {
 
-    .nav-link {
+    .nav-link,
+    .adnav-link {
         font-size: 25px !important;
     }
 
@@ -326,7 +326,8 @@ body {
 }
 
 
-.nav-link {
+.nav-link,
+.adnav-link {
     font-size: 30px;
     color: white;
 }
@@ -870,6 +871,13 @@ footer {
 
 .photography {
     height: 100vh;
+}
+
+
+.adnav-link.active {
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid #fff;
 }
 
 

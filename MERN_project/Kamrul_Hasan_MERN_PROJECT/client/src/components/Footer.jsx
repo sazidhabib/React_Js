@@ -20,6 +20,7 @@ const Footer = () => {
                 <span className="text-white ">
                     &copy; {new Date().getFullYear()} কামরুল হাসান। সকল অধিকার সংরক্ষিত।
                 </span>
+                <a href="/nitimala.html" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">নীতিমালা</a>
             </div>
         </footer >
     );

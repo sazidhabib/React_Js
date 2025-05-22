@@ -4,7 +4,7 @@ const Photo = require('../models/photo');
 
 exports.uploadPhoto = async (req, res, next) => {
     try {
-        const { albumId } = req.body;
+        const { albumId, caption } = req.body; // Added caption
         const filePath = req.file?.path;
 
         if (!filePath) {
@@ -23,6 +23,7 @@ exports.uploadPhoto = async (req, res, next) => {
         const photo = await Photo.create({
             imageUrl: filePath.replace(/\\/g, '/'),
             album: albumId,
+            caption: caption || '' // Add caption if provided
         });
 
         res.status(201).json(photo);
@@ -65,6 +66,11 @@ exports.updatePhoto = async (req, res, next) => {
         // Update album if sent
         if (req.body.albumId) {
             photo.album = req.body.albumId;
+        }
+
+        // Update caption if sent
+        if (req.body.caption !== undefined) {
+            photo.caption = req.body.caption;
         }
 
         await photo.save();

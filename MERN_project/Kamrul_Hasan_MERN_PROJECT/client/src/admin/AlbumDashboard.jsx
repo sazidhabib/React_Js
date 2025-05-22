@@ -84,7 +84,7 @@ const AlbumDashboard = () => {
     };
 
     return (
-        <div className="container mt-4">
+        <div className="container custom-font-initial mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4>Album Dashboard</h4>
                 <Button onClick={() => { setEditAlbum(null); setModalShow(true); }}>

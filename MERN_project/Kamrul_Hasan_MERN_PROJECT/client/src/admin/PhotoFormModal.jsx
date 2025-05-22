@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -31,6 +32,7 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
             if (editPhoto) {
                 setValue("albumId", editPhoto.album?._id || "");
                 setValue("status", editPhoto.status || "active");
+                setValue("caption", editPhoto.caption || ""); // Set caption value
                 if (editPhoto.imageUrl) {
                     setImagePreview(`${import.meta.env.VITE_API_BASE_URL}/${editPhoto.imageUrl}`);
                 }
@@ -46,6 +48,7 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
         try {
             const formData = new FormData();
             formData.append('albumId', data.albumId);
+            formData.append('caption', data.caption); // Add caption to form data
             if (data.image[0]) formData.append('image', data.image[0]);
             await onSubmit(formData);
             onHide();
@@ -57,18 +60,16 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Clear previous preview if it was a blob URL
             if (imagePreview?.startsWith("blob:")) {
                 URL.revokeObjectURL(imagePreview);
             }
-
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
         }
     };
 
     return (
-        <Modal show={show} onHide={onHide} centered>
+        <Modal show={show} onHide={onHide} centered className="custom-font-initial">
             <Modal.Header closeButton>
                 <Modal.Title>{editPhoto ? "Edit" : "Add"} Photo</Modal.Title>
             </Modal.Header>
@@ -92,6 +93,16 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
                                 {errors.albumId.message}
                             </Form.Control.Feedback>
                         )}
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Caption</Form.Label>
+                        <Form.Control
+                            as="textarea"
+                            rows={3}
+                            {...register("caption")}
+                            placeholder="Optional photo description"
+                        />
                     </Form.Group>
 
                     <Form.Group className="mb-3">

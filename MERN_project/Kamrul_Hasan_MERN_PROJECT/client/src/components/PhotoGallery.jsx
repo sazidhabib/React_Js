@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Container, Row, Col, Card, ListGroup, Spinner,
-    Modal, Button, Carousel, Pagination
+    Button, Pagination
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import PhotoModal from './PhotoModal'; // Import the new modal component
 
 const PhotoGallery = () => {
     const [albums, setAlbums] = useState([]);
@@ -42,17 +43,15 @@ const PhotoGallery = () => {
         const fetchAlbums = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(ALBUM_API);
+                const res = await axios.get(`${ALBUM_API}?status=active`);
                 setAlbums(res.data);
 
-                // Initialize photo counts and select first album if available
                 const counts = {};
                 for (const album of res.data) {
                     try {
                         const photosRes = await axios.get(`${PHOTO_API}/${album._id}`);
                         counts[album._id] = photosRes.data.length;
 
-                        // Select the first album
                         if (res.data.length > 0 && !selectedAlbumId) {
                             setSelectedAlbumId(res.data[0]._id);
                         }
@@ -78,7 +77,7 @@ const PhotoGallery = () => {
             if (selectedAlbumId) {
                 setPhotoLoading(true);
                 setPhotos([]);
-                setCurrentPhotoPage(1); // Reset to first page when album changes
+                setCurrentPhotoPage(1);
                 try {
                     const res = await axios.get(`${PHOTO_API}/${selectedAlbumId}`);
                     setPhotos(res.data);
@@ -94,7 +93,6 @@ const PhotoGallery = () => {
     }, [selectedAlbumId]);
 
     const handlePhotoClick = (index) => {
-        // Adjust index based on pagination
         const actualIndex = indexOfFirstPhoto + index;
         setSelectedPhotoIndex(actualIndex);
         setShowModal(true);
@@ -164,8 +162,7 @@ const PhotoGallery = () => {
 
     return (
         <div className='custom-bgcolor photography' id='photography'>
-            <Container >
-
+            <Container>
                 <Row>
                     {/* Album List */}
                     <Col md={3} className="mb-3">
@@ -202,7 +199,6 @@ const PhotoGallery = () => {
                     <Col md={9} className='margin-photo'>
                         {selectedAlbumId ? (
                             <>
-
                                 {photoLoading ? (
                                     <div className="text-center">
                                         <Spinner animation="border" />
@@ -214,10 +210,10 @@ const PhotoGallery = () => {
                                             {currentPhotos.map((photo, index) => (
                                                 <Col
                                                     key={photo._id}
-                                                    xs={6}  // 2 columns on mobile (extra small devices)
-                                                    sm={6}  // 2 columns on small devices
-                                                    md={4}  // 3 columns on medium devices
-                                                    lg={3}  // 4 columns on large devices
+                                                    xs={6}
+                                                    sm={6}
+                                                    md={4}
+                                                    lg={3}
                                                     className="mb-4"
                                                 >
                                                     <Card className="h-100" onClick={() => handlePhotoClick(index)}>
@@ -230,6 +226,7 @@ const PhotoGallery = () => {
                                                                 cursor: 'pointer'
                                                             }}
                                                         />
+
                                                     </Card>
                                                 </Col>
                                             ))}
@@ -250,55 +247,15 @@ const PhotoGallery = () => {
                     </Col>
                 </Row>
 
-                {/* Full-screen Image Modal */}
-                <Modal
+                {/* Photo Modal */}
+                <PhotoModal
                     show={showModal}
                     onHide={() => setShowModal(false)}
-                    size="lg"
-                    centered
-
-                >
-                    <Modal.Header closeButton className="border-0 pb-0">
-                        <Modal.Title className="text-center w-100">{getSelectedAlbumTitle()}</Modal.Title>
-                    </Modal.Header>
-
-                    <Modal.Body className="text-center p-0" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
-                        <Carousel
-                            activeIndex={selectedPhotoIndex}
-                            onSelect={(index) => setSelectedPhotoIndex(index)}
-                            interval={null}
-                        >
-                            {photos.map((photo) => (
-                                <Carousel.Item key={photo._id}>
-                                    <img
-                                        className="img-fluid d-block mx-auto"
-                                        src={`${API_BASE_URL}/${photo.imageUrl}`}
-                                        alt=""
-                                        style={{
-                                            maxHeight: '65vh',
-                                            objectFit: 'contain',
-                                            width: '100%',
-                                            padding: '1rem'
-                                        }}
-                                    />
-                                    {photo.title && (
-                                        <Carousel.Caption className="bg-dark bg-opacity-50 rounded">
-                                            <p className="mb-0">{photo.title}</p>
-                                        </Carousel.Caption>
-                                    )}
-                                </Carousel.Item>
-                            ))}
-                        </Carousel>
-                    </Modal.Body>
-
-                    <Modal.Footer className="border-0 pt-0 d-flex justify-content-between">
-                        <div>{selectedPhotoIndex + 1} of {photos.length}</div>
-                        <Button variant="secondary" onClick={() => setShowModal(false)}>
-                            বন্ধ করুন
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-
+                    photos={photos}
+                    selectedIndex={selectedPhotoIndex}
+                    onIndexChange={setSelectedPhotoIndex}
+                    albumTitle={getSelectedAlbumTitle()}
+                />
             </Container>
         </div>
     );

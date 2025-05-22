@@ -39,32 +39,26 @@ const ArticleDashboard = () => {
     const getPaginationButtons = () => {
         const pages = [];
 
-        if (totalPages <= 7) {
-            // If there are 7 or fewer total pages, show all
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
-            }
-        } else {
-            // Always show the first page
-            pages.push(1);
+        // Always show the first page
+        pages.push(1);
 
-            if (currentPage > 4) {
-                pages.push("...");
-            }
+        // Show dots if current page is not adjacent to first page
+        if (currentPage > 2) {
+            pages.push("...");
+        }
 
-            // Middle pages
-            const start = Math.max(2, currentPage - 1);
-            const end = Math.min(totalPages - 1, currentPage + 1);
+        // Show current page if it's not first or last
+        if (currentPage > 1 && currentPage < totalPages) {
+            pages.push(currentPage);
+        }
 
-            for (let i = start; i <= end; i++) {
-                pages.push(i);
-            }
+        // Show dots if current page is not adjacent to last page
+        if (currentPage < totalPages - 1) {
+            pages.push("...");
+        }
 
-            if (currentPage < totalPages - 3) {
-                pages.push("...");
-            }
-
-            // Always show the last page
+        // Always show the last page if different from first
+        if (totalPages > 1) {
             pages.push(totalPages);
         }
 

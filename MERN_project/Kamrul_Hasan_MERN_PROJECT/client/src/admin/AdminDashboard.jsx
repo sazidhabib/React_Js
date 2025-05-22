@@ -4,6 +4,7 @@ import axios from "axios";
 const AdminDashboard = () => {
     const [articleCount, setArticleCount] = useState(0);
     const [blogCount, setBlogCount] = useState(0);
+    const [photoCount, setPhotoCount] = useState(0); // New state for photos
 
     useEffect(() => {
         // Fetch all articles and count them
@@ -15,8 +16,12 @@ const AdminDashboard = () => {
         axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/blogs`)
             .then(res => setBlogCount(res.data.length))
             .catch(err => console.error("Failed to fetch blogs:", err));
-    }, []);
 
+        // Fetch all photos and count them
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/photos`)
+            .then(res => setPhotoCount(res.data.length))
+            .catch(err => console.error("Failed to fetch photos:", err));
+    }, []);
 
     return (
         <div className="container-fluid custom-font-initial px-4">
@@ -29,7 +34,7 @@ const AdminDashboard = () => {
 
                     <div className="row">
                         {/* Blog Post Counter */}
-                        <div className="col-xl-6 col-md-12">
+                        <div className="col-xl-4 col-md-12">
                             <div className="card bg-primary text-white mb-4">
                                 <div className="card-body">
                                     <h4>📚 Total Blog Posts</h4>
@@ -39,7 +44,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Article Post Counter */}
-                        <div className="col-xl-6 col-md-12">
+                        <div className="col-xl-4 col-md-12">
                             <div className="card bg-success text-white mb-4">
                                 <div className="card-body">
                                     <h4>📝 Total Articles</h4>
@@ -47,7 +52,18 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Photo Counter */}
+                        <div className="col-xl-4 col-md-12">
+                            <div className="card bg-warning text-white mb-4">
+                                <div className="card-body">
+                                    <h4>📷 Total Photos</h4>
+                                    <h2>{photoCount}</h2>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </div>

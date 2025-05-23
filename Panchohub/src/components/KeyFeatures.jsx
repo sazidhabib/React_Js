@@ -7,10 +7,14 @@ const KeyFeatures = () => {
   const navigate = useNavigate();
 
   const handleNavigation = (path) => {
-    // Convert title to a slug (remove spaces, make lowercase)
-    const slug = path.replace(/\s+/g, "-").toLowerCase();
-    navigate(`/feature/${slug}`);
+    if (path.toLowerCase() === "doctors") {
+      navigate("/doctors");
+    } else {
+      const slug = path.replace(/\s+/g, "-").toLowerCase();
+      navigate(`/feature/${slug}`);
+    }
   };
+
 
   return (
     <section className="relative py-12 lg:py-20">

@@ -22,10 +22,11 @@ function App() {
       <Routes>
         <Route path="/" element={<KeyFeatures />} />
         <Route path="/feature/:slug" element={<FeatureDetails />} />
+        <Route path="/doctors" element={<DoctorCategories />} />
       </Routes>
       <Package plans={plans} />
       <Services />
-      <DoctorCategories />
+
     </Router>
   );
 }

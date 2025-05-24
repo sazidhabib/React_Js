@@ -296,8 +296,7 @@ body {
         display: flex !important;
     }
 
-    .nav-link,
-    .adnav-link {
+    .nav-link {
         font-size: 25px !important;
     }
 
@@ -315,8 +314,7 @@ body {
 
 @media (max-width: 1300px) {
 
-    .nav-link,
-    .adnav-link {
+    .nav-link {
         font-size: 25px !important;
     }
 
@@ -325,9 +323,13 @@ body {
     }
 }
 
+.nav-item.active-item {
+    background-color: rgba(255, 255, 255, 0.2);
+    /* Example color */
+    border-radius: 4px;
+}
 
-.nav-link,
-.adnav-link {
+.nav-link {
     font-size: 30px;
     color: white;
 }
@@ -874,11 +876,7 @@ footer {
 }
 
 
-.adnav-link.active {
-    font-weight: bold;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-left: 4px solid #fff;
-}
+
 
 
 

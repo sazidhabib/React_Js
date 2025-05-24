@@ -23,7 +23,7 @@ const AlbumFormModal = ({ show, onHide, onSubmit, editAlbum }) => {
     }, [editAlbum, setValue, reset]);
 
     return (
-        <Modal show={show} onHide={onHide} centered>
+        <Modal show={show} onHide={onHide} centered className="custom-font-initial">
             <Modal.Header closeButton>
                 <Modal.Title>{editAlbum ? "Edit" : "Add"} Album</Modal.Title>
             </Modal.Header>

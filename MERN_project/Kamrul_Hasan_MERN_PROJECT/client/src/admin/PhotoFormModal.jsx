@@ -48,14 +48,20 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
         try {
             const formData = new FormData();
             formData.append('albumId', data.albumId);
-            formData.append('caption', data.caption); // Add caption to form data
-            if (data.image[0]) formData.append('image', data.image[0]);
+            // Sanitize caption
+            if (typeof data.caption === 'string' && data.caption.trim() !== "") {
+                formData.append('caption', data.caption.trim());
+            } else {
+                formData.append('caption', ''); // Or skip appending if truly optional
+            }
+            if (data.image?.[0]) formData.append('image', data.image[0]);
             await onSubmit(formData);
             onHide();
         } finally {
             setIsSubmitting(false);
         }
     };
+
 
     const handleImageChange = (e) => {
         const file = e.target.files?.[0];

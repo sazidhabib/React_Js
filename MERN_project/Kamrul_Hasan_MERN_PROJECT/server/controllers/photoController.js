@@ -23,7 +23,8 @@ exports.uploadPhoto = async (req, res, next) => {
         const photo = await Photo.create({
             imageUrl: filePath.replace(/\\/g, '/'),
             album: albumId,
-            caption: caption || '' // Add caption if provided
+            caption: caption?.trim() || ''
+            // Add caption if provided
         });
 
         res.status(201).json(photo);
@@ -70,7 +71,7 @@ exports.updatePhoto = async (req, res, next) => {
 
         // Update caption if sent
         if (req.body.caption !== undefined) {
-            photo.caption = req.body.caption;
+            photo.caption = req.body.caption === 'undefined' ? '' : req.body.caption.trim();
         }
 
         await photo.save();

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import { useForm } from "react-hook-form";
@@ -14,9 +13,10 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
     } = useForm();
 
     const [albums, setAlbums] = useState([]);
-    const [imagePreview, setImagePreview] = useState(null);
+    const [imagePreview, setImagePreview] = useState([]);  // Always as array
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Fetch albums when modal opens
     useEffect(() => {
         const fetchAlbums = async () => {
             try {
@@ -32,149 +32,113 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
             if (editPhoto) {
                 setValue("albumId", editPhoto.album?._id || "");
                 setValue("status", editPhoto.status || "active");
-                setValue("caption", editPhoto.caption || ""); // Set caption value
+                setValue("caption", editPhoto.caption || "");
                 if (editPhoto.imageUrl) {
-                    setImagePreview(`${import.meta.env.VITE_API_BASE_URL}/${editPhoto.imageUrl}`);
+                    setImagePreview([`${import.meta.env.VITE_API_BASE_URL}/${editPhoto.imageUrl}`]);
+                } else {
+                    setImagePreview([]);
                 }
             } else {
                 reset();
-                setImagePreview(null);
+                setImagePreview([]);
             }
+        } else {
+            reset();
+            clearPreviews();  // Clear previews when modal closes
         }
     }, [show, editPhoto, setValue, reset]);
+
+    // Cleanup preview URLs from memory
+    const clearPreviews = () => {
+        imagePreview.forEach((url) => {
+            if (url.startsWith("blob:")) {
+                URL.revokeObjectURL(url);
+            }
+        });
+        setImagePreview([]);
+    };
+
+    const handleImageChange = (e) => {
+        clearPreviews();  // Always clear old previews first
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            const previews = files.map(file => URL.createObjectURL(file));
+            setImagePreview(previews);
+        }
+    };
 
     const handleFormSubmit = async (data) => {
         setIsSubmitting(true);
         try {
             const formData = new FormData();
             formData.append('albumId', data.albumId);
-            // Sanitize caption
-            if (typeof data.caption === 'string' && data.caption.trim() !== "") {
-                formData.append('caption', data.caption.trim());
-            } else {
-                formData.append('caption', ''); // Or skip appending if truly optional
+            formData.append('status', data.status);
+            formData.append('caption', data.caption?.trim() || '');
+
+            if (data.images?.length > 0) {
+                for (const file of data.images) {
+                    formData.append('images', file);
+                }
             }
-            if (data.image?.[0]) formData.append('image', data.image[0]);
+
             await onSubmit(formData);
             onHide();
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-
-    const handleImageChange = (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (imagePreview?.startsWith("blob:")) {
-                URL.revokeObjectURL(imagePreview);
-            }
-            const previewUrl = URL.createObjectURL(file);
-            setImagePreview(previewUrl);
+            clearPreviews();  // Clean previews after submit
         }
     };
 
     return (
-        <Modal show={show} onHide={onHide} centered className="custom-font-initial">
+        <Modal show={show} onHide={() => { onHide(); clearPreviews(); }} centered className="custom-font-initial">
             <Modal.Header closeButton>
                 <Modal.Title>{editPhoto ? "Edit" : "Add"} Photo</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form onSubmit={handleSubmit(handleFormSubmit)} encType="multipart/form-data">
-                    <Form.Group className="mb-3">
-                        <Form.Label>Album *</Form.Label>
-                        <Form.Select
-                            {...register("albumId", { required: "Album is required" })}
-                            isInvalid={!!errors.albumId}
-                        >
+                <Form onSubmit={handleSubmit(handleFormSubmit)}>
+                    <Form.Group controlId="albumId" className="mb-3">
+                        <Form.Label>Album</Form.Label>
+                        <Form.Select {...register("albumId", { required: true })}>
                             <option value="">Select Album</option>
                             {albums.map((album) => (
-                                <option key={album._id} value={album._id}>
-                                    {album.name}
-                                </option>
+                                <option key={album._id} value={album._id}>{album.name}</option>
                             ))}
                         </Form.Select>
-                        {errors.albumId && (
-                            <Form.Control.Feedback type="invalid">
-                                {errors.albumId.message}
-                            </Form.Control.Feedback>
-                        )}
+                        {errors.albumId && <div className="text-danger">Album is required</div>}
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>Caption</Form.Label>
-                        <Form.Control
-                            as="textarea"
-                            rows={3}
-                            {...register("caption")}
-                            placeholder="Optional photo description"
-                        />
+                    <Form.Group controlId="images" className="mb-3">
+                        <Form.Label>Image</Form.Label>
+                        <Form.Control type="file" multiple {...register("images")} onChange={handleImageChange} />
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
-                        <Form.Label>Status *</Form.Label>
-                        <Form.Select
-                            {...register("status", { required: "Status is required" })}
-                            isInvalid={!!errors.status}
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </Form.Select>
-                        {errors.status && (
-                            <Form.Control.Feedback type="invalid">
-                                {errors.status.message}
-                            </Form.Control.Feedback>
-                        )}
-                    </Form.Group>
-
-                    <Form.Group className="mb-3">
-                        <Form.Label>Image {!editPhoto && "*"}</Form.Label>
-                        <Form.Control
-                            type="file"
-                            accept="image/*"
-                            {...register("image", {
-                                required: !editPhoto ? "Image is required" : false
-                            })}
-                            onChange={handleImageChange}
-                            isInvalid={!!errors.image}
-                        />
-                        {errors.image && (
-                            <Form.Control.Feedback type="invalid">
-                                {errors.image.message}
-                            </Form.Control.Feedback>
-                        )}
-                    </Form.Group>
-
-                    {imagePreview && (
-                        <div className="mb-3 text-center">
-                            <img
-                                src={imagePreview}
-                                alt="Preview"
-                                style={{ maxWidth: "100%", maxHeight: "200px" }}
-                                className="img-thumbnail"
-                            />
+                    {imagePreview.length > 0 && (
+                        <div className="mb-3">
+                            <strong>Preview:</strong>
+                            <div className="d-flex flex-wrap">
+                                {imagePreview.map((src, idx) => (
+                                    <img key={idx} src={src} alt="preview" style={{ width: "100px", height: "80px", objectFit: "cover", marginRight: "5px" }} />
+                                ))}
+                            </div>
                         </div>
                     )}
 
-                    <div className="d-flex justify-content-end gap-2">
-                        <Button variant="secondary" onClick={onHide}>
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? (
-                                <span className="d-flex align-items-center">
-                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    {editPhoto ? "Updating..." : "Adding..."}
-                                </span>
-                            ) : (
-                                editPhoto ? "Update Photo" : "Add Photo"
-                            )}
-                        </Button>
-                    </div>
+                    <Form.Group controlId="status" className="mb-3">
+                        <Form.Label>Status</Form.Label>
+                        <Form.Select {...register("status", { required: true })}>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </Form.Select>
+                    </Form.Group>
+
+                    <Form.Group controlId="caption" className="mb-3">
+                        <Form.Label>Caption</Form.Label>
+                        <Form.Control type="text" {...register("caption")} />
+                    </Form.Group>
+
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Saving..." : (editPhoto ? "Update" : "Add")}
+                    </Button>
                 </Form>
             </Modal.Body>
         </Modal>

@@ -15,7 +15,8 @@ router.delete('/albums/:id', authMiddleware, albumController.deleteAlbum);
 router.get('/albums', albumController.getAllAlbums);
 
 // Photo CRUD (Admin only)
-router.post('/photos', authMiddleware, upload.single('image'), photoController.uploadPhoto);
+router.post('/photos', authMiddleware, upload.array('images', 20), photoController.uploadMultiplePhotos);
+
 router.patch('/photos/:id', authMiddleware, upload.single('image'), photoController.updatePhoto);
 router.delete('/photos/:id', authMiddleware, photoController.deletePhoto);
 

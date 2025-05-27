@@ -2,36 +2,39 @@ const fs = require('fs');
 const path = require('path');
 const Photo = require('../models/photo');
 
-exports.uploadPhoto = async (req, res, next) => {
+exports.uploadMultiplePhotos = async (req, res, next) => {
     try {
-        const { albumId, caption } = req.body; // Added caption
-        const filePath = req.file?.path;
+        const { albumId, caption } = req.body; // Global caption (optional)
+        const files = req.files;
 
-        if (!filePath) {
-            return res.status(400).json({ message: 'Image is required.' });
+        if (!files || files.length === 0) {
+            return res.status(400).json({ message: 'At least one image is required.' });
         }
 
-        const existing = await Photo.findOne({
-            imageUrl: filePath.replace(/\\/g, '/'),
-            album: albumId
-        });
+        const createdPhotos = [];
 
-        if (existing) {
-            return res.status(409).json({ message: 'Duplicate photo in this album' });
+        for (const file of files) {
+            const filePath = file.path.replace(/\\/g, '/');
+
+            // Optional: Prevent duplicates per album
+            const existing = await Photo.findOne({ imageUrl: filePath, album: albumId });
+            if (existing) continue;
+
+            const photo = await Photo.create({
+                imageUrl: filePath,
+                album: albumId,
+                caption: caption?.trim() || '', // Optional global caption
+            });
+
+            createdPhotos.push(photo);
         }
 
-        const photo = await Photo.create({
-            imageUrl: filePath.replace(/\\/g, '/'),
-            album: albumId,
-            caption: caption?.trim() || ''
-            // Add caption if provided
-        });
-
-        res.status(201).json(photo);
+        res.status(201).json(createdPhotos);
     } catch (error) {
         next(error);
     }
 };
+
 
 exports.getAllPhotos = async (req, res, next) => {
     try {

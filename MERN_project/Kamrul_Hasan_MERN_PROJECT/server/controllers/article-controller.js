@@ -6,7 +6,7 @@ const path = require("path");
 // ✅ Create Article
 const createArticle = async (req, res, next) => {
     try {
-        const { title, description, status } = req.body;
+        const { title, description, status, publishDate } = req.body;
 
         if (!title || !description) {
             return res.status(400).json({ message: "Title and Description are required" });
@@ -26,6 +26,7 @@ const createArticle = async (req, res, next) => {
             status,
             author: req.user._id,
             image: imagePath,
+            publishDate: publishDate || Date.now(),
         });
 
         res.status(201).json({ message: "Article Created", article: newArticle });
@@ -40,7 +41,8 @@ const createArticle = async (req, res, next) => {
 // ✅ Get All Articles
 const getAllArticles = async (req, res) => {
     try {
-        const articles = await Article.find();
+        const articles = await Article.find()
+            .sort({ publishDate: -1, createdAt: -1 }); // Sort by publishDate in descending order;
         res.status(200).json(articles);
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -51,7 +53,7 @@ const getAllArticles = async (req, res) => {
 
 const updateArticle = async (req, res) => {
     try {
-        const { title, description, status } = req.body;
+        const { title, description, status, publishDate } = req.body;
 
         const existingArticle = await Article.findById(req.params.id);
         if (!existingArticle) {
@@ -77,6 +79,7 @@ const updateArticle = async (req, res) => {
             description,
             status,
             image: req.file ? req.file.filename : existingArticle.image,
+            publishDate,
         };
 
         const article = await Article.findByIdAndUpdate(req.params.id, updatedFields, { new: true });

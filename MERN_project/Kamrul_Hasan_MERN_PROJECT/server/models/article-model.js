@@ -21,6 +21,11 @@ const articleSchema = new mongoose.Schema({
   image: {
     type: String, // store the image filename or path
   },
+  publishDate: {
+    type: Date, // Store as ISO date for sorting
+    required: false, // Optional, but you can make it required if you like
+  },
+
 }, { timestamps: true });
 
 

@@ -7,6 +7,10 @@ import Button from "react-bootstrap/Button";
 import { useAuth } from "../store/auth";
 import { toast } from "react-toastify";
 import ConfirmationModal from "./ConfirmationModal";
+import DatePicker from "react-datepicker";
+import moment from "moment";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/articles`;
 
@@ -16,7 +20,8 @@ const ArticleDashboard = () => {
         title: "",
         description: "",
         status: false,
-        image: null // 🆕 added for storing the file
+        image: null,
+        date: new Date(), // 🆕 added default to today.
     });
     const [editingId, setEditingId] = useState(null);
     const [imagePreview, setImagePreview] = useState(null); // added for image preview
@@ -141,6 +146,8 @@ const ArticleDashboard = () => {
         try {
             const formData = new FormData();
             formData.append("title", newArticle.title);
+            formData.append("date", moment(newArticle.date).format("YYYY-MM-DD"));
+
             formData.append("description", newArticle.description);
             formData.append("status", newArticle.status);
             if (newArticle.image) {
@@ -197,7 +204,8 @@ const ArticleDashboard = () => {
             title: article.title,
             description: article.description,
             status: article.status,
-            image: null, // We'll reset this, the image is not a File object
+            image: null,
+            date: article.date ? new Date(article.date) : new Date(), // We'll reset this, the image is not a File object
         });
 
         setImagePreview(article.image
@@ -208,17 +216,6 @@ const ArticleDashboard = () => {
     };
 
 
-    // Delete Article
-    const handleDelete = async (id) => {
-        try {
-            await axios.delete(`${API_URL}/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            });
-            setArticles(articles.filter(article => article._id !== id));
-        } catch (error) {
-            console.error("Error deleting article:", error);
-        }
-    };
 
 
     // Toggle Status
@@ -259,6 +256,17 @@ const ArticleDashboard = () => {
                         required
                     />
                 </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Article Date</Form.Label>
+                    <DatePicker
+                        selected={newArticle.date}
+                        onChange={(date) => setNewArticle({ ...newArticle, date })}
+                        dateFormat="yyyy-MM-dd"
+                        className="form-control"
+                    />
+                </Form.Group>
+
 
                 <Form.Group className="mb-3">
                     <Form.Label>Description</Form.Label>
@@ -327,6 +335,7 @@ const ArticleDashboard = () => {
                 <thead className="table-dark">
                     <tr>
                         <th>#</th>
+                        <th>Date</th>
                         <th>Image</th>
                         <th>Title</th>
                         <th>Description</th>
@@ -339,6 +348,15 @@ const ArticleDashboard = () => {
 
                         <tr key={article._id}>
                             <td>{indexOfFirstArticle + index + 1}</td>
+                            <td>
+                                {article.date
+                                    ? moment(article.date).isValid()
+                                        ? moment(article.date).format("YYYY-MM-DD")
+                                        : article.date // fallback if moment() fails
+                                    : "N/A"}
+                            </td>
+
+
 
                             <td>
                                 {article.image && (

@@ -9,10 +9,14 @@ import { toast } from "react-toastify";
 import ConfirmationModal from "./ConfirmationModal";
 import DatePicker from "react-datepicker";
 import moment from "moment";
+import 'moment/locale/bn';
 import "react-datepicker/dist/react-datepicker.css";
-
+moment.locale('bn');
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/articles`;
+
+console.log(moment.locale()); // Should output 'bn'
+console.log(moment.locales()); // Should include 'bn' in the array
 
 const ArticleDashboard = () => {
     const [articles, setArticles] = useState([]);
@@ -21,7 +25,7 @@ const ArticleDashboard = () => {
         description: "",
         status: false,
         image: null,
-        date: new Date(), // 🆕 added default to today.
+        publishDate: null, // 🆕 added default to today.
     });
     const [editingId, setEditingId] = useState(null);
     const [imagePreview, setImagePreview] = useState(null); // added for image preview
@@ -40,6 +44,17 @@ const ArticleDashboard = () => {
     const handlePageChange = (pageNumber) => {
         setCurrentPage(pageNumber);
     };
+
+
+    const formatDateBangla = (dateString) => {
+        const dateObj = new Date(dateString);
+        return dateObj.toLocaleDateString("bn-BD", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
+    };
+
 
     const getPaginationButtons = () => {
         const pages = [];
@@ -89,6 +104,17 @@ const ArticleDashboard = () => {
         }
     }, [articles, totalPages, currentPage]);
 
+    useEffect(() => {
+        axios.get(API_URL, {
+            params: {
+                sort: '-publishDate'  // Add this to sort by publishDate descending
+            }
+        })
+            .then(response => {
+                setArticles(response.data);
+            })
+            .catch(error => console.error("Error fetching articles:", error));
+    }, []);
 
     const confirmDelete = async () => {
         try {
@@ -146,7 +172,7 @@ const ArticleDashboard = () => {
         try {
             const formData = new FormData();
             formData.append("title", newArticle.title);
-            formData.append("date", moment(newArticle.date).format("YYYY-MM-DD"));
+            formData.append("publishDate", moment(newArticle.publishDate).format("YYYY-MM-DD"));
 
             formData.append("description", newArticle.description);
             formData.append("status", newArticle.status);
@@ -165,9 +191,15 @@ const ArticleDashboard = () => {
                         },
                     }
                 );
-                setArticles(articles.map(article =>
-                    article._id === editingId ? response.data.article : article
-                ));
+                // In handleSubmit, after updating articles:
+                setArticles(prevArticles => {
+                    const updated = editingId
+                        ? prevArticles.map(article => article._id === editingId ? response.data.article : article)
+                        : [...prevArticles, response.data.article];
+
+                    // Sort by publishDate descending
+                    return updated.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
+                });
                 setEditingId(null);
                 toast.success("Article updated successfully");
             } else {
@@ -205,7 +237,7 @@ const ArticleDashboard = () => {
             description: article.description,
             status: article.status,
             image: null,
-            date: article.date ? new Date(article.date) : new Date(), // We'll reset this, the image is not a File object
+            publishDate: article.publishDate ? new Date(article.publishDate) : null, // We'll reset this, the image is not a File object
         });
 
         setImagePreview(article.image
@@ -260,10 +292,13 @@ const ArticleDashboard = () => {
                 <Form.Group className="mb-3">
                     <Form.Label>Article Date</Form.Label>
                     <DatePicker
-                        selected={newArticle.date}
-                        onChange={(date) => setNewArticle({ ...newArticle, date })}
+                        selected={newArticle.publishDate}
+                        onChange={(date) => setNewArticle({ ...newArticle, publishDate: date })}
                         dateFormat="yyyy-MM-dd"
                         className="form-control"
+                        placeholderText="Select a date"
+                        locale="bn"
+                        isClearable
                     />
                 </Form.Group>
 
@@ -349,13 +384,8 @@ const ArticleDashboard = () => {
                         <tr key={article._id}>
                             <td>{indexOfFirstArticle + index + 1}</td>
                             <td>
-                                {article.date
-                                    ? moment(article.date).isValid()
-                                        ? moment(article.date).format("YYYY-MM-DD")
-                                        : article.date // fallback if moment() fails
-                                    : "N/A"}
+                                {formatDateBangla(article.publishDate)}
                             </td>
-
 
 
                             <td>

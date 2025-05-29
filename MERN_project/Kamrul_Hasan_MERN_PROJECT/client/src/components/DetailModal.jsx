@@ -1,6 +1,15 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
 
+const formatDateBangla = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('bn-BD', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    }).format(date);
+};
 
 const DetailModal = ({ show, handleClose, item }) => {
     if (!item) return null;
@@ -26,7 +35,12 @@ const DetailModal = ({ show, handleClose, item }) => {
                         className="img-fluid mb-3 rounded"
                     />
                 )}
-                <pre className="modal-description custom-font text-start" style={{ whiteSpace: "pre-wrap" }}>{item.description}</pre>
+                {/* Show formatted Bangla date */}
+                <p>প্রকাশ হয়েছে : {formatDateBangla(item.publishDate)}</p>
+
+                <pre className="modal-description custom-font text-start" style={{ whiteSpace: "pre-wrap" }}>
+                    {item.description}
+                </pre>
             </Modal.Body>
             <Modal.Footer className="justify-content-center">
                 <Button variant="secondary" onClick={handleClose}>

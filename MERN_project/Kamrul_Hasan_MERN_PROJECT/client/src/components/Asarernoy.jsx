@@ -42,7 +42,7 @@ const Story = ({ title, date, description, image, onClick }) => {
         <div className="col-6 d-block d-md-none">
 
           <p className="news-description">
-            <p>প্রকাশ হয়েছে : {formatDateBangla(date)}</p>
+            প্রকাশ হয়েছে : {formatDateBangla(date)} <br />
             {truncateByChars(description, 150)}</p>
         </div>
 
@@ -66,7 +66,7 @@ const Story = ({ title, date, description, image, onClick }) => {
         <div className="col-md-6 d-none d-md-block">
 
           <p className="news-description">
-            <p>প্রকাশ হয়েছে : {formatDateBangla(date)}</p>
+            প্রকাশ হয়েছে : {formatDateBangla(date)}<br />
             {truncateByChars(description, 150)}</p>
         </div>
       </div>

@@ -5,6 +5,11 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import { toast } from "react-toastify";
 import ConfirmationModal from "./ConfirmationModal";
+import DatePicker from "react-datepicker";
+import moment from "moment";
+import 'moment/locale/bn';
+import "react-datepicker/dist/react-datepicker.css";
+
 
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/blogs`;
@@ -17,6 +22,7 @@ const BlogPostDashboard = () => {
         description: "",
         status: false,
         image: null,
+        publishDate: null,
     });
     const [editingId, setEditingId] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -26,7 +32,14 @@ const BlogPostDashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedBlogId, setSelectedBlogId] = useState(null);
 
-
+    const formatDateBangla = (dateString) => {
+        const dateObj = new Date(dateString);
+        return dateObj.toLocaleDateString("bn-BD", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
+    };
 
 
     // Fetch all blogs on component mount
@@ -35,6 +48,10 @@ const BlogPostDashboard = () => {
             try {
                 setLoading(true);
                 const response = await axios.get(API_URL);
+                // Sort blogs by publishDate descending
+                const sortedBlogs = response.data.sort((a, b) =>
+                    new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
+                );
                 setBlogs(response.data);
             } catch (err) {
                 setError(err.message);
@@ -82,6 +99,10 @@ const BlogPostDashboard = () => {
         }
     };
 
+    const handleDateChange = (date) => {
+        setNewBlog({ ...newBlog, publishDate: date });
+    };
+
     // Add or Edit Blog Post
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -96,44 +117,48 @@ const BlogPostDashboard = () => {
             formData.append("title", newBlog.title);
             formData.append("description", newBlog.description);
             formData.append("status", newBlog.status);
+            if (newBlog.publishDate) {
+                formData.append("publishDate", newBlog.publishDate.toISOString());
+            }
             if (newBlog.image) {
                 formData.append("image", newBlog.image);
             }
 
-            if (editingId !== null) {
-                // Update existing blog
-                const response = await axios.patch(`${API_URL}/${editingId}`, formData, {
+            let response;
+            // Submit
+            if (editingId) {
+                response = await axios.patch(`${API_URL}/${editingId}`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 });
-                setBlogs(blogs.map(blog => blog._id === editingId ? response.data.blog : blog));
-                setEditingId(null);
+                setBlogs(
+                    blogs
+                        .map(blog => blog._id === editingId ? response.data.blog : blog)
+                        .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
+                );
             } else {
-                // Create new blog
-                const response = await axios.post(API_URL, formData, {
+                response = await axios.post(API_URL, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 });
-                setBlogs([...blogs, response.data.blog]);
+                setBlogs(
+                    [response.data.blog, ...blogs].sort(
+                        (a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
+                    )
+                );
             }
 
-            setNewBlog({ title: "", description: "", status: false, image: null });
+
+            setNewBlog({ title: "", description: "", status: false, image: null, publishDate: null });
             setImagePreview(null);
             toast.success(editingId ? "Blog updated!" : "Blog added!");
             setEditingId(null);
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                toast.error(error.response.data.message);
-            } else {
-                toast.error("An unexpected error occurred.");
-            }
-
-            // setError(error.response?.data?.message || "Something went wrong");
-
+            toast.error(error.response?.data?.message || "An unexpected error occurred.");
         } finally {
             setLoading(false);
         }
@@ -145,35 +170,43 @@ const BlogPostDashboard = () => {
             title: blog.title,
             description: blog.description,
             status: blog.status,
-            image: null, // Reset image to null when editing
+            image: null,
+            publishDate: blog.publishDate ? new Date(blog.publishDate) : null, // Reset image to null when editing
         });
         setEditingId(blog._id);
         setImagePreview(blog.image ? `${IMG_URL}${blog.image.startsWith("/") ? "" : "/"}${blog.image}` : null);
     };
 
-    // Delete Blog Post
+
 
 
     // Toggle Status
+
     const handleToggleStatus = async (id, currentStatus) => {
         try {
             setLoading(true);
-            const response = await axios.patch(
+            await axios.patch(
                 `${API_URL}/${id}`,
                 { status: !currentStatus },
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
-            setBlogs(blogs.map(blog => blog._id === id ? response.data.blog : blog));
+            setBlogs(
+                blogs
+                    .map(blog => blog._id === id ? { ...blog, status: !currentStatus } : blog)
+                    .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
+            );
         } catch (error) {
-            setError(error.message);
+            toast.error(error.response?.data?.message || error.message);
         } finally {
             setLoading(false);
         }
     };
+
 
     if (loading) return <div className="text-center my-5">Loading...</div>;
     if (error) return <div className="alert alert-danger">Error: {error}</div>;
@@ -206,6 +239,18 @@ const BlogPostDashboard = () => {
                         onChange={handleChange}
                         placeholder="Enter blog description"
                         required
+                    />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Publish Date</Form.Label>
+                    <DatePicker
+                        selected={newBlog.publishDate}
+                        onChange={handleDateChange}
+                        dateFormat="yyyy-MM-dd"
+                        isClearable
+                        placeholderText="Select publish date"
+                        className="form-control"
                     />
                 </Form.Group>
 
@@ -262,6 +307,7 @@ const BlogPostDashboard = () => {
                         <th>#</th>
                         <th>Image</th>
                         <th>Title</th>
+                        <th>Publish Date</th>
                         <th>Description</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -284,7 +330,7 @@ const BlogPostDashboard = () => {
                                 )}
                             </td>
                             <td>{blog.title}</td>
-
+                            <td>{formatDateBangla(blog.publishDate)}</td>
                             <td>{blog.description.length > 200 ? `${blog.description.slice(0, 200)}...` : blog.description}</td>
                             <td>
                                 <Form.Check

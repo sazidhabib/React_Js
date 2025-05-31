@@ -20,7 +20,11 @@ const blogSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    publishDate: {
+        type: Date, // Store as ISO date for sorting
+        required: false, // Optional, but you can make it required if you like
+    },
 });
 
 const Blog = mongoose.model("Blog", blogSchema);

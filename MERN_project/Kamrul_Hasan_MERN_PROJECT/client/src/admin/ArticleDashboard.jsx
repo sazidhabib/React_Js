@@ -11,12 +11,11 @@ import DatePicker from "react-datepicker";
 import moment from "moment";
 import 'moment/locale/bn';
 import "react-datepicker/dist/react-datepicker.css";
-moment.locale('bn');
+
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/articles`;
 
-console.log(moment.locale()); // Should output 'bn'
-console.log(moment.locales()); // Should include 'bn' in the array
+
 
 const ArticleDashboard = () => {
     const [articles, setArticles] = useState([]);

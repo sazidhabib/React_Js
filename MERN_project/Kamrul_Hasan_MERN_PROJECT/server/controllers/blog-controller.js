@@ -47,34 +47,41 @@ const getAllBlogs = async (req, res) => {
 };
 
 // ✅ Update Blog
+// ✅ Update Blog (Partial Update)
 const updateBlog = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, status, publishDate } = req.body;
+        const updateFields = {};
 
-        if (!title || !title.trim()) {
-            return res.status(400).json({ message: "Title is required." });
+        // Extract fields from req.body only if they exist
+        if (req.body.title) {
+            if (!req.body.title.trim()) {
+                return res.status(400).json({ message: "Title cannot be empty." });
+            }
+
+            const existingBlog = await Blog.findOne({
+                _id: { $ne: id },
+                title: { $regex: new RegExp(`^${req.body.title}$`, 'i') }
+            });
+
+            if (existingBlog) {
+                return res.status(400).json({ message: "A blog with this title already exists." });
+            }
+
+            updateFields.title = req.body.title;
         }
 
-        const existingBlog = await Blog.findOne({
-            _id: { $ne: id },
-            title: { $regex: new RegExp(`^${title}$`, 'i') }
-        });
-        if (existingBlog) {
-            return res.status(400).json({ message: "A blog with this title already exists." });
+        if (typeof req.body.title !== "undefined") updateFields.title = req.body.title;
+        if (typeof req.body.description !== "undefined") updateFields.description = req.body.description;
+        if (typeof req.body.publishDate !== "undefined") updateFields.publishDate = req.body.publishDate;
+        if (typeof req.body.status !== "undefined") updateFields.status = req.body.status;
+
+        // If no fields are provided, return an error
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({ message: "No fields provided for update." });
         }
 
-        const updatedBlog = await Blog.findByIdAndUpdate(
-            id,
-            {
-                title,
-                description,
-                status,
-                ...(req.file && { image: req.file.filename }),
-                publishDate: publishDate ? new Date(publishDate) : undefined,
-            },
-            { new: true }
-        );
+        const updatedBlog = await Blog.findByIdAndUpdate(id, updateFields, { new: true });
 
         if (!updatedBlog) return res.status(404).json({ message: "Blog not found." });
 
@@ -84,6 +91,7 @@ const updateBlog = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // ✅ Delete Blog
 const deleteBlog = async (req, res) => {

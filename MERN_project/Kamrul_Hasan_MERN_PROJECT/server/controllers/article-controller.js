@@ -8,6 +8,8 @@ const createArticle = async (req, res, next) => {
     try {
         const { title, description, status, publishDate } = req.body;
 
+        const parsedStatus = status === "true" || status === true;
+
         if (!title || !description) {
             return res.status(400).json({ message: "Title and Description are required" });
         }
@@ -23,7 +25,7 @@ const createArticle = async (req, res, next) => {
         const newArticle = await Article.create({
             title,
             description,
-            status,
+            status: parsedStatus,
             author: req.user._id,
             image: imagePath,
             publishDate: publishDate || Date.now(),
@@ -54,6 +56,7 @@ const getAllArticles = async (req, res) => {
 const updateArticle = async (req, res) => {
     try {
         const { title, description, status, publishDate } = req.body;
+        const parsedStatus = status === "true" || status === true;
 
         const existingArticle = await Article.findById(req.params.id);
         if (!existingArticle) {
@@ -77,7 +80,7 @@ const updateArticle = async (req, res) => {
         const updatedFields = {
             title,
             description,
-            status,
+            status: parsedStatus,
             image: req.file ? req.file.filename : existingArticle.image,
             publishDate,
         };

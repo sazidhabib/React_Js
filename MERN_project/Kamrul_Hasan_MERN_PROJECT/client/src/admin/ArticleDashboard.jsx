@@ -252,7 +252,7 @@ const ArticleDashboard = () => {
     // Toggle Status
     const handleToggleStatus = async (id, currentStatus) => {
         try {
-            const response = await axios.put(
+            const response = await axios.patch(
                 `${API_URL}/${id}`,
                 { status: !currentStatus },
                 {

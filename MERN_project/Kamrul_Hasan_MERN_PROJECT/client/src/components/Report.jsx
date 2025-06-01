@@ -16,7 +16,16 @@ const truncateByChars = (text, limit) => {
 };
 
 
-const ReportCard = ({ title, description, image, onClick }) => {
+const ReportCard = ({ title, date, description, image, onClick }) => {
+
+  const formatDateBangla = (dateString) => {
+    const dateObj = new Date(dateString);
+    return dateObj.toLocaleDateString("bn-BD", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
 
   return (
     <div id="news-slider" className="owl-carousel" onClick={onClick} style={{ cursor: "pointer" }}>
@@ -26,7 +35,9 @@ const ReportCard = ({ title, description, image, onClick }) => {
         </div>
         <div className="post-content">
           <h2 className="post-title">{truncateByChars(title, 50)}</h2>
-          <p className="post-description">{truncateByChars(description, 150)}</p>
+          <p className="post-description">
+            প্রকাশ হয়েছে : {formatDateBangla(date)} <br />
+            {truncateByChars(description, 150)}</p>
         </div>
       </div>
     </div>
@@ -100,11 +111,13 @@ const Report = () => {
               <SwiperSlide key={report._id}>
                 <ReportCard
                   title={report.title}
+                  date={report.publishDate}
                   description={report.description}
                   image={`${fullImageUrl}${report.image.startsWith("/") ? "" : "/"}${report.image}`}
                   onClick={() =>
                     handleOpenModal({
                       title: report.title,
+                      publishDate: report.publishDate,
                       description: report.description,
                       image: `${fullImageUrl}${report.image.startsWith("/") ? "" : "/"}${report.image}`,
                     })
@@ -117,6 +130,7 @@ const Report = () => {
             show={showModal}
             handleClose={handleCloseModal}
             item={selectedReport}
+            showDate={true}
           />
         </div>
       </section>

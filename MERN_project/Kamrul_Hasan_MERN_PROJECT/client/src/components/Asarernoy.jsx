@@ -9,17 +9,10 @@ const truncateByChars = (text, limit) => {
 };
 
 
-const Story = ({ title, date, description, image, onClick }) => {
+const Story = ({ title, description, image, onClick }) => {
   const fullImageUrl = `${import.meta.env.VITE_API_BASE_URL}/uploads/${image}`;
 
-  const formatDateBangla = (dateString) => {
-    const dateObj = new Date(dateString);
-    return dateObj.toLocaleDateString("bn-BD", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
+
 
   return (
     <div className="common-story" onClick={onClick} style={{ cursor: "pointer" }}>
@@ -42,7 +35,7 @@ const Story = ({ title, date, description, image, onClick }) => {
         <div className="col-6 d-block d-md-none">
 
           <p className="news-description">
-            প্রকাশ হয়েছে : {formatDateBangla(date)} <br />
+
             {truncateByChars(description, 150)}</p>
         </div>
 
@@ -66,7 +59,7 @@ const Story = ({ title, date, description, image, onClick }) => {
         <div className="col-md-6 d-none d-md-block">
 
           <p className="news-description">
-            প্রকাশ হয়েছে : {formatDateBangla(date)}<br />
+
             {truncateByChars(description, 150)}</p>
         </div>
       </div>
@@ -169,7 +162,7 @@ const Asarernoy = () => {
               <Story
                 key={article._id}
                 title={article.title}
-                date={article.publishDate}
+
                 description={article.description}
                 image={article.image}
                 onClick={() => handleOpenModal(article)}
@@ -181,6 +174,7 @@ const Asarernoy = () => {
               show={showModal}
               handleClose={handleCloseModal}
               item={selectedArticle}
+              showDate={false} // Show date in the modal
             />
 
             {/* Bootstrap Pagination */}

@@ -11,7 +11,7 @@ const formatDateBangla = (dateString) => {
     }).format(date);
 };
 
-const DetailModal = ({ show, handleClose, item }) => {
+const DetailModal = ({ show, handleClose, item, showDate }) => {
     if (!item) return null;
 
     return (
@@ -36,7 +36,7 @@ const DetailModal = ({ show, handleClose, item }) => {
                     />
                 )}
                 {/* Show formatted Bangla date */}
-                <p>প্রকাশ হয়েছে : {formatDateBangla(item.publishDate)}</p>
+                {showDate && <p>প্রকাশ হয়েছে : {formatDateBangla(item.publishDate)}</p>}
 
                 <pre className="modal-description custom-font text-start" style={{ whiteSpace: "pre-wrap" }}>
                     {item.description}

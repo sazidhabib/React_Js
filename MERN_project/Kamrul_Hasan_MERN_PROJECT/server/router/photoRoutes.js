@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const albumController = require('../controllers/albumController');
 const photoController = require('../controllers/photoController');
-const upload = require('../middlewares/multer-config');
+const { upload, convertToWebp } = require('../middlewares/multer-config');
 const authMiddleware = require('../middlewares/auth-middleware');
 
 
@@ -15,9 +15,9 @@ router.delete('/albums/:id', authMiddleware, albumController.deleteAlbum);
 router.get('/albums', albumController.getAllAlbums);
 
 // Photo CRUD (Admin only)
-router.post('/photos', authMiddleware, upload.array('images', 20), photoController.uploadMultiplePhotos);
+router.post('/photos', authMiddleware, upload.array('images', 20), convertToWebp, photoController.uploadMultiplePhotos);
 
-router.patch('/photos/:id', authMiddleware, upload.single('image'), photoController.updatePhoto);
+router.patch('/photos/:id', authMiddleware, upload.single('image'), convertToWebp, photoController.updatePhoto);
 router.delete('/photos/:id', authMiddleware, photoController.deletePhoto);
 
 // Photo GET - no auth required

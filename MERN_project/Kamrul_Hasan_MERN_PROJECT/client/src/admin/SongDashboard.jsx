@@ -14,6 +14,15 @@ const SongDashboard = () => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const songsPerPage = 8; // Show 8 per page
+
+    const indexOfLastSong = currentPage * songsPerPage;
+    const indexOfFirstSong = indexOfLastSong - songsPerPage;
+    const currentSongs = songs.slice(indexOfFirstSong, indexOfLastSong);
+
+    const totalPages = Math.ceil(songs.length / songsPerPage);
+
     // Fetch all songs
     const fetchSongs = async () => {
         try {
@@ -34,6 +43,10 @@ const SongDashboard = () => {
     useEffect(() => {
         fetchSongs();
     }, []);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [currentPage]);
 
     const handleInputChange = (e) => {
         setNewSong({ ...newSong, [e.target.name]: e.target.value });
@@ -169,7 +182,7 @@ const SongDashboard = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {songs.map((song) => (
+                        {currentSongs.map((song) => (
                             <tr key={song._id}>
                                 <td>{song.position}</td>
                                 <td>{song.title}</td>
@@ -189,7 +202,43 @@ const SongDashboard = () => {
                             </tr>
                         ))}
                     </tbody>
+
                 </table>
+            )}
+            {totalPages > 1 && (
+                <nav className="mt-4">
+                    <ul className="pagination justify-content-center">
+                        {Array.from({ length: totalPages }).map((_, i) => {
+                            const page = i + 1;
+                            const isNear = Math.abs(currentPage - page) <= 1;
+                            const isFirst = page === 1;
+                            const isLast = page === totalPages;
+
+                            if (isFirst || isLast || isNear) {
+                                return (
+                                    <li key={page} className={`page-item ${currentPage === page ? 'active' : ''}`}>
+                                        <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                            {page}
+                                        </button>
+                                    </li>
+                                );
+                            }
+
+                            if (
+                                (page === currentPage - 2 && page > 1) ||
+                                (page === currentPage + 2 && page < totalPages)
+                            ) {
+                                return (
+                                    <li key={`dots-${page}`} className="page-item disabled">
+                                        <span className="page-link">…</span>
+                                    </li>
+                                );
+                            }
+
+                            return null;
+                        })}
+                    </ul>
+                </nav>
             )}
 
             <Modal show={showConfirm} onHide={() => setShowConfirm(false)}>

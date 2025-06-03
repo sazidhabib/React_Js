@@ -32,6 +32,32 @@ const BlogPostDashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedBlogId, setSelectedBlogId] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const blogsPerPage = 10;
+
+    const indexOfLastBlog = currentPage * blogsPerPage;
+    const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+    const currentBlogs = blogs.slice(indexOfFirstBlog, indexOfLastBlog);
+    const totalPages = Math.ceil(blogs.length / blogsPerPage);
+
+    const getPageNumbers = () => {
+        const pageNumbers = [];
+        if (totalPages <= 5) {
+            for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+        } else {
+            pageNumbers.push(1);
+            if (currentPage > 3) pageNumbers.push("...");
+            for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+                pageNumbers.push(i);
+            }
+            if (currentPage < totalPages - 2) pageNumbers.push("...");
+            pageNumbers.push(totalPages);
+        }
+        return pageNumbers;
+    };
+
+
+
     const formatDateBangla = (dateString) => {
         const dateObj = new Date(dateString);
         return dateObj.toLocaleDateString("bn-BD", {
@@ -314,7 +340,7 @@ const BlogPostDashboard = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {blogs.map((blog, index) => (
+                    {currentBlogs.map((blog, index) => (
                         <tr key={blog._id}>
                             <td>{index + 1}</td>
                             <td>
@@ -365,6 +391,36 @@ const BlogPostDashboard = () => {
                     ))}
                 </tbody>
             </Table>
+            {/* Pagination */}
+            <div className="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul className="pagination">
+                        <li className={`page-item ${currentPage === 1 && "disabled"}`}>
+                            <button className="page-link" onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>
+                                Previous
+                            </button>
+                        </li>
+
+                        {getPageNumbers().map((number, index) => (
+                            <li
+                                key={index}
+                                className={`page-item ${number === currentPage ? "active" : ""} ${number === "..." ? "disabled" : ""}`}
+                            >
+                                <button className="page-link" onClick={() => number !== "..." && setCurrentPage(number)}>
+                                    {number}
+                                </button>
+                            </li>
+                        ))}
+
+                        <li className={`page-item ${currentPage === totalPages && "disabled"}`}>
+                            <button className="page-link" onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>
+                                Next
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
 
             <ConfirmationModal
                 show={showModal}

@@ -18,7 +18,7 @@ const Story = ({ title, description, image, onClick }) => {
     <div className="common-story" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="news-item p-3">
 
-        <h4 className="news-title d-block d-md-none">{truncateByChars(title, 40)}</h4>
+        <h4 className="news-title py-2 d-block d-md-none">{title}</h4>
       </div>
       <div className="row">
         <div className="col-4 d-block d-md-none">
@@ -53,7 +53,7 @@ const Story = ({ title, description, image, onClick }) => {
         <div className="col-md-3 d-none d-md-block">
           <div className="news-item py-3 text-center">
 
-            <h4 className="news-title">{truncateByChars(title, 40)}</h4>
+            <h4 className="news-title">{title}</h4>
           </div>
         </div>
         <div className="col-md-6 d-none d-md-block">

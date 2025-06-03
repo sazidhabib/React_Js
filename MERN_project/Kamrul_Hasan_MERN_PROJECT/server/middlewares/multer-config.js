@@ -1,17 +1,12 @@
+
 const multer = require("multer");
+const sharp = require("sharp");
 const path = require("path");
+const fs = require("fs");
 
-// Storage Configuration
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "uploads/"); // Make sure "uploads" folder exists
-    },
-    filename: function (req, file, cb) {
-        cb(null, "image-" + Date.now() + path.extname(file.originalname));
-    }
-});
+// Use memory storage for in-memory file processing
+const storage = multer.memoryStorage();
 
-// File Filter (Only Images)
 const fileFilter = (req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
     if (allowedTypes.includes(file.mimetype)) {
@@ -21,11 +16,35 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Upload Middleware
 const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
-    limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+    limits: { fileSize: 2 * 1024 * 1024 }, //2MB limit
 });
 
-module.exports = upload;
+// Middleware to convert uploaded image to WebP
+const convertToWebp = async (req, res, next) => {
+    if (!req.file) return next();
+
+    try {
+        const originalName = req.file.originalname.split('.')[0];
+        const filename = `image-${Date.now()}.webp`;
+        const outputPath = path.join("uploads", filename);
+
+        // Convert buffer to webp using sharp
+        await sharp(req.file.buffer)
+            .webp({ quality: 80 })
+            .toFile(outputPath);
+
+        // Attach file info for controller use
+        req.file.filename = filename;
+        req.file.path = outputPath;
+
+        next();
+    } catch (err) {
+        console.error("Image conversion failed:", err);
+        next(err);
+    }
+};
+
+module.exports = { upload, convertToWebp };

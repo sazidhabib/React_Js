@@ -27,6 +27,15 @@ const ReportCard = ({ title, date, description, image, onClick }) => {
     });
   };
 
+  // Dynamically determine description length based on title length
+
+  let descriptionLength = 150; // Default length
+  if (title.length >= 70) {
+    descriptionLength = 90; // Long title
+  } else if (title.length <= 30) {
+    descriptionLength = 200; // Short title
+  }
+
   return (
     <div id="news-slider" className="owl-carousel" onClick={onClick} style={{ cursor: "pointer" }}>
       <div className="post-slide">
@@ -34,10 +43,10 @@ const ReportCard = ({ title, date, description, image, onClick }) => {
           <img src={image} className="card-img-to" alt={title} />
         </div>
         <div className="post-content">
-          <h2 className="post-title">{truncateByChars(title, 50)}</h2>
+          <h2 className="post-title">{title}</h2>
           <p className="post-description">
             প্রকাশ হয়েছে : {formatDateBangla(date)} <br />
-            {truncateByChars(description, 150)}</p>
+            {truncateByChars(description, descriptionLength)}</p>
         </div>
       </div>
     </div>
@@ -52,6 +61,37 @@ const Report = () => {
 
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+
+  const customPagination = {
+    clickable: true,
+    renderBullet: function (index, className) {
+      const total = reports.length;
+      const current = this.swiper?.realIndex || 0;
+      const width = window.innerWidth;
+
+      let range = 1; // default for tablet
+      if (width < 576) {
+        range = 0; // mobile
+      } else if (width >= 992) {
+        range = 2; // desktop
+      }
+
+      if (index === 0 || index === total - 1 || Math.abs(index - current) <= range) {
+        return `<span class="${className}"></span>`;
+      }
+
+      if (
+        (index === 1 && current > range + 1) ||
+        (index === total - 2 && current < total - range - 2)
+      ) {
+        return `<span class="swiper-pagination-ellipsis">...</span>`;
+      }
+
+      return "";
+    }
+  };
+
 
   const handleOpenModal = (report) => {
     setSelectedReport(report);
@@ -85,6 +125,19 @@ const Report = () => {
     fetchPublishedReports();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.swiperInstance?.pagination) {
+        window.swiperInstance.pagination.render();
+        window.swiperInstance.pagination.update();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+
   if (loading) return <div className="text-center">Loading reports...</div>;
   if (error) return <div className="alert alert-danger">Error: {error}</div>;
 
@@ -98,8 +151,11 @@ const Report = () => {
             spaceBetween={20}
             slidesPerView={3}
             autoplay={{ delay: 3000 }}
-            pagination={{ clickable: true }}
             loop={true}
+            pagination={customPagination}
+            onSwiper={(swiper) => {
+              window.swiperInstance = swiper;
+            }}
             breakpoints={{
               0: { slidesPerView: 1 },
               576: { slidesPerView: 1 },
@@ -126,6 +182,8 @@ const Report = () => {
               </SwiperSlide>
             ))}
           </Swiper>
+
+
           <DetailModal
             show={showModal}
             handleClose={handleCloseModal}

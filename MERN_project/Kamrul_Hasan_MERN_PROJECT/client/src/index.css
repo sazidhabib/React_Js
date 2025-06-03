@@ -46,6 +46,13 @@ body {
     background-color: #f7e6ea;
 }
 
+.swiper-pagination-ellipsis {
+    display: inline-block;
+    margin: 0 4px;
+    color: #888;
+    font-size: 16px;
+    pointer-events: none;
+}
 
 
 
@@ -720,7 +727,8 @@ footer {
 
 .common-story .news-title {
     color: #037d83;
-    font-size: 40px;
+    font-size: 32px;
+    padding-top: 10px;
 
 }
 
@@ -847,13 +855,13 @@ footer {
 }
 
 .post-title {
-    font-size: 39px;
+    font-size: 25px;
     color: #41ad47;
 
 }
 
 .post-slide .post-title {
-    font-size: 39px;
+    font-size: 25px;
     color: #41ad47;
     display: inline-block;
     text-decoration: none;

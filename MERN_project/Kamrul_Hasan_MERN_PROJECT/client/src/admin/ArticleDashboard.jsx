@@ -295,7 +295,7 @@ const ArticleDashboard = () => {
                         onChange={(date) => setNewArticle({ ...newArticle, publishDate: date })}
                         dateFormat="yyyy-MM-dd"
                         className="form-control"
-                        placeholderText="Select a date"
+                        placeholderText="Enter date (yyyy-mm-dd)"
                         locale="bn"
                         isClearable
                     />

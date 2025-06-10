@@ -275,7 +275,7 @@ const BlogPostDashboard = () => {
                         onChange={handleDateChange}
                         dateFormat="yyyy-MM-dd"
                         isClearable
-                        placeholderText="Publish date(yyyy-mm-dd)"
+                        placeholderText="Enter date (yyyy-mm-dd)"
                         className="form-control"
                     />
                 </Form.Group>

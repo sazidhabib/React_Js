@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import BookReadingModal from './BookReadingModal'; // import the modal component
+import { useMenu } from '../store/MenuContext';
 
 const BookReadingSection = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
+
+  const { getMenuByOrder } = useMenu();
+  const bookMenu = getMenuByOrder(6); // Assuming 'Book Reading' is the sixth menu item
 
   const Book = [
     {
@@ -37,9 +41,9 @@ const BookReadingSection = () => {
   };
 
   return (
-    <section className="boipora" id="bookreading">
+    <section className="boipora" id={bookMenu?.path || "bookreading"}>
       <div className="container">
-        <h3 className="subheading">বই পড়া</h3>
+        <h3 className="subheading">{bookMenu?.name || "বই পড়া"}</h3>
 
         {Book.map((book, index) => (
           <h2 key={index} className="mainheading">{book.title}</h2>

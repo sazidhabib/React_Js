@@ -9,6 +9,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import DetailModal from "./DetailModal";
+import { useMenu } from '../store/MenuContext';
 
 const truncateByChars = (text, limit) => {
   if (!text) return "";
@@ -61,6 +62,9 @@ const Report = () => {
 
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  const { getMenuByOrder } = useMenu();
+  const reportMenu = getMenuByOrder(4); // Assuming 'Report' is the forth menu item
 
 
   const customPagination = {
@@ -143,9 +147,9 @@ const Report = () => {
 
   return (
     <>
-      <section className="publishedreport py-5" id="publishedreport">
+      <section className="publishedreport py-5" id={reportMenu?.path || "publishedreport"}>
         <div className="container py-5">
-          <h2 className="publishedreport-sty mb-4">প্রকাশিত রিপোর্ট</h2>
+          <h2 className="publishedreport-sty mb-4">{reportMenu?.name || "প্রকাশিত রিপোর্ট"}</h2>
           <Swiper
             modules={[Autoplay, Pagination]}
             spaceBetween={20}

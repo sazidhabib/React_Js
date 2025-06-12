@@ -6,6 +6,7 @@ import {
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import PhotoModal from './PhotoModal'; // Import the new modal component
+import { useMenu } from '../store/MenuContext';
 
 const PhotoGallery = () => {
     const [albums, setAlbums] = useState([]);
@@ -16,6 +17,9 @@ const PhotoGallery = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
     const [albumPhotoCounts, setAlbumPhotoCounts] = useState({});
+
+    const { getMenuByOrder } = useMenu();
+    const photoGalleryMenu = getMenuByOrder(7); // Assuming 'Photography' is the seventh menu item
 
     // Pagination states
     const [currentAlbumPage, setCurrentAlbumPage] = useState(1);
@@ -161,12 +165,12 @@ const PhotoGallery = () => {
     };
 
     return (
-        <div className='custom-bgcolor photography' id='photography'>
+        <div className='custom-bgcolor photography' id={photoGalleryMenu?.path || 'photography'}>
             <Container>
                 <Row>
                     {/* Album List */}
                     <Col md={3} className="mb-3">
-                        <h2 className="subheading">ফটোগ্রাফি</h2>
+                        <h2 className="subheading">{photoGalleryMenu?.name || "ফটোগ্রাফি"}</h2>
                         <h5 className="mainheading mb-3">অ্যালবাম</h5>
                         {loading ? (
                             <div className="text-center">

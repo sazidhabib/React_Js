@@ -1,16 +1,27 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const menuSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        unique: true,
+        required: [true, 'Menu name is required'],
+        trim: true,
+        unique: true
     },
     path: {
-        trype: String,
-        required: true,
+        type: String,
+        required: [true, 'Menu path is required'],
+        trim: true,
+        unique: true
     },
-    createdAt: { type: Date, default: Date.now },
+    order: {
+        type: Number,
+        required: [true, 'Order is required'],
+        unique: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-module.exports = mongoose.model('Menu', menuSchema);
+export default mongoose.model('Menu', menuSchema);

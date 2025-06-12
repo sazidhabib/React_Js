@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import BookReadingModal from './BookReadingModal';
+import { useMenu } from '../store/MenuContext';
 
 const JetukuBoliniAga = () => {
   const [showModal, setShowModal] = useState(false);
@@ -44,11 +45,14 @@ const JetukuBoliniAga = () => {
     setShowModal(false);
   };
 
+  const { getMenuByOrder } = useMenu();
+  const jetukuMenu = getMenuByOrder(5); // Assuming 'Jetuku Bolini Aga' is the fifth menu item
+
 
   return (
-    <section className="jetukuboliniaga" id="jetukuboliniaga">
+    <section className="jetukuboliniaga" id={jetukuMenu?.path || "jetukuboliniaga"}>
       <div className="container">
-        <h3 className="subheading">যেটুকু বলিনি আগে</h3>
+        <h3 className="subheading">{jetukuMenu?.name || "যেটুকু বলিনি আগে"}</h3>
         {Jetuku.map((jetuku, index) => (
           <h2 key={index} className="mainheading">{jetuku.title}</h2>
         ))}

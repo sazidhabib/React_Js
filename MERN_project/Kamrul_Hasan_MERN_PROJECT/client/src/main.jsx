@@ -6,14 +6,14 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import App from './App.jsx'
 import { AuthProvider } from './store/auth.jsx';
-
+import { MenuProvider } from './store/MenuContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <AuthProvider>
-
-    <StrictMode>
-      <App />
-    </StrictMode>
-
+    <MenuProvider>
+      <StrictMode>
+        <App />
+      </StrictMode>
+    </MenuProvider>
   </AuthProvider>,
 )

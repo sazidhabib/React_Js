@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import DetailModal from "./DetailModal";
+import { useMenu } from '../store/MenuContext';
 
 const truncateByChars = (text, limit) => {
   if (!text) return "";
@@ -78,7 +79,8 @@ const Asarernoy = () => {
   const articlesPerPage = 3; // Show 3 articles per page
 
 
-
+  const { getMenuByOrder } = useMenu();
+  const asarernoyMenu = getMenuByOrder(3); // Assuming 'Asarernoy' is the third menu item
 
 
 
@@ -151,7 +153,7 @@ const Asarernoy = () => {
   const currentArticles = articles.slice(indexOfFirstArticle, indexOfLastArticle);
 
   return (
-    <section className="asarernoy" id="asarernoy">
+    <section className="asarernoy" id={asarernoyMenu?.path || "asarernoy"}>
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-md-12 text-left">

@@ -3,6 +3,7 @@ import YouTube from 'react-youtube';
 import { FaPlayCircle, FaPauseCircle } from 'react-icons/fa';
 import 'animate.css';
 import axios from 'axios';
+import { useMenu } from '../store/MenuContext';
 
 const extractVideoId = (url) => {
   const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -19,6 +20,8 @@ const ListeningMusicSection = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const songsPerPage = 8;
+  const { getMenuByOrder } = useMenu();
+  const listeningMusicMenu = getMenuByOrder(8); // Assuming 'Listening Music' is the third menu item
 
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/songs`;
 
@@ -130,9 +133,9 @@ const ListeningMusicSection = () => {
   };
 
   return (
-    <section className="gansona" id="listeningmusic">
+    <section className="gansona" id={listeningMusicMenu?.path || "listeningmusic"}>
       <div className="container">
-        <h3 className="subheading">গান শোনা</h3>
+        <h3 className="subheading">{listeningMusicMenu?.name || "গান শোনা"}</h3>
         <h2 className="lisenmainheading">জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,</h2>
         <h2 className="lisenmainheading">জানি না লালন শুনে ভাসে কেন বুকের আঙিনা</h2>
         <div className="row">

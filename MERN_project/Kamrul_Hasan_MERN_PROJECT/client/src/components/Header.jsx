@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "../index.css";
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useMenu } from '../store/MenuContext';
+
 
 
 const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(window.innerWidth < 992);
-
-  const [initialLoad, setInitialLoad] = useState(true);
+  const { menus, loading, getMenuByOrder } = useMenu();
 
 
 
@@ -16,6 +17,39 @@ const Header = () => {
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
 
 
+  // Render menu links dynamically
+  const renderMenuLinks = (onClickHandler = null) => {
+    if (loading) return <li>Loading menus...</li>;
+
+    return menus.sort((a, b) => a.order - b.order).map(menu => (
+      <li className="nav-item" key={menu._id}>
+        <Link
+          to={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
+          className="nav-link text-white"
+          onClick={onClickHandler}
+        >
+          {menu.name}
+        </Link>
+      </li>
+    ));
+  };
+
+  const homeMenu = getMenuByOrder(1);
+
+  // Fetch menus from backend
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/menus`);
+        setMenus(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch menus:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMenus();
+  }, []);
 
 
   // Track screen size on resize
@@ -64,9 +98,11 @@ const Header = () => {
     }
   };
 
+
+
   return (
     <header className="header_contentent">
-
+      {/* Mobile Top Bar */}
       {isMediumOrSmaller && (
         <div
           className="mobile-topbardef d-flex justify-content-between align-items-center px-3 py-2 bg-dark w-100"
@@ -127,14 +163,7 @@ const Header = () => {
               </div>
               <div className="modal-body d-flex flex-column align-items-start">
                 <ul className="nav flex-column w-100">
-                  <li className="nav-item"><Link to="/home" className="nav-link text-white" onClick={() => setShowSidebar(false)}>হোম</Link></li>
-                  <li className="nav-item"><Link to="/about-us" className="nav-link text-white" onClick={() => setShowSidebar(false)}>আমার আমি</Link></li>
-                  <li className="nav-item"><Link to="/asarernoy" className="nav-link text-white" onClick={() => setShowSidebar(false)}>আষাঢ়ে নয়</Link></li>
-                  <li className="nav-item"><Link to="/publishedreport" className="nav-link text-white" onClick={() => setShowSidebar(false)}>প্রকাশিত রিপোর্ট</Link></li>
-                  <li className="nav-item"><Link to="/jetukuboliniaga" className="nav-link text-white" onClick={() => setShowSidebar(false)}>যেটুকু বলিনি আগে</Link></li>
-                  <li className="nav-item"><Link to="/bookreading" className="nav-link text-white" onClick={() => setShowSidebar(false)}>বইপড়া</Link></li>
-                  <li className="nav-item"><Link to="/photography" className="nav-link text-white" onClick={() => setShowSidebar(false)}>ফটোগ্রাফি</Link></li>
-                  <li className="nav-item"><Link to="/listeningmusic" className="nav-link text-white" onClick={() => setShowSidebar(false)}>গান শোনা</Link></li>
+                  {renderMenuLinks(() => setShowSidebar(false))}
                 </ul>
 
                 <div className="social-icons mt-3">
@@ -156,14 +185,7 @@ const Header = () => {
         >
 
           <ul className="nav text-white">
-            <li className="nav-item"><Link to="/home" className="nav-link text-white">হোম</Link></li>
-            <li className="nav-item"><Link to="/about-us" className="nav-link text-white">আমার আমি</Link></li>
-            <li className="nav-item"><Link to="/asarernoy" className="nav-link text-white">আষাঢ়ে নয়</Link></li>
-            <li className="nav-item"><Link to="/publishedreport" className="nav-link text-white">প্রকাশিত রিপোর্ট</Link></li>
-            <li className="nav-item"><Link to="/jetukuboliniaga" className="nav-link text-white">যেটুকু বলিনি আগে</Link></li>
-            <li className="nav-item"><Link to="/bookreading" className="nav-link text-white">বইপড়া</Link></li>
-            <li className="nav-item"><Link to="/photography" className="nav-link text-white">ফটোগ্রাফি</Link></li>
-            <li className="nav-item"><Link to="/listeningmusic" className="nav-link text-white">গান শোনা</Link></li>
+            {renderMenuLinks()}
           </ul>
         </div>
       )}
@@ -176,14 +198,7 @@ const Header = () => {
             {!isMediumOrSmaller && (
               <div className="leftsidebar col-md-2 d-flex flex-column justify-content-center align-items-center text-left">
                 <ul className="navh font-weight-bold flex-column">
-                  <li className="nav-item"><Link to="/home" className="nav-link font-weight-bold">হোম</Link></li>
-                  <li className="nav-item"><Link to="/about-us" className="nav-link">আমার আমি</Link></li>
-                  <li className="nav-item"><Link to="/asarernoy" className="nav-link">আষাঢ়ে নয়</Link></li>
-                  <li className="nav-item"><Link to="/publishedreport" className="nav-link">প্রকাশিত রিপোর্ট</Link></li>
-                  <li className="nav-item"><Link to="/jetukuboliniaga" className="nav-link">যেটুকু বলিনি আগে</Link></li>
-                  <li className="nav-item"><Link to="/bookreading" className="nav-link">বইপড়া</Link></li>
-                  <li className="nav-item"><Link to="/photography" className="nav-link">ফটোগ্রাফি</Link></li>
-                  <li className="nav-item"><Link to="/listeningmusic" className="nav-link">গান শোনা</Link></li>
+                  {renderMenuLinks()}
                 </ul>
                 <div className="social-icons mt-4">
                   <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-linkedin-in"></i></a>
@@ -195,7 +210,7 @@ const Header = () => {
             )}
 
             {/* Middle Content */}
-            <div id="home"
+            <div id={homeMenu?.path || "home"}
               className={`col-12 ${isMediumOrSmaller ? "col-md-6" : "col-md-4"
                 } middelsidebar text-center d-flex flex-column  justify-content-center`}
             >
@@ -209,7 +224,7 @@ const Header = () => {
 
               </div>
 
-              {/* <p className="desination text-end">গণমাধ্যম কর্মী (সাংবাদিক)</p> */}
+
             </div>
 
             {/* Right Content */}

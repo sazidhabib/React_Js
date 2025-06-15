@@ -8,6 +8,7 @@ const errorMiddleware = require("./middlewares/error-middleware");
 const songRoutes = require('./router/songsRoutes');
 const photoRoutes = require('./router/photoRoutes');
 const menuRoutes = require('./router/menu-routes');
+const heroSectionRoutes = require('./router/heroSectionRoutes');  // Correct import for hero section routes
 // Correct import for song routes
 
 connectDB();
@@ -40,6 +41,7 @@ app.use("/api/blogs", require("./router/blog-router"));
 app.use('/api/songs', songRoutes);
 app.use('/api', photoRoutes);
 app.use('/api/menus', menuRoutes);
+app.use('/api/hero-section', heroSectionRoutes);
 
 // Test Routes
 app.get("/", (req, res) => {

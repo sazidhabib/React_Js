@@ -26,6 +26,11 @@ function AdminSidebar({ isSidebarOpen }) {
             Menu
           </NavLink>
         </li>
+        <li className={`nav-item ${isActiveRoute("/admin/hero-section") ? "active-item" : ""}`}>
+          <NavLink to="/admin/hero-section" className="nav-link text-white">
+            Hero Section
+          </NavLink>
+        </li>
 
         <li className={`nav-item ${isActiveRoute("/admin/blog") ? "active-item" : ""}`}>
           <NavLink to="/admin/blog" className="nav-link text-white">

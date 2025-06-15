@@ -13,6 +13,7 @@ import SongDashboard from "./admin/SongDashboard";
 import AlbumDashboard from "./admin/AlbumDashboard";
 import PhotoDashboard from "./admin/PhotoDashboard";
 import MenuDashboard from "./admin/MenuDashboard";
+import HeroSectionDashboard from "./admin/HeroSectionDashboard";
 
 
 const AppRoutes = () => {
@@ -36,6 +37,7 @@ const AppRoutes = () => {
           <Route path="/admin/photos" element={<PhotoDashboard />} />
           <Route path="/admin/menu" element={<MenuDashboard />} />
           <Route path="/admin/songs" element={<SongDashboard />} />
+          <Route path="/admin/hero-section" element={<HeroSectionDashboard />} />
         </Route>
       </Routes>
 

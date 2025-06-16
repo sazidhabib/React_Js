@@ -23,7 +23,9 @@ const HeroSectionDashboard = () => {
         setLoading(true);
         try {
             const res = await axios.get(API_URL);
-            setHeroSections(res.data);
+            // Handle both array and single object responses
+            const data = res.data.data || res.data;
+            setHeroSections(Array.isArray(data) ? data : [data]);
         } catch (err) {
             toast.error("Failed to fetch hero sections");
             console.error("Fetch error:", err);

@@ -7,10 +7,12 @@ const FeatureDetails = () => {
   const { slug } = useParams();
   const [featureData, setFeatureData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentFeature, setCurrentFeature] = useState(null);
 
   useEffect(() => {
     // Find the feature by slug
     const feature = keyFeatures.find((item) => item.path === slug);
+    setCurrentFeature(feature);
 
     if (feature) {
       fetch(feature.api)
@@ -30,35 +32,46 @@ const FeatureDetails = () => {
   }, [slug]);
 
   if (loading) return <p>Loading...</p>;
-  if (!featureData || featureData.length === 0) return <p>Feature not found</p>;
+  if (!currentFeature) return <p>Feature not found</p>;
+  if (!featureData || featureData.length === 0) return <p>No data available</p>;
 
   return (
     <div className="container mx-auto p-6 py-12">
-      <h1 className="text-3xl font-bold">Feature Details</h1>
+      {/* Feature Header with Icon */}
+      <div className="flex items-center gap-4 mb-8">
+        {currentFeature.icon && (
+          <img
+            src={currentFeature.icon}
+            alt={`${currentFeature.title} Icon`}
+            className="h-12 w-12 object-contain"
+          />
+        )}
+        <h1 className="text-3xl font-bold">{currentFeature.title} Details</h1>
+      </div>
 
-      {/* Map through the array to display all doctors/hospitals/bus info */}
-      {featureData.map((item, index) => (
-        <div key={index} className="border-b py-8">
+      {/* Grid Layout */}
+      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {featureData.map((item, index) => (
           <div
-            className={`flex flex-col md:flex-row ${
-              index % 2 !== 0 ? "md:flex-row-reverse" : ""
-            } items-center gap-6`}
+            key={index}
+            className="flex flex-col rounded-lg bg-white p-6 shadow-lg hover:shadow-xl transition cursor-pointer"
           >
-            {/* Image Section */}
-            <div className="flex-shrink-0">
+            {/* Image */}
+            <div className="flex justify-center mb-4">
               <img
                 src={`${imgLink}/${slug}/${item.image}`}
-                alt={item.dr_name}
-                className="w-48 h-48 object-cover rounded-lg shadow-md"
+                alt={item.dr_name || item.hp_name || item.title}
+                className="w-full h-48 object-cover rounded-lg"
               />
             </div>
 
-            {/* Content Section */}
-            <div className="flex-grow text-left">
-              <h2 className="text-2xl font-semibold mb-2">
+            {/* Content */}
+            <div className="flex-grow">
+              <h2 className="text-xl font-semibold mb-2 text-center">
                 {item.dr_name || item.hp_name || item.title}
               </h2>
-              <div className="space-y-1">
+
+              <div className="space-y-2 text-sm">
                 {item.category && (
                   <p>
                     <strong>Category:</strong> {item.category}
@@ -74,38 +87,40 @@ const FeatureDetails = () => {
                     <strong>Current Service:</strong> {item.current_servise}
                   </p>
                 )}
+                {item.upazila && (
+                  <p>
+                    <strong>উপজেলা:</strong> {item.upazila}
+                  </p>
+                )}
+                {item.address && (
+                  <p>
+                    <strong>বিস্তারিত ঠিকানা:</strong> {item.address}
+                  </p>
+                )}
+                {item.contact && (
+                  <p>
+                    <strong>ফোন:</strong> {item.contact}
+                  </p>
+                )}
+                {item.facilities && (
+                  <p>
+                    <strong>সুযোগ-সুবিধা:</strong> {item.facilities}
+                  </p>
+                )}
               </div>
 
-              {/* Chambers if exist */}
+              {/* Chambers - shown as a badge if exists */}
               {item.chambers && item.chambers.length > 0 && (
-                <div className="mt-4">
-                  <h3 className="text-xl font-semibold">Chambers:</h3>
-                  {item.chambers.map((chamber, idx) => (
-                    <div
-                      key={idx}
-                      className="mt-2 pl-2 border-l-2 border-gray-300"
-                    >
-                      <p>
-                        <strong>Name:</strong> {chamber.chamber_name}
-                      </p>
-                      <p>
-                        <strong>Address:</strong> {chamber.chamber_address}
-                      </p>
-                      <p>
-                        <strong>Contact:</strong> {chamber.chamber_contact}
-                      </p>
-                      <p>
-                        <strong>Schedule:</strong> {chamber.chamber_date} (
-                        {chamber.chamber_time})
-                      </p>
-                    </div>
-                  ))}
+                <div className="mt-3">
+                  <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                    {item.chambers.length} Chamber(s)
+                  </span>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

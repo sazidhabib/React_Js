@@ -3,6 +3,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "../index.css";
 import { Link } from 'react-router-dom';
 import { useMenu } from '../store/MenuContext';
+import { Spinner } from 'react-bootstrap';
+import axios from 'axios';
 
 
 
@@ -10,11 +12,28 @@ const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(window.innerWidth < 992);
   const { menus, loading, getMenuByOrder } = useMenu();
+  const [heroSection, setHeroSection] = useState(null);
+  const [heroLoading, setHeroLoading] = useState(true);
 
 
 
   const lastScrollY = useRef(window.scrollY);
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
+
+  // Fetch hero section data
+  useEffect(() => {
+    const fetchHeroSection = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hero-section`);
+        setHeroSection(response.data);
+      } catch (error) {
+        console.error("Failed to fetch hero section:", error);
+      } finally {
+        setHeroLoading(false);
+      }
+    };
+    fetchHeroSection();
+  }, []);
 
 
   // Render menu links dynamically
@@ -36,20 +55,7 @@ const Header = () => {
 
   const homeMenu = getMenuByOrder(1);
 
-  // Fetch menus from backend
-  useEffect(() => {
-    const fetchMenus = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/menus`);
-        setMenus(response.data.data);
-      } catch (error) {
-        console.error("Failed to fetch menus:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMenus();
-  }, []);
+
 
 
   // Track screen size on resize
@@ -214,15 +220,21 @@ const Header = () => {
               className={`col-12 ${isMediumOrSmaller ? "col-md-6" : "col-md-4"
                 } middelsidebar text-center d-flex flex-column  justify-content-center`}
             >
-              <div>
-
+              {heroLoading ? (
+                <div className="text-center"><Spinner animation="border" /></div>
+              ) : heroSection ? (
+                <div className="text-container">
+                  <div className="helloi">{heroSection.lines[0]}</div>
+                  <div className="main-text">{heroSection.lines[1]}</div>
+                  <div className="sub-text">{heroSection.lines[2]}</div>
+                </div>
+              ) : (
                 <div className="text-container">
                   <div className="helloi">হ্যালো, আমি</div>
                   <div className="main-text">কামরুল হাসান</div>
                   <div className="sub-text">গণমাধ্যম কর্মী (সাংবাদিক)</div>
                 </div>
-
-              </div>
+              )}
 
 
             </div>
@@ -230,8 +242,21 @@ const Header = () => {
             {/* Right Content */}
             <div className="col-md-6 col-12 rightsidebar text-center d-flex flex-column justify-content-center align-items-center">
               <div className="image-wrapper">
-                <img src="/images/kamrulhasan.webp
-                " alt="kamrulhasan" className="img-fluid profile-image" />
+                {heroLoading ? (
+                  <Spinner animation="border" />
+                ) : heroSection?.imageUrl ? (
+                  <img
+                    src={`${import.meta.env.VITE_API_BASE_URL}/${heroSection.imageUrl}`}
+                    alt="Profile"
+                    className="img-fluid profile-image"
+                  />
+                ) : (
+                  <img
+                    src="/images/kamrulhasan.webp"
+                    alt="Default Profile"
+                    className="img-fluid profile-image"
+                  />
+                )}
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Spinner, Form, Image } from "react-bootstrap";
+import { Button, Table, Spinner, Image } from "react-bootstrap";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../store/auth";
@@ -7,6 +7,7 @@ import HeroSectionFormModal from "./HeroSectionFormModal";
 import ConfirmationModal from "./ConfirmationModal";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/hero-section`;
+const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
 
 const HeroSectionDashboard = () => {
     const [heroSections, setHeroSections] = useState([]);
@@ -57,7 +58,7 @@ const HeroSectionDashboard = () => {
             }
 
             if (editHeroSection) {
-                await axios.put(`${API_URL}/${editHeroSection._id}`, formData, config);
+                await axios.patch(`${API_URL}/${editHeroSection._id}`, formData, config);
                 toast.success("Hero section updated successfully");
             } else {
                 await axios.post(API_URL, formData, config);
@@ -87,11 +88,19 @@ const HeroSectionDashboard = () => {
         }
     };
 
+    // Check if hero section exists (length > 0)
+    const hasHeroSection = heroSections.length > 0;
+    // Check if there's exactly one hero section
+    const hasSingleHeroSection = heroSections.length === 1;
+
     return (
         <div className="container custom-font-initial mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4>Hero Section Dashboard</h4>
-                <Button onClick={() => { setEditHeroSection(null); setModalShow(true); }}>
+                <Button
+                    onClick={() => { setEditHeroSection(null); setModalShow(true); }}
+                    disabled={hasHeroSection} // Disable if any hero section exists
+                >
                     + Add Hero Section
                 </Button>
             </div>
@@ -124,7 +133,7 @@ const HeroSectionDashboard = () => {
                                 <td>
                                     {section.imageUrl && (
                                         <Image
-                                            src={section.imageUrl}
+                                            src={`${IMG_URL}${section.imageUrl.replace(/^\/+/, "")}`}
                                             alt="Hero"
                                             thumbnail
                                             style={{ maxWidth: "100px" }}
@@ -143,16 +152,19 @@ const HeroSectionDashboard = () => {
                                     >
                                         Edit
                                     </Button>
-                                    <Button
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() => {
-                                            setSectionToDelete(section._id);
-                                            setConfirmModalShow(true);
-                                        }}
-                                    >
-                                        Delete
-                                    </Button>
+                                    {/* Only show Delete button if there's more than one hero section */}
+                                    {!hasSingleHeroSection && (
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => {
+                                                setSectionToDelete(section._id);
+                                                setConfirmModalShow(true);
+                                            }}
+                                        >
+                                            Delete
+                                        </Button>
+                                    )}
                                 </td>
                             </tr>
                         ))}

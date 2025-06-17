@@ -7,16 +7,19 @@ const HeroSectionFormModal = ({ show, onHide, onSubmit, editData }) => {
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState("");
     const [loading, setLoading] = useState(false);
+    const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
 
     useEffect(() => {
         if (editData) {
-            setTitle(editData.title);
-            setLines([...editData.lines]);
-            setPreview(editData.imageUrl || "");
+            setTitle(editData.title || "");
+            setLines(editData.lines || ["", "", ""]);
+            // Set preview with full URL if imageUrl exists
+            setPreview(editData.imageUrl ? `${IMG_URL}${editData.imageUrl.replace(/^\/+/, "")}` : "");
+            setImage(null); // Reset image state when editing
         } else {
             resetForm();
         }
-    }, [editData]);
+    }, [editData, show]); // Added show to dependencies
 
     const resetForm = () => {
         setTitle("");
@@ -36,6 +39,11 @@ const HeroSectionFormModal = ({ show, onHide, onSubmit, editData }) => {
         if (file) {
             setImage(file);
             setPreview(URL.createObjectURL(file));
+        } else {
+            // If no file selected but we have existing image, keep it
+            if (editData?.imageUrl) {
+                setPreview(`${IMG_URL}${editData.imageUrl.replace(/^\/+/, "")}`);
+            }
         }
     };
 
@@ -47,9 +55,9 @@ const HeroSectionFormModal = ({ show, onHide, onSubmit, editData }) => {
             await onSubmit({
                 title,
                 lines,
-                image
+                image: image || undefined // Send undefined if no new image
             });
-            resetForm();
+            onHide(); // Close modal on success
         } finally {
             setLoading(false);
         }
@@ -92,10 +100,10 @@ const HeroSectionFormModal = ({ show, onHide, onSubmit, editData }) => {
                             accept="image/*"
                             onChange={handleImageChange}
                         />
-                        {preview && (
+                        {(preview || editData?.imageUrl) && (
                             <div className="mt-2">
                                 <img
-                                    src={preview}
+                                    src={preview || `${IMG_URL}${editData.imageUrl.replace(/^\/+/, "")}`}
                                     alt="Preview"
                                     style={{ maxWidth: "100%", maxHeight: "200px" }}
                                 />

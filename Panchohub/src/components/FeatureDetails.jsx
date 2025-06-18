@@ -46,7 +46,7 @@ const FeatureDetails = () => {
             className="h-12 w-12 object-contain"
           />
         )}
-        <h1 className="text-3xl font-bold">{currentFeature.title} Details</h1>
+        <h1 className="text-3xl font-bold">{currentFeature.title}</h1>
       </div>
 
       {/* Grid Layout */}

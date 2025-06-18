@@ -64,6 +64,7 @@ export const keyFeatures = [
   {
     title: "বিদ্যুৎ অফিস",
     path: "biddut_office",
+    imagePath: "biddutOffices",
     icon: "https://img.icons8.com/?size=100&id=G3O7E2TAHbeY&format=png&color=000000",
     api: "https://app.panchohub.com/api/biddut_office",
   },

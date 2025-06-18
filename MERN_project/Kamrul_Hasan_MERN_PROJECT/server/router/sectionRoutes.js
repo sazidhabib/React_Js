@@ -1,12 +1,12 @@
-import express from 'express';
-import {
+const express = require('express');
+const {
     upsertSection,
     getSections,
     getSectionByType
-} from '../controllers/sectionController.js';
-import { upload, convertToWebp } from '../middleware/multer-config.js';
-import validate from '../middleware/validate-middleware.js';
-import { z } from 'zod';
+} = require('../controllers/sectionController');
+const { upload, convertToWebp } = require('../middlewares/multer-config');
+const validate = require('../middlewares/validate-middleware');
+const { z } = require('zod');
 
 const router = express.Router();
 
@@ -32,4 +32,4 @@ router.get('/', getSections);
 // Get specific section by type
 router.get('/:type', getSectionByType);
 
-export default router;
+module.exports = router;

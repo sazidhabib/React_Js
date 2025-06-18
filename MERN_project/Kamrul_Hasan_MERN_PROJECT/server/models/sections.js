@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const sectionTypes = ['about', 'jetukuboliniage', 'bookreading', 'music'];
 
-const sectionSchema = new mongoose.Schema({
+const SectionSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: sectionTypes,
@@ -29,6 +29,4 @@ const sectionSchema = new mongoose.Schema({
     }
 });
 
-
-const sections = mongoose.model("sections", sectionSchema);
-module.exports = sections;
+module.exports = mongoose.model('Section', SectionSchema);

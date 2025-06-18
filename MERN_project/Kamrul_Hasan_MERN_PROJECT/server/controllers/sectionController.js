@@ -1,13 +1,13 @@
-import sections from '../models/sections.js';
+const Section = require('../models/sections');
 
 // Create or Update section
-export const upsertSection = async (req, res, next) => {
+const upsertSection = async (req, res, next) => {
     try {
         const { type, title, description } = req.body;
         const imageUrl = req.file?.path || null;
 
         // Find existing section of this type
-        let section = await sections.findOne({ type });
+        let section = await Section.findOne({ type });
 
         if (section) {
             // Update existing section
@@ -17,7 +17,7 @@ export const upsertSection = async (req, res, next) => {
             section.updatedAt = new Date();
         } else {
             // Create new section
-            section = new sections({
+            section = new Section({
                 type,
                 title,
                 description,
@@ -33,19 +33,19 @@ export const upsertSection = async (req, res, next) => {
 };
 
 // Get all sections
-export const getSections = async (req, res, next) => {
+const getSections = async (req, res, next) => {
     try {
-        const sections = await sections.find();
-        res.json(sections);
+        const allSections = await Section.find();
+        res.json(allSections);
     } catch (error) {
         next(error);
     }
 };
 
 // Get section by type
-export const getSectionByType = async (req, res, next) => {
+const getSectionByType = async (req, res, next) => {
     try {
-        const section = await sections.findOne({ type: req.params.type });
+        const section = await Section.findOne({ type: req.params.type });
         if (!section) {
             return res.status(404).json({ error: 'Section not found' });
         }
@@ -53,4 +53,10 @@ export const getSectionByType = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+module.exports = {
+    upsertSection,
+    getSections,
+    getSectionByType
 };

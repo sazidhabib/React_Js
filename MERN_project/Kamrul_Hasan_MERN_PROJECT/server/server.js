@@ -46,7 +46,7 @@ app.use('/api/sections', sectionRoutes);
 
 // Test Routes
 app.get("/", (req, res) => {
-  res.status(200).send("Hello World my name is Sazid");
+  res.status(200).send("Database is connected successfully");
 });
 app.get("/register", (req, res) => {
   res.status(200).send("Hello World this is register page");

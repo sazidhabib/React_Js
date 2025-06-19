@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../store/auth";
 import SectionFormModal from "./SectionFormModal";
-import ConfirmationModal from "./ConfirmationModal";
+
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/sections`;
 const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
@@ -46,33 +46,34 @@ const SectionDashboard = () => {
 
     const handleSubmit = async (sectionData) => {
         try {
+            const formData = new FormData();
+            formData.append('type', sectionData.type);
+            formData.append('title', sectionData.title);
+            formData.append('description', sectionData.description);
+            if (sectionData.image) {
+                formData.append('image', sectionData.image);
+            }
+
             const config = {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "multipart/form-data"
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`
                 }
             };
 
-            const formData = new FormData();
-            formData.append("type", sectionData.type);
-            formData.append("title", sectionData.title);
-            formData.append("description", sectionData.description);
-            if (sectionData.image) {
-                formData.append("image", sectionData.image);
-            }
+            // Use PUT for existing sections, POST for new ones
+            const response = currentSection?._id
+                ? await axios.patch(`${API_URL}/${currentSection._id}`, formData, config)
+                : await axios.post(API_URL, formData, config);
 
-            if (currentSection) {
-                await axios.patch(`${API_URL}/${currentSection._id}`, formData, config);
-                toast.success(`${sectionData.type} section updated successfully`);
-            } else {
-                await axios.post(API_URL, formData, config);
-                toast.success(`${sectionData.type} section created successfully`);
-            }
+            toast.success(`Section ${currentSection?._id ? 'updated' : 'created'} successfully`);
             setModalShow(false);
-            fetchSections();
-        } catch (err) {
-            toast.error(err.response?.data?.error || "Operation failed");
-            console.error("Submit error:", err);
+            fetchSections(); // Refresh the data after successful submission
+            return response.data;
+        } catch (error) {
+            console.error('Submission error:', error);
+            toast.error(error.response?.data?.error || 'Failed to save section');
+            throw error;
         }
     };
 
@@ -148,19 +149,7 @@ const SectionDashboard = () => {
                                         >
                                             {section ? "Edit" : "Create"}
                                         </Button>
-                                        {section && (
-                                            <Button
-                                                variant="danger"
-                                                size="sm"
-                                                className="ms-2"
-                                                onClick={() => {
-                                                    setSectionToDelete(section._id);
-                                                    setConfirmModalShow(true);
-                                                }}
-                                            >
-                                                Delete
-                                            </Button>
-                                        )}
+
                                     </td>
                                 </tr>
                             );
@@ -177,12 +166,7 @@ const SectionDashboard = () => {
                 section={currentSection}
                 sectionTypes={sectionTypes}
             />
-            <ConfirmationModal
-                show={confirmModalShow}
-                onHide={() => setConfirmModalShow(false)}
-                onConfirm={handleDelete}
-                message="Are you sure you want to delete this section?"
-            />
+
         </div>
     );
 };

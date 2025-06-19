@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Spinner } from "react-bootstrap";
 import YouTube from 'react-youtube';
 import { FaPlayCircle, FaPauseCircle } from 'react-icons/fa';
 import 'animate.css';
@@ -23,7 +24,30 @@ const ListeningMusicSection = () => {
   const { getMenuByOrder } = useMenu();
   const listeningMusicMenu = getMenuByOrder(8); // Assuming 'Listening Music' is the third menu item
 
+  const [musicData, setMusicData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const API_MUSIC_URL = `${import.meta.env.VITE_API_BASE_URL}/api/sections/music`;
+
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/songs`;
+
+
+  useEffect(() => {
+    const fetchJetukuData = async () => {
+      try {
+        const response = await axios.get(API_MUSIC_URL);
+        setMusicData(response.data);
+      } catch (err) {
+        console.error("Error fetching jetuku data:", err);
+        setError("Failed to load jetuku section content");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJetukuData();
+  }, []);
 
   // Fetch songs
   useEffect(() => {
@@ -59,6 +83,21 @@ const ListeningMusicSection = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
+  if (loading) {
+    return (
+      <div className="text-center py-5">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger text-center">
+        {error}
+      </div>
+    );
+  }
 
   const indexOfLastSong = currentPage * songsPerPage;
   const indexOfFirstSong = indexOfLastSong - songsPerPage;
@@ -136,8 +175,8 @@ const ListeningMusicSection = () => {
     <section className="gansona" id={listeningMusicMenu?.path || "listeningmusic"}>
       <div className="container">
         <h3 className="subheading">{listeningMusicMenu?.name || "গান শোনা"}</h3>
-        <h2 className="lisenmainheading">জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,</h2>
-        <h2 className="lisenmainheading">জানি না লালন শুনে ভাসে কেন বুকের আঙিনা</h2>
+        <h2 className="lisenmainheading">{musicData?.title || "জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,"}</h2>
+        <h2 className="lisenmainheading">{musicData?.description || "জানি না লালন শুনে ভাসে কেন বুকের আঙিনা"}</h2>
         <div className="row">
           <div className="col-lg-6">
             <div className="icon-content">

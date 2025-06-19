@@ -8,13 +8,14 @@ const SectionFormModal = ({ show, onHide, onSubmit, section, sectionTypes }) => 
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState("");
     const [loading, setLoading] = useState(false);
+    const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`
 
     useEffect(() => {
         if (section) {
             setType(section.type);
             setTitle(section.title || "");
             setDescription(section.description || "");
-            setPreview(section.imageUrl || "");
+            setPreview(section.imageUrl ? `${IMG_URL}${section.imageUrl.replace(/^\/+/, '')}` : '');
         } else {
             resetForm();
         }
@@ -33,6 +34,11 @@ const SectionFormModal = ({ show, onHide, onSubmit, section, sectionTypes }) => 
         if (file) {
             setImage(file);
             setPreview(URL.createObjectURL(file));
+        } else {
+            // If no file selected but we have existing image, keep it
+            if (section?.imageUrl) {
+                setPreview(`${IMG_URL}${section.imageUrl.replace(/^\/+/, '')}`);
+            }
         }
     };
 
@@ -54,7 +60,7 @@ const SectionFormModal = ({ show, onHide, onSubmit, section, sectionTypes }) => 
     };
 
     return (
-        <Modal show={show} onHide={onHide} size="lg">
+        <Modal show={show} onHide={onHide} size="lg" className="custom-font-initial">
             <Modal.Header closeButton>
                 <Modal.Title>
                     {section?._id ? "Edit" : "Create"} {sectionTypes.find(st => st.type === type)?.name || "Section"}
@@ -111,7 +117,7 @@ const SectionFormModal = ({ show, onHide, onSubmit, section, sectionTypes }) => 
                         {(preview || section?.imageUrl) && (
                             <div className="mt-2">
                                 <img
-                                    src={preview || `${import.meta.env.VITE_API_BASE_URL}${section.imageUrl}`}
+                                    src={preview || `${IMG_URL}${section.imageUrl.replace(/^\/+/, '')}`}
                                     alt="Preview"
                                     style={{ maxWidth: "100%", maxHeight: "200px" }}
                                 />

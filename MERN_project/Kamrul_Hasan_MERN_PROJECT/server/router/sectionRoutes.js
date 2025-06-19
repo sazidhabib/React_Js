@@ -7,6 +7,7 @@ const {
 const { upload, convertToWebp } = require('../middlewares/multer-config');
 const validate = require('../middlewares/validate-middleware');
 const { z } = require('zod');
+const authMiddleware = require('../middlewares/auth-middleware');
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.post(
     '/',
     upload.single('image'),
     convertToWebp,
+    authMiddleware,
     validate(sectionSchema),
     upsertSection
 );

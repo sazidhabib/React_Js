@@ -16,6 +16,17 @@ function AdminSidebar({ isSidebarOpen }) {
           </NavLink>
         </li>
 
+        <li className={`nav-item ${isActiveRoute("/admin/menu") ? "active-item" : ""}`}>
+          <NavLink to="/admin/menu" className="nav-link text-white">
+            Menu
+          </NavLink>
+        </li>
+        <li className={`nav-item ${isActiveRoute("/admin/hero-section") ? "active-item" : ""}`}>
+          <NavLink to="/admin/hero-section" className="nav-link text-white">
+            Hero Section
+          </NavLink>
+        </li>
+
         <li className={`nav-item ${isActiveRoute("/admin/sections") ? "active-item" : ""}`}>
           <NavLink to="/admin/sections" className="nav-link text-white">
             Sections
@@ -27,16 +38,7 @@ function AdminSidebar({ isSidebarOpen }) {
             Article
           </NavLink>
         </li>
-        <li className={`nav-item ${isActiveRoute("/admin/menu") ? "active-item" : ""}`}>
-          <NavLink to="/admin/menu" className="nav-link text-white">
-            Menu
-          </NavLink>
-        </li>
-        <li className={`nav-item ${isActiveRoute("/admin/hero-section") ? "active-item" : ""}`}>
-          <NavLink to="/admin/hero-section" className="nav-link text-white">
-            Hero Section
-          </NavLink>
-        </li>
+
 
         <li className={`nav-item ${isActiveRoute("/admin/blog") ? "active-item" : ""}`}>
           <NavLink to="/admin/blog" className="nav-link text-white">

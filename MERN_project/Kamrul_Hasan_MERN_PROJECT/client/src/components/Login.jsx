@@ -27,7 +27,6 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    console.log(user);
     try {
       const response = await fetch(LOGIN_BASE_URL, {
         method: "POST",

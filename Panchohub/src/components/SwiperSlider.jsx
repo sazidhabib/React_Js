@@ -15,29 +15,31 @@ const SwiperSlider = () => {
   ];
 
   return (
-    <div style={{ width: "600px", margin: "auto" }}>
-      <Swiper
-        modules={[Pagination, Navigation]} // Attach the modules
-        pagination={{ clickable: true }} // Enable pagination
-        navigation={true} // Enable navigation arrows
-        loop={true} // Loop the slides
-        spaceBetween={50}
-        slidesPerView={1}
-      >
-        {slides.map((slide, index) => (
-          <SwiperSlide key={index}>
-            <img
-              src={slide}
-              alt={`Slide ${index + 1}`}
-              style={{
-                width: "100%",
-                height: "auto",
-                borderRadius: "10px",
-              }}
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className="bg-gray-100">
+      <div className="bg-gray-100" style={{ width: "600px", margin: "auto" }}>
+        <Swiper
+          modules={[Pagination, Navigation]} // Attach the modules
+          pagination={{ clickable: true }} // Enable pagination
+          navigation={true} // Enable navigation arrows
+          loop={true} // Loop the slides
+          spaceBetween={50}
+          slidesPerView={1}
+        >
+          {slides.map((slide, index) => (
+            <SwiperSlide key={index}>
+              <img
+                src={slide}
+                alt={`Slide ${index + 1}`}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: "10px",
+                }}
+              />
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </div>
   );
 };

@@ -12,11 +12,15 @@ import Slider from "./components/Slider";
 import NewsScrolling from "./components/NewsScrolling";
 import Package from "./components/Package";
 import DoctorCategories from "./components/DoctorCategoris";
+import ScreenshotsSection from "./components/ScreenshotsSection";
+import AppDownload from "./components/AppDownload";
 
 function App() {
   return (
     <Router>
       <Header />
+
+      <AppDownload />
       <NewsScrolling />
       <Slider />
       <Routes>
@@ -25,6 +29,8 @@ function App() {
         <Route path="/doctors" element={<DoctorCategories />} />
       </Routes>
       <Package plans={plans} />
+      <ScreenshotsSection />
+
       <Services />
 
     </Router>

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import KeyFeatures from "./components/KeyFeatures";
 import FeatureDetails from "./components/FeatureDetails";
-import Services from "./components/Services";
+
 import { plans } from "./constant";
 
 import "./App.css";
@@ -14,6 +14,7 @@ import Package from "./components/Package";
 import DoctorCategories from "./components/DoctorCategoris";
 import ScreenshotsSection from "./components/ScreenshotsSection";
 import AppDownload from "./components/AppDownload";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -30,8 +31,8 @@ function App() {
       </Routes>
       <Package plans={plans} />
       <ScreenshotsSection />
+      <Footer />
 
-      <Services />
 
     </Router>
   );

@@ -59,10 +59,11 @@ const FeatureDetails = () => {
             {/* Image */}
             <div className="flex justify-center mb-4">
               <img
-                src={`${imgLink}/${slug}/${item.image}`}
+                src={`${imgLink}/${currentFeature.imagePath}/${item.image}`}
                 alt={item.dr_name || item.hp_name || item.title}
                 className="w-full h-48 object-cover rounded-lg"
               />
+
             </div>
 
             {/* Content */}

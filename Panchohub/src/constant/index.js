@@ -5,6 +5,7 @@ export const keyFeatures = [
   {
     title: "ডাক্তার",
     path: "doctors",
+    imagePath: "doctors",
     icon: "https://img.icons8.com/?size=100&id=jnN8CxPfUgES&format=png&color=000000",
     api: "https://app.panchohub.com/api/doctors",
   },

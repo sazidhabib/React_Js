@@ -4,10 +4,14 @@ import { useNavigate } from "react-router-dom";
 const DoctorCategories = () => {
   const navigate = useNavigate();
 
-  const handleNavigation = (path) => {
-    // Convert title to a slug (remove spaces, make lowercase)
-    const slug = path.replace(/\s+/g, "-").toLowerCase();
-    navigate(`/feature/${slug}`);
+  const handleNavigation = (categoryTitle) => {
+    // Create slug from category title
+    const slug = categoryTitle.replace(/\s+/g, "-").toLowerCase();
+    navigate(`/feature/doctors`, {
+      state: {
+        filterCategory: categoryTitle
+      }
+    });
   };
 
   return (
@@ -21,7 +25,7 @@ const DoctorCategories = () => {
             </h2>
             <button
               type="button"
-              class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+              className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
             >
               এক নজরে দেখে নিন কোন রোগ হলে কোন ডাক্তার দেখবেন?
             </button>
@@ -33,7 +37,7 @@ const DoctorCategories = () => {
           {doctorsCategories.map((feature, index) => (
             <div
               key={index}
-              onClick={() => handleNavigation(feature.path)}
+              onClick={() => handleNavigation(feature.title)}
               className="flex flex-col justify-between rounded-lg bg-white p-6 shadow-lg hover:shadow-xl transition cursor-pointer"
             >
               {/* Feature Title */}

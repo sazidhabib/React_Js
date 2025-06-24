@@ -15,30 +15,26 @@ const AppDownload = () => {
                             Our app is here to empower you on your quest for knowledge,
                             anytime and anywhere.
                         </p>
+
+                        {/* App Download Buttons as Images (Updated) */}
                         <h6 className="mb-4 text-lg font-semibold text-white">
                             Get the app
                         </h6>
-                        <div className="flex flex-col gap-2 md:mb-2 md:w-10/12 md:flex-row">
-                            <button
-                                className="flex items-center justify-center gap-3 rounded-lg bg-white px-6 py-3 text-gray-900 transition-colors hover:bg-gray-100"
-                            >
+                        <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+                            <a href="#" className="hover:opacity-90 transition">
                                 <img
                                     src="image/download-1.svg"
-                                    alt="App Store"
-                                    className="h-6 w-6"
+                                    alt="Download on App Store"
+                                    className="h-12 w-auto"
                                 />
-                                App Store
-                            </button>
-                            <button
-                                className="flex items-center justify-center gap-3 rounded-lg bg-white px-6 py-3 text-gray-900 transition-colors hover:bg-gray-100"
-                            >
+                            </a>
+                            <a href="#" className="hover:opacity-90 transition">
                                 <img
-                                    src="/logos/logo-google.png"
-                                    alt="Google Play"
-                                    className="h-6 w-6"
+                                    src="image/download-2.svg"
+                                    alt="Get it on Google Play"
+                                    className="h-12 w-auto"
                                 />
-                                Google Play
-                            </button>
+                            </a>
                         </div>
                     </div>
 

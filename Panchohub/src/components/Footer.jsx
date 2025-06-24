@@ -7,7 +7,6 @@ import {
     FaYoutube,
     FaGithub
 } from "react-icons/fa";
-import { FaGooglePlay, FaAppStore } from "react-icons/fa6";
 
 const Footer = () => {
     return (
@@ -48,7 +47,7 @@ const Footer = () => {
                         <h3 className="text-xl font-bold mb-4">Connect With Us</h3>
 
                         {/* Social Media Icons */}
-                        <div className="flex space-x-4 mb-6">
+                        <div className="flex space-x-4 justify-center mb-6">
                             <a href="#" className="text-gray-400 hover:text-white transition">
                                 <FaFacebook className="w-6 h-6" />
                             </a>
@@ -69,21 +68,21 @@ const Footer = () => {
                             </a>
                         </div>
 
-                        {/* App Download Buttons */}
-                        <div className="space-y-3">
-                            <a href="#" className="flex items-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                                <FaGooglePlay className="w-5 h-5 mr-2" />
-                                <div className="text-left">
-                                    <div className="text-xs">GET IT ON</div>
-                                    <div className="text-sm font-semibold">Google Play</div>
-                                </div>
+                        {/* App Download Buttons as Images */}
+                        <div className="flex justify-center space-x-3">
+                            <a href="#" className="hover:opacity-90 transition">
+                                <img
+                                    src="image/download-1.svg"
+                                    alt="Download on App Store"
+                                    className="h-10"
+                                />
                             </a>
-                            <a href="#" className="flex items-center bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
-                                <FaAppStore className="w-5 h-5 mr-2" />
-                                <div className="text-left">
-                                    <div className="text-xs">Download on the</div>
-                                    <div className="text-sm font-semibold">App Store</div>
-                                </div>
+                            <a href="#" className="hover:opacity-90 transition">
+                                <img
+                                    src="image/download-2.svg"
+                                    alt="Get it on Google Play"
+                                    className="h-10"
+                                />
                             </a>
                         </div>
                     </div>

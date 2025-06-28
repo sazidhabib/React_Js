@@ -12,6 +12,7 @@ export const keyFeatures = [
   {
     title: "হাসপাতাল",
     path: "hospitals",
+    imagePath: "hospitals",
     icon: "https://img.icons8.com/?size=100&id=vmPQBtpsnX7W&format=png&color=000000",
     api: "https://app.panchohub.com/api/hospitals",
   },
@@ -25,16 +26,21 @@ export const keyFeatures = [
     title: "ট্রেনের সময়সূচী",
     path: "train",
     icon: "https://img.icons8.com/?size=100&id=rBmUO88UsE0L&format=png&color=000000",
+    api: "https://app.panchohub.com/api/train",
   },
   {
     title: "দর্শনীয় স্থান",
     path: "tourist_place",
+    imagePath: "touristPlaces",
     icon: "https://img.icons8.com/?size=100&id=25449&format=png&color=000000",
+    api: "https://app.panchohub.com/api/tourist_place",
   },
   {
     title: "বাসা ভাড়া",
-    path: "rent",
+    path: "house_rent",
+    imagePath: "houseRents",
     icon: "https://img.icons8.com/?size=100&id=Kj72GsBUwKAL&format=png&color=000000",
+    api: "https://app.panchohub.com/api/house_rent",
   },
   {
     title: "শপিং",

@@ -1,0 +1,83 @@
+/*|--------------------------------------------------------------------------|
+  | Get All Data API Routes                                                  |
+  |--------------------------------------------------------------------------|*/
+
+Route::get('doctors', [GetAllData::class, 'doctors']);
+Route::get('hospitals', [GetAllData::class, 'hospitals']);
+Route::get('diagnostics', [GetAllData::class, 'diagnostics']);
+Route::get('donors', [GetAllData::class, 'donors']);
+Route::get('needers', [GetAllData::class, 'needers']);
+Route::get('todaynews', [GetAllData::class, 'todaynews']);
+Route::get('jobnews', [GetAllData::class, 'jobnews']);
+Route::get('notifications', [GetAllData::class, 'notifications']);
+Route::get('sliders', [GetAllData::class, 'sliders']);
+Route::get('scrolls', [GetAllData::class, 'scrolls']);
+Route::get('hoteles', [GetAllData::class, 'hoteles']);
+Route::get('restaurants', [GetAllData::class, 'restaurants']);
+Route::get('salon_parlour', [GetAllData::class, 'salon_parlour']);
+Route::get('shopping', [GetAllData::class, 'shopping']);
+Route::get('vehicle_rent', [GetAllData::class, 'vehicle_rent']);
+Route::get('house_rent', [GetAllData::class, 'house_rent']);
+Route::get('plot_sales', [GetAllData::class, 'plot_sales']);
+Route::get('technicians', [GetAllData::class, 'technicians']);
+Route::get('nursery', [GetAllData::class, 'nursery']);
+Route::get('entrepreneurs', [GetAllData::class, 'entrepreneurs']);
+Route::get('teachers', [GetAllData::class, 'teachers']);
+Route::get('institutions', [GetAllData::class, 'institutions']);
+Route::get('bus', [GetAllData::class, 'bus']);
+Route::get('train', [GetAllData::class, 'train']);
+Route::get('fire_service', [GetAllData::class, 'fire_service']);
+Route::get('police', [GetAllData::class, 'police']);
+Route::get('thana', [GetAllData::class, 'thana']);
+Route::get('biddut_office', [GetAllData::class, 'biddut_office']);
+Route::get('courier_service', [GetAllData::class, 'courier_service']);
+Route::get('tourist_place', [GetAllData::class, 'tourist_place']);
+Route::get('contact_us', [GetAllData::class, 'contact_us']);
+Route::get('privacy_policy', [GetAllData::class, 'privacy_policy']);
+Route::get('terms', [GetAllData::class, 'terms']);
+
+
+
+
+
+
+
+Image End point:
+----------------
+
+biddutOffices
+curierServises
+diagnostics
+doctors
+entrepreneurs
+hospitals
+hoteles
+houseRents
+vehicleRents
+institutions
+jobNews
+notifications
+nurseries
+plotSales
+restaurants
+salonParlours
+shoppings
+sliders
+teachers
+technicians
+todayNews
+touristPlaces
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,8 +5,17 @@ import {
     Button, Pagination
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import PhotoModal from './PhotoModal'; // Import the new modal component
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+import PhotoModal from './PhotoModal';
 import { useMenu } from '../store/MenuContext';
+
+// Skeleton Loading Component
+const PhotoSkeleton = () => (
+    <div className="skeleton-photo">
+        <div className="skeleton-image"></div>
+    </div>
+);
 
 const PhotoGallery = () => {
     const [albums, setAlbums] = useState([]);
@@ -19,7 +28,7 @@ const PhotoGallery = () => {
     const [albumPhotoCounts, setAlbumPhotoCounts] = useState({});
 
     const { getMenuByOrder } = useMenu();
-    const photoGalleryMenu = getMenuByOrder(7); // Assuming 'Photography' is the seventh menu item
+    const photoGalleryMenu = getMenuByOrder(7);
 
     // Pagination states
     const [currentAlbumPage, setCurrentAlbumPage] = useState(1);
@@ -42,22 +51,38 @@ const PhotoGallery = () => {
     const currentPhotos = photos.slice(indexOfFirstPhoto, indexOfLastPhoto);
     const totalPhotoPages = Math.ceil(photos.length / photosPerPage);
 
-    // Fetch albums and photo counts
+    // Fetch albums and photo counts with cache first strategy
     useEffect(() => {
         const fetchAlbums = async () => {
             setLoading(true);
             try {
-                const res = await axios.get(`${ALBUM_API}?status=active`);
-                setAlbums(res.data);
+                // Check cache first
+                const cached = localStorage.getItem('prefetchedAlbums');
+                let albumData;
+
+                if (cached) {
+                    albumData = JSON.parse(cached);
+                    setAlbums(albumData);
+                } else {
+                    const res = await axios.get(`${ALBUM_API}?status=active`);
+                    albumData = res.data;
+                    setAlbums(albumData);
+                    localStorage.setItem('prefetchedAlbums', JSON.stringify(albumData));
+                }
 
                 const counts = {};
-                for (const album of res.data) {
+                for (const album of albumData) {
                     try {
-                        const photosRes = await axios.get(`${PHOTO_API}/${album._id}`);
+                        const photosRes = await axios.get(`${PHOTO_API}/${album._id}?limit=1`);
                         counts[album._id] = photosRes.data.length;
 
-                        if (res.data.length > 0 && !selectedAlbumId) {
-                            setSelectedAlbumId(res.data[0]._id);
+                        if (albumData.length > 0 && !selectedAlbumId) {
+                            setSelectedAlbumId(albumData[0]._id);
+                            // Prefetch first album's photos
+                            axios.get(`${PHOTO_API}/${albumData[0]._id}`)
+                                .then(res => {
+                                    sessionStorage.setItem(`album_${albumData[0]._id}`, JSON.stringify(res.data));
+                                });
                         }
                     } catch (err) {
                         counts[album._id] = 0;
@@ -75,16 +100,25 @@ const PhotoGallery = () => {
         fetchAlbums();
     }, []);
 
-    // Fetch photos when album is selected
+    // Fetch photos when album is selected with cache first
     useEffect(() => {
         const fetchPhotos = async () => {
             if (selectedAlbumId) {
                 setPhotoLoading(true);
                 setPhotos([]);
                 setCurrentPhotoPage(1);
+
                 try {
+                    // Check session cache first
+                    const cached = sessionStorage.getItem(`album_${selectedAlbumId}`);
+                    if (cached) {
+                        setPhotos(JSON.parse(cached));
+                        setPhotoLoading(false);
+                    }
+
                     const res = await axios.get(`${PHOTO_API}/${selectedAlbumId}`);
                     setPhotos(res.data);
+                    sessionStorage.setItem(`album_${selectedAlbumId}`, JSON.stringify(res.data));
                 } catch (err) {
                     toast.error('Failed to load photos');
                     console.error('Error fetching photos:', err);
@@ -204,10 +238,13 @@ const PhotoGallery = () => {
                         {selectedAlbumId ? (
                             <>
                                 {photoLoading ? (
-                                    <div className="text-center">
-                                        <Spinner animation="border" />
-                                        <p>Loading photos...</p>
-                                    </div>
+                                    <Row>
+                                        {[...Array(12)].map((_, i) => (
+                                            <Col key={i} xs={6} sm={6} md={4} lg={3} className="mb-4">
+                                                <PhotoSkeleton />
+                                            </Col>
+                                        ))}
+                                    </Row>
                                 ) : photos.length > 0 ? (
                                     <>
                                         <Row>
@@ -221,16 +258,15 @@ const PhotoGallery = () => {
                                                     className="mb-4"
                                                 >
                                                     <Card className="h-100" onClick={() => handlePhotoClick(index)}>
-                                                        <Card.Img
-                                                            variant="top"
+                                                        <LazyLoadImage
                                                             src={`${API_BASE_URL}/${photo.imageUrl}`}
-                                                            style={{
-                                                                height: '180px',
-                                                                objectFit: 'cover',
-                                                                cursor: 'pointer'
-                                                            }}
+                                                            effect="blur"
+                                                            placeholderSrc={`${API_BASE_URL}/placeholder.jpg`}
+                                                            width="100%"
+                                                            height="180px"
+                                                            style={{ objectFit: 'cover', cursor: 'pointer' }}
+                                                            wrapperClassName="lazy-wrapper"
                                                         />
-
                                                     </Card>
                                                 </Col>
                                             ))}

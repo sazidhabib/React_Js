@@ -9,6 +9,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import PhotoModal from './PhotoModal';
 import { useMenu } from '../store/MenuContext';
+import ResponsivePagination from './ResponsivePagination';
 
 // Skeleton Loading Component
 const PhotoSkeleton = () => (
@@ -142,61 +143,8 @@ const PhotoGallery = () => {
     };
 
     // Pagination controls
-    const renderAlbumPagination = () => {
-        if (albums.length <= albumsPerPage) return null;
 
-        return (
-            <div className="d-flex justify-content-center mt-3">
-                <Pagination>
-                    <Pagination.Prev
-                        onClick={() => setCurrentAlbumPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentAlbumPage === 1}
-                    />
-                    {Array.from({ length: totalAlbumPages }, (_, i) => (
-                        <Pagination.Item
-                            key={i + 1}
-                            active={i + 1 === currentAlbumPage}
-                            onClick={() => setCurrentAlbumPage(i + 1)}
-                        >
-                            {i + 1}
-                        </Pagination.Item>
-                    ))}
-                    <Pagination.Next
-                        onClick={() => setCurrentAlbumPage(prev => Math.min(prev + 1, totalAlbumPages))}
-                        disabled={currentAlbumPage === totalAlbumPages}
-                    />
-                </Pagination>
-            </div>
-        );
-    };
 
-    const renderPhotoPagination = () => {
-        if (photos.length <= photosPerPage || !selectedAlbumId) return null;
-
-        return (
-            <div className="d-flex justify-content-center mt-3">
-                <Pagination>
-                    <Pagination.Prev
-                        onClick={() => setCurrentPhotoPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPhotoPage === 1}
-                    />
-                    {Array.from({ length: totalPhotoPages }, (_, i) => (
-                        <Pagination.Item
-                            key={i + 1}
-                            active={i + 1 === currentPhotoPage}
-                            onClick={() => setCurrentPhotoPage(i + 1)}
-                        >
-                            {i + 1}
-                        </Pagination.Item>
-                    ))}
-                    <Pagination.Next
-                        onClick={() => setCurrentPhotoPage(prev => Math.min(prev + 1, totalPhotoPages))}
-                        disabled={currentPhotoPage === totalPhotoPages}
-                    />
-                </Pagination>
-            </div>
-        );
-    };
 
     return (
         <div className='custom-bgcolor photography' id={photoGalleryMenu?.path || 'photography'}>
@@ -212,14 +160,14 @@ const PhotoGallery = () => {
                             </div>
                         ) : (
                             <>
-                                <ListGroup>
+                                <ListGroup >
                                     {currentAlbums.map((album) => (
                                         <ListGroup.Item
                                             key={album._id}
                                             action
                                             active={selectedAlbumId === album._id}
                                             onClick={() => setSelectedAlbumId(album._id)}
-                                            className="d-flex justify-content-between align-items-center"
+                                            className="d-flex justify-content-between align-items-center "
                                         >
                                             {album.name}
                                             <span className="badge bg-green rounded-pill">
@@ -228,7 +176,14 @@ const PhotoGallery = () => {
                                         </ListGroup.Item>
                                     ))}
                                 </ListGroup>
-                                {renderAlbumPagination()}
+
+                                <ResponsivePagination
+                                    currentPage={currentAlbumPage}
+                                    totalPages={totalAlbumPages}
+                                    onPageChange={setCurrentAlbumPage}
+                                    maxVisible={3}
+                                // Adjust based on your needs
+                                />
                             </>
                         )}
                     </Col>
@@ -271,7 +226,12 @@ const PhotoGallery = () => {
                                                 </Col>
                                             ))}
                                         </Row>
-                                        {renderPhotoPagination()}
+                                        <ResponsivePagination
+                                            currentPage={currentPhotoPage}
+                                            totalPages={totalPhotoPages}
+                                            onPageChange={setCurrentPhotoPage}
+                                            maxVisible={3}
+                                        />
                                     </>
                                 ) : (
                                     <div className="text-center text-muted py-5">

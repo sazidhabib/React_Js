@@ -5,6 +5,7 @@ import { FaPlayCircle, FaPauseCircle } from 'react-icons/fa';
 import 'animate.css';
 import axios from 'axios';
 import { useMenu } from '../store/MenuContext';
+import ResponsivePagination from './ResponsivePagination';
 
 const extractVideoId = (url) => {
   const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -235,29 +236,12 @@ const ListeningMusicSection = () => {
 
             </div>
             <div className="d-flex justify-content-center mt-4">
-              <nav>
-                <ul className="pagination">
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>&laquo;</button>
-                  </li>
-
-                  {getPageNumbers().map((num, idx) =>
-                    num === '...' ? (
-                      <li key={idx} className="page-item disabled">
-                        <span className="page-link">...</span>
-                      </li>
-                    ) : (
-                      <li key={idx} className={`page-item ${num === currentPage ? 'active' : ''}`}>
-                        <button className="page-link" onClick={() => setCurrentPage(num)}>{num}</button>
-                      </li>
-                    )
-                  )}
-
-                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                    <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>&raquo;</button>
-                  </li>
-                </ul>
-              </nav>
+              <ResponsivePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                maxVisible={3}
+              />
             </div>
           </div>
 

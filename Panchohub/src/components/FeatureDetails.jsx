@@ -14,16 +14,32 @@ const FeatureDetails = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedChambers, setSelectedChambers] = useState(null);
   const [showChambersModal, setShowChambersModal] = useState(false);
+  const [shoppingCategories, setShoppingCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+
 
   useEffect(() => {
     const feature = keyFeatures.find((item) => item.path === slug);
     setCurrentFeature(feature);
 
-    if (slug === "doctors" && location.state?.filterCategory) {
-      const category = doctorsCategories.find(
-        cat => cat.title.toLowerCase() === location.state.filterCategory.toLowerCase()
-      );
-      setSelectedCategory(category);
+    // Reset states when slug changes
+    setSelectedCategory(null);
+    setShoppingCategories([]);
+
+
+    // Fetch categories if shopping
+    if (slug === "shopping") {
+      setCategoriesLoading(true);
+      fetch("your-shopping-categories-api-endpoint")
+        .then(res => res.json())
+        .then(data => {
+          setShoppingCategories(data);
+          setCategoriesLoading(false);
+        })
+        .catch(error => {
+          console.error("Error fetching categories:", error);
+          setCategoriesLoading(false);
+        });
     }
 
     if (feature) {
@@ -33,6 +49,12 @@ const FeatureDetails = () => {
           setAllData(data);
 
           if (slug === "doctors" && location.state?.filterCategory) {
+            const filtered = data.filter(item =>
+              item.category &&
+              item.category.toLowerCase() === location.state.filterCategory.toLowerCase()
+            );
+            setFilteredData(filtered);
+          } else if (slug === "shopping" && location.state?.filterCategory) {
             const filtered = data.filter(item =>
               item.category &&
               item.category.toLowerCase() === location.state.filterCategory.toLowerCase()
@@ -91,6 +113,44 @@ const FeatureDetails = () => {
                 </button>
               </div>
             )}
+          </>
+        );
+      case "shopping":
+        return (
+          <>
+            <h2 className="text-xl font-semibold mb-2 text-center">
+              {item.title || item.hp_name || item.name || item.place_name}
+            </h2>
+            <div className="space-y-2 text-sm text-left">
+              {item.description && (
+                <p>
+                  <span className="font-bold" >বিস্তারিত:</span>
+                  <HtmlRenderer encodedHtml={item.description} />
+                </p>
+              )}
+              {item.place_details && (
+                <p>
+                  <span className="font-bold" >বিস্তারিত:</span>
+                  <HtmlRenderer encodedHtml={item.place_details} />
+                </p>
+              )}
+              {item.category && <p><strong>শপিং এর ধরণ: </strong>{item.category}</p>}
+              {item.rent_available && <p><strong>কোন মাস থেকে ভাড়া হবে: </strong>{item.rent_available}</p>}
+              {item.area && <p><strong>আয়তন: </strong>{item.area}</p>}
+              {item.number_of_rooms && <p><strong>রুম সংখ্যা: </strong>{item.number_of_rooms}</p>}
+              {item.number_of_bath && <p><strong>বাথরুম সংখ্যা: </strong>{item.number_of_bath}</p>}
+              {item.rent_amount && <p><strong>ভাড়ার পরিমান: </strong>{item.rent_amount}</p>}
+              {item.facilities && (
+                <p>
+                  <span className="font-bold" >সুযোগ-সুবিধা:</span>
+                  <HtmlRenderer encodedHtml={item.facilities} />
+                </p>
+              )}
+              {item.address && <p><strong>বিস্তারিত ঠিকানা: </strong>{item.address}</p>}
+              {item.others_info && <p><strong>অন্যান্য তথ্য: </strong>{item.others_info}</p>}
+              {item.upazila && <p><strong>উপজেলা:</strong> {item.upazila}</p>}
+              {item.contact && <p><strong>যোগাযোগ নম্বর:</strong> {item.contact}</p>}
+            </div>
           </>
         );
       default:
@@ -153,8 +213,8 @@ const FeatureDetails = () => {
         </h1>
       </div>
 
-      {/* Category filter (only for doctors) */}
-      {slug === "doctors" && (
+      {/* Category filter (for doctors and shopping) */}
+      {(slug === "doctors" || (slug === "shopping" && shoppingCategories.length > 0)) && (
         <div className="mb-8">
           <div className="flex flex-wrap gap-2">
             <button
@@ -166,7 +226,7 @@ const FeatureDetails = () => {
             >
               All Categories
             </button>
-            {doctorsCategories.map((category) => (
+            {(slug === "doctors" ? doctorsCategories : shoppingCategories).map((category) => (
               <button
                 key={category.title}
                 onClick={() => {

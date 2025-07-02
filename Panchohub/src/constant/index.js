@@ -45,7 +45,9 @@ export const keyFeatures = [
   {
     title: "শপিং",
     path: "shopping",
+    imagePath: "shoppings",
     icon: "https://img.icons8.com/?size=100&id=9gYPgyVfWWyJ&format=png&color=000000",
+    api: "https://app.panchohub.com/api/shopping",
   },
   {
     title: "ফায়ার সার্ভিস",

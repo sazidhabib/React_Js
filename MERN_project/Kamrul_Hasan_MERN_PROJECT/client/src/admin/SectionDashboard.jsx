@@ -21,8 +21,8 @@ const SectionDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [modalShow, setModalShow] = useState(false);
     const [currentSection, setCurrentSection] = useState(null);
-    const [confirmModalShow, setConfirmModalShow] = useState(false);
-    const [sectionToDelete, setSectionToDelete] = useState(null);
+
+
 
     const { token } = useAuth();
 
@@ -50,7 +50,8 @@ const SectionDashboard = () => {
             formData.append('type', sectionData.type);
             formData.append('title', sectionData.title);
             formData.append('description', sectionData.description);
-            if (sectionData.image) {
+            // Only append image if it exists (for updates)
+            if (sectionData.image && typeof sectionData.image !== 'string') {
                 formData.append('image', sectionData.image);
             }
 
@@ -77,21 +78,7 @@ const SectionDashboard = () => {
         }
     };
 
-    const handleDelete = async () => {
-        try {
-            await axios.delete(`${API_URL}/${sectionToDelete}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            toast.success("Section deleted successfully");
-            setConfirmModalShow(false);
-            fetchSections();
-        } catch (err) {
-            toast.error("Failed to delete section");
-            console.error("Delete error:", err);
-        }
-    };
+
 
     return (
         <div className="container custom-font-initial mt-4">

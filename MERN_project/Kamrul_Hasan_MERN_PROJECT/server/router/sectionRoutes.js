@@ -27,6 +27,15 @@ router.post(
     validate(sectionSchema),
     upsertSection
 );
+//udate section
+router.patch(
+    '/:id',
+    upload.single('image'),
+    convertToWebp,
+    authMiddleware,
+    validate(sectionSchema),
+    upsertSection
+);
 
 // Get all sections
 router.get('/', getSections);

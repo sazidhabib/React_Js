@@ -51,7 +51,7 @@ const SectionFormModal = ({ show, onHide, onSubmit, section, sectionTypes }) => 
                 type,
                 title,
                 description,
-                image
+                image: image || (section?.imageUrl ? section.imageUrl : null)
             });
             resetForm();
         } finally {

@@ -4,6 +4,7 @@ import {
   keyFeatures,
   doctorsCategories,
   shoppingCategories,
+  thanaPolishiceCategories,
 } from "../constant";
 import { imgLink } from "../constant";
 import HtmlRenderer from "./HtmlRenderer";
@@ -20,8 +21,35 @@ const FeatureDetails = () => {
   const [showChambersModal, setShowChambersModal] = useState(false);
 
   useEffect(() => {
-    const feature = keyFeatures.find((item) => item.path === slug);
+    const feature = keyFeatures.find((item) => item.path === slug || item.path2 === slug);
     setCurrentFeature(feature);
+
+    // Set initial category for thana/police
+    if (feature?.path === "police" || feature?.path2 === "thana") {
+      const defaultCategory = thanaPolishiceCategories.find(
+        cat => cat.slug === (slug === "thana" ? "thana" : "police")
+      );
+      setSelectedCategory(defaultCategory);
+    }
+
+    if (feature) {
+      // Determine which API to use based on slug
+      const apiUrl = slug === "thana" ? feature.api2 : feature.api;
+
+      fetch(apiUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          setAllData(data);
+          setFilteredData(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching feature data:", error);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
 
     if (slug === "doctors" && location.state?.filterCategory) {
       const category = doctorsCategories.find(
@@ -43,7 +71,7 @@ const FeatureDetails = () => {
               (item) =>
                 item.category &&
                 item.category.toLowerCase() ===
-                  location.state.filterCategory.toLowerCase()
+                location.state.filterCategory.toLowerCase()
             );
             setFilteredData(filtered);
           } else if (slug === "shopping" && location.state?.filterCategory) {
@@ -51,7 +79,7 @@ const FeatureDetails = () => {
               (item) =>
                 item.category &&
                 item.category.toLowerCase() ===
-                  location.state.filterCategory.toLowerCase()
+                location.state.filterCategory.toLowerCase()
             );
             setFilteredData(filtered);
           } else {
@@ -68,6 +96,27 @@ const FeatureDetails = () => {
       setLoading(false);
     }
   }, [slug, location.state]);
+
+  // Handle category change for thana/police
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+
+    if (category.slug === "police") {
+      fetch(currentFeature.api)
+        .then(res => res.json())
+        .then(data => {
+          setAllData(data);
+          setFilteredData(data);
+        });
+    } else if (category.slug === "thana") {
+      fetch(currentFeature.api2)
+        .then(res => res.json())
+        .then(data => {
+          setAllData(data);
+          setFilteredData(data);
+        });
+    }
+  };
 
   const handleShowChambers = (chambers) => {
     setSelectedChambers(chambers);
@@ -294,17 +343,36 @@ const FeatureDetails = () => {
         </h1>
       </div>
 
+      {/* Category filter for thana/police */}
+      {(slug === "thana" || slug === "police") && (
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2">
+            {thanaPolishiceCategories.map((category) => (
+              <button
+                key={category.title}
+                onClick={() => handleCategoryChange(category)}
+                className={`px-4 py-2 rounded ${selectedCategory?.slug === category.slug
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+                  }`}
+              >
+                {category.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Category filter (for doctors and shopping) */}
       {(slug === "doctors" || slug === "shopping") && (
         <div className="mb-8">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilteredData(allData)}
-              className={`px-4 py-2 rounded ${
-                !location.state?.filterCategory
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
+              className={`px-4 py-2 rounded ${!location.state?.filterCategory
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
+                }`}
             >
               All Categories
             </button>
@@ -321,11 +389,10 @@ const FeatureDetails = () => {
                     setFilteredData(filtered);
                     setSelectedCategory(category);
                   }}
-                  className={`px-4 py-2 rounded ${
-                    selectedCategory?.title === category.title
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
-                  }`}
+                  className={`px-4 py-2 rounded ${selectedCategory?.title === category.title
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                    }`}
                 >
                   {category.title}
                 </button>
@@ -353,15 +420,13 @@ const FeatureDetails = () => {
               className="flex flex-col rounded-lg bg-white p-6 shadow-lg hover:shadow-xl transition cursor-pointer"
             >
               {/* Image */}
-              {item.image && (
-                <div className="flex justify-center mb-4">
-                  <img
-                    src={`${imgLink}/${currentFeature.imagePath}/${item.image}`}
-                    alt={item.dr_name || item.title || item.name}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                </div>
-              )}
+              <div className="flex justify-center mb-4">
+                <img
+                  src={item.image ? `${imgLink}/${currentFeature.imagePath}/${item.image}` : '/image/logo-3.png'}
+                  alt={item.image ? (item.dr_name || item.title || item.name) : "Default"}
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+              </div>
 
               {/* Dynamic Content */}
               <div className="flex-grow">{renderContent(item)}</div>

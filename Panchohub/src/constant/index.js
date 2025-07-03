@@ -53,17 +53,22 @@ export const keyFeatures = [
     title: "ফায়ার সার্ভিস",
     path: "fire_service",
     icon: "https://img.icons8.com/?size=100&id=LPfUNSdTFurl&format=png&color=000000",
+    api: "https://app.panchohub.com/api/fire_service",
   },
   {
     title: "কুরিয়ার সার্ভিস",
     path: "courier_service",
+    imagePath: "curierServises",
     icon: "https://img.icons8.com/?size=100&id=ATJTsWtdBiWn&format=png&color=000000",
+    api: "https://app.panchohub.com/api/courier_service",
   },
   {
     title: "থানা - পুলিশ",
     path: "police",
     path2: "thana",
     icon: "https://img.icons8.com/?size=100&id=jCKzmCCS5GzP&format=png&color=000000",
+    api: "https://app.panchohub.com/api/police",
+    api2: "https://app.panchohub.com/api/thana",
   },
   {
     title: "ওয়েব-সাইট",
@@ -291,6 +296,17 @@ export const shoppingCategories = [
   { title: "নতুন পণ্য" },
   { title: "পুরাতন পণ্য" },
   // Add more categories as needed
+];
+
+export const thanaPolishiceCategories = [
+  {
+    title: "পুলিশ",
+    slug: "police"
+  },
+  {
+    title: "থানা",
+    slug: "thana"
+  }
 ];
 
 export const plans = [

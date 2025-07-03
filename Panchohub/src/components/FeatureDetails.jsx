@@ -99,10 +99,10 @@ const FeatureDetails = () => {
                 </p>
               )}
               {item.spacialist && (
-                <p>
+                <div>
                   <span className="font-bold">যেসব রোগের চিকিৎসা করেন:</span>
                   <HtmlRenderer encodedHtml={item.spacialist} />
-                </p>
+                </div>
               )}
               {item.upazila && (
                 <p>
@@ -144,72 +144,32 @@ const FeatureDetails = () => {
               {item.title || item.hp_name || item.name || item.place_name}
             </h2>
             <div className="space-y-2 text-sm text-left">
-              {item.description && (
-                <p>
-                  <span className="font-bold">বিস্তারিত:</span>
-                  <HtmlRenderer encodedHtml={item.description} />
-                </p>
-              )}
-              {item.place_details && (
-                <p>
-                  <span className="font-bold">বিস্তারিত:</span>
-                  <HtmlRenderer encodedHtml={item.place_details} />
-                </p>
-              )}
               {item.category && (
                 <p>
                   <strong>শপিং এর ধরণ: </strong>
                   {item.category}
                 </p>
               )}
-              {item.rent_available && (
+              {item.details && (
+                <div>
+                  <span className="font-bold">বিস্তারিত:</span>
+                  <HtmlRenderer encodedHtml={item.details} />
+                </div>
+              )}
+              {item.price && (
                 <p>
-                  <strong>কোন মাস থেকে ভাড়া হবে: </strong>
-                  {item.rent_available}
+                  <strong>মূল্য: </strong>
+                  {item.price}
                 </p>
               )}
-              {item.area && (
-                <p>
-                  <strong>আয়তন: </strong>
-                  {item.area}
-                </p>
-              )}
-              {item.number_of_rooms && (
-                <p>
-                  <strong>রুম সংখ্যা: </strong>
-                  {item.number_of_rooms}
-                </p>
-              )}
-              {item.number_of_bath && (
-                <p>
-                  <strong>বাথরুম সংখ্যা: </strong>
-                  {item.number_of_bath}
-                </p>
-              )}
-              {item.rent_amount && (
-                <p>
-                  <strong>ভাড়ার পরিমান: </strong>
-                  {item.rent_amount}
-                </p>
-              )}
-              {item.facilities && (
-                <p>
-                  <span className="font-bold">সুযোগ-সুবিধা:</span>
-                  <HtmlRenderer encodedHtml={item.facilities} />
-                </p>
-              )}
+
               {item.address && (
                 <p>
                   <strong>বিস্তারিত ঠিকানা: </strong>
                   {item.address}
                 </p>
               )}
-              {item.others_info && (
-                <p>
-                  <strong>অন্যান্য তথ্য: </strong>
-                  {item.others_info}
-                </p>
-              )}
+
               {item.upazila && (
                 <p>
                   <strong>উপজেলা:</strong> {item.upazila}

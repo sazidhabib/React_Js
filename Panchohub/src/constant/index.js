@@ -85,14 +85,17 @@ export const keyFeatures = [
   {
     title: "ডায়াগনস্টিক সেন্টার",
     path: "diagnostics",
+    imagePath: "diagnostics",
     icon: "https://img.icons8.com/?size=100&id=awpcsVKyfXtK&format=png&color=000000",
     api: "https://app.panchohub.com/api/diagnostics",
   },
   {
     title: "রক্ত",
-    path: "/doners",
-    path2: "/needers",
+    path: "doners",
+    path2: "needers",
     icon: "https://img.icons8.com/?size=100&id=au6epl7oVxWj&format=png&color=000000",
+    api: "https://app.panchohub.com/api/doners",
+    api2: "https://app.panchohub.com/api/needers",
   },
   {
     title: "হোটেল",
@@ -306,6 +309,17 @@ export const thanaPolishiceCategories = [
   {
     title: "থানা",
     slug: "thana"
+  }
+];
+
+export const BloodDonorsNeedersCategories = [
+  {
+    title: "রক্তদাতা",
+    slug: "Doners"
+  },
+  {
+    title: "থানা",
+    slug: "Needers"
   }
 ];
 

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { keyFeatures, doctorsCategories } from "../constant";
+import {
+  keyFeatures,
+  doctorsCategories,
+  shoppingCategories,
+} from "../constant";
 import { imgLink } from "../constant";
 import HtmlRenderer from "./HtmlRenderer";
 
@@ -14,32 +18,18 @@ const FeatureDetails = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedChambers, setSelectedChambers] = useState(null);
   const [showChambersModal, setShowChambersModal] = useState(false);
-  const [shoppingCategories, setShoppingCategories] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
-
 
   useEffect(() => {
     const feature = keyFeatures.find((item) => item.path === slug);
     setCurrentFeature(feature);
 
-    // Reset states when slug changes
-    setSelectedCategory(null);
-    setShoppingCategories([]);
-
-
-    // Fetch categories if shopping
-    if (slug === "shopping") {
-      setCategoriesLoading(true);
-      fetch("your-shopping-categories-api-endpoint")
-        .then(res => res.json())
-        .then(data => {
-          setShoppingCategories(data);
-          setCategoriesLoading(false);
-        })
-        .catch(error => {
-          console.error("Error fetching categories:", error);
-          setCategoriesLoading(false);
-        });
+    if (slug === "doctors" && location.state?.filterCategory) {
+      const category = doctorsCategories.find(
+        (cat) =>
+          cat.title.toLowerCase() ===
+          location.state.filterCategory.toLowerCase()
+      );
+      setSelectedCategory(category);
     }
 
     if (feature) {
@@ -49,15 +39,19 @@ const FeatureDetails = () => {
           setAllData(data);
 
           if (slug === "doctors" && location.state?.filterCategory) {
-            const filtered = data.filter(item =>
-              item.category &&
-              item.category.toLowerCase() === location.state.filterCategory.toLowerCase()
+            const filtered = data.filter(
+              (item) =>
+                item.category &&
+                item.category.toLowerCase() ===
+                  location.state.filterCategory.toLowerCase()
             );
             setFilteredData(filtered);
           } else if (slug === "shopping" && location.state?.filterCategory) {
-            const filtered = data.filter(item =>
-              item.category &&
-              item.category.toLowerCase() === location.state.filterCategory.toLowerCase()
+            const filtered = data.filter(
+              (item) =>
+                item.category &&
+                item.category.toLowerCase() ===
+                  location.state.filterCategory.toLowerCase()
             );
             setFilteredData(filtered);
           } else {
@@ -89,19 +83,47 @@ const FeatureDetails = () => {
               {item.dr_name}
             </h2>
             <div className="space-y-2 text-sm text-left">
-              {item.category && <p><strong>বিশেষজ্ঞ:</strong> {item.category}</p>}
-              {item.education_qualify && <p><strong>শিক্ষাগত যোগ্যতা:</strong> {item.education_qualify}</p>}
-              {item.current_servise && <p><strong>বর্তমান কর্মস্থল:</strong> {item.current_servise}</p>}
+              {item.category && (
+                <p>
+                  <strong>বিশেষজ্ঞ:</strong> {item.category}
+                </p>
+              )}
+              {item.education_qualify && (
+                <p>
+                  <strong>শিক্ষাগত যোগ্যতা:</strong> {item.education_qualify}
+                </p>
+              )}
+              {item.current_servise && (
+                <p>
+                  <strong>বর্তমান কর্মস্থল:</strong> {item.current_servise}
+                </p>
+              )}
               {item.spacialist && (
                 <p>
-                  <span className="font-bold" >যেসব রোগের চিকিৎসা করেন:</span>
+                  <span className="font-bold">যেসব রোগের চিকিৎসা করেন:</span>
                   <HtmlRenderer encodedHtml={item.spacialist} />
                 </p>
               )}
-              {item.upazila && <p><strong>উপজেলা:</strong> {item.upazila}</p>}
-              {item.address && <p><strong>বিস্তারিত ঠিকানা:</strong> {item.address}</p>}
-              {item.contact && <p><strong>যোগাযোগ নম্বর:</strong> {item.contact}</p>}
-              {item.facilities && <p><strong>সুযোগ-সুবিধা:</strong> {item.facilities}</p>}
+              {item.upazila && (
+                <p>
+                  <strong>উপজেলা:</strong> {item.upazila}
+                </p>
+              )}
+              {item.address && (
+                <p>
+                  <strong>বিস্তারিত ঠিকানা:</strong> {item.address}
+                </p>
+              )}
+              {item.contact && (
+                <p>
+                  <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+                </p>
+              )}
+              {item.facilities && (
+                <p>
+                  <strong>সুযোগ-সুবিধা:</strong> {item.facilities}
+                </p>
+              )}
             </div>
             {item.chambers?.length > 0 && (
               <div className="mt-3">
@@ -124,32 +146,80 @@ const FeatureDetails = () => {
             <div className="space-y-2 text-sm text-left">
               {item.description && (
                 <p>
-                  <span className="font-bold" >বিস্তারিত:</span>
+                  <span className="font-bold">বিস্তারিত:</span>
                   <HtmlRenderer encodedHtml={item.description} />
                 </p>
               )}
               {item.place_details && (
                 <p>
-                  <span className="font-bold" >বিস্তারিত:</span>
+                  <span className="font-bold">বিস্তারিত:</span>
                   <HtmlRenderer encodedHtml={item.place_details} />
                 </p>
               )}
-              {item.category && <p><strong>শপিং এর ধরণ: </strong>{item.category}</p>}
-              {item.rent_available && <p><strong>কোন মাস থেকে ভাড়া হবে: </strong>{item.rent_available}</p>}
-              {item.area && <p><strong>আয়তন: </strong>{item.area}</p>}
-              {item.number_of_rooms && <p><strong>রুম সংখ্যা: </strong>{item.number_of_rooms}</p>}
-              {item.number_of_bath && <p><strong>বাথরুম সংখ্যা: </strong>{item.number_of_bath}</p>}
-              {item.rent_amount && <p><strong>ভাড়ার পরিমান: </strong>{item.rent_amount}</p>}
+              {item.category && (
+                <p>
+                  <strong>শপিং এর ধরণ: </strong>
+                  {item.category}
+                </p>
+              )}
+              {item.rent_available && (
+                <p>
+                  <strong>কোন মাস থেকে ভাড়া হবে: </strong>
+                  {item.rent_available}
+                </p>
+              )}
+              {item.area && (
+                <p>
+                  <strong>আয়তন: </strong>
+                  {item.area}
+                </p>
+              )}
+              {item.number_of_rooms && (
+                <p>
+                  <strong>রুম সংখ্যা: </strong>
+                  {item.number_of_rooms}
+                </p>
+              )}
+              {item.number_of_bath && (
+                <p>
+                  <strong>বাথরুম সংখ্যা: </strong>
+                  {item.number_of_bath}
+                </p>
+              )}
+              {item.rent_amount && (
+                <p>
+                  <strong>ভাড়ার পরিমান: </strong>
+                  {item.rent_amount}
+                </p>
+              )}
               {item.facilities && (
                 <p>
-                  <span className="font-bold" >সুযোগ-সুবিধা:</span>
+                  <span className="font-bold">সুযোগ-সুবিধা:</span>
                   <HtmlRenderer encodedHtml={item.facilities} />
                 </p>
               )}
-              {item.address && <p><strong>বিস্তারিত ঠিকানা: </strong>{item.address}</p>}
-              {item.others_info && <p><strong>অন্যান্য তথ্য: </strong>{item.others_info}</p>}
-              {item.upazila && <p><strong>উপজেলা:</strong> {item.upazila}</p>}
-              {item.contact && <p><strong>যোগাযোগ নম্বর:</strong> {item.contact}</p>}
+              {item.address && (
+                <p>
+                  <strong>বিস্তারিত ঠিকানা: </strong>
+                  {item.address}
+                </p>
+              )}
+              {item.others_info && (
+                <p>
+                  <strong>অন্যান্য তথ্য: </strong>
+                  {item.others_info}
+                </p>
+              )}
+              {item.upazila && (
+                <p>
+                  <strong>উপজেলা:</strong> {item.upazila}
+                </p>
+              )}
+              {item.contact && (
+                <p>
+                  <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+                </p>
+              )}
             </div>
           </>
         );
@@ -162,32 +232,80 @@ const FeatureDetails = () => {
             <div className="space-y-2 text-sm text-left">
               {item.description && (
                 <p>
-                  <span className="font-bold" >বিস্তারিত:</span>
+                  <span className="font-bold">বিস্তারিত:</span>
                   <HtmlRenderer encodedHtml={item.description} />
                 </p>
               )}
               {item.place_details && (
                 <p>
-                  <span className="font-bold" >বিস্তারিত:</span>
+                  <span className="font-bold">বিস্তারিত:</span>
                   <HtmlRenderer encodedHtml={item.place_details} />
                 </p>
               )}
-              {item.category && <p><strong>বাসার ধরণ: </strong>{item.category}</p>}
-              {item.rent_available && <p><strong>কোন মাস থেকে ভাড়া হবে: </strong>{item.rent_available}</p>}
-              {item.area && <p><strong>আয়তন: </strong>{item.area}</p>}
-              {item.number_of_rooms && <p><strong>রুম সংখ্যা: </strong>{item.number_of_rooms}</p>}
-              {item.number_of_bath && <p><strong>বাথরুম সংখ্যা: </strong>{item.number_of_bath}</p>}
-              {item.rent_amount && <p><strong>ভাড়ার পরিমান: </strong>{item.rent_amount}</p>}
+              {item.category && (
+                <p>
+                  <strong>বাসার ধরণ: </strong>
+                  {item.category}
+                </p>
+              )}
+              {item.rent_available && (
+                <p>
+                  <strong>কোন মাস থেকে ভাড়া হবে: </strong>
+                  {item.rent_available}
+                </p>
+              )}
+              {item.area && (
+                <p>
+                  <strong>আয়তন: </strong>
+                  {item.area}
+                </p>
+              )}
+              {item.number_of_rooms && (
+                <p>
+                  <strong>রুম সংখ্যা: </strong>
+                  {item.number_of_rooms}
+                </p>
+              )}
+              {item.number_of_bath && (
+                <p>
+                  <strong>বাথরুম সংখ্যা: </strong>
+                  {item.number_of_bath}
+                </p>
+              )}
+              {item.rent_amount && (
+                <p>
+                  <strong>ভাড়ার পরিমান: </strong>
+                  {item.rent_amount}
+                </p>
+              )}
               {item.facilities && (
                 <p>
-                  <span className="font-bold" >সুযোগ-সুবিধা:</span>
+                  <span className="font-bold">সুযোগ-সুবিধা:</span>
                   <HtmlRenderer encodedHtml={item.facilities} />
                 </p>
               )}
-              {item.address && <p><strong>বিস্তারিত ঠিকানা: </strong>{item.address}</p>}
-              {item.others_info && <p><strong>অন্যান্য তথ্য: </strong>{item.others_info}</p>}
-              {item.upazila && <p><strong>উপজেলা:</strong> {item.upazila}</p>}
-              {item.contact && <p><strong>যোগাযোগ নম্বর:</strong> {item.contact}</p>}
+              {item.address && (
+                <p>
+                  <strong>বিস্তারিত ঠিকানা: </strong>
+                  {item.address}
+                </p>
+              )}
+              {item.others_info && (
+                <p>
+                  <strong>অন্যান্য তথ্য: </strong>
+                  {item.others_info}
+                </p>
+              )}
+              {item.upazila && (
+                <p>
+                  <strong>উপজেলা:</strong> {item.upazila}
+                </p>
+              )}
+              {item.contact && (
+                <p>
+                  <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+                </p>
+              )}
             </div>
           </>
         );
@@ -195,7 +313,8 @@ const FeatureDetails = () => {
   };
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
-  if (!currentFeature) return <div className="text-center py-10">Feature not found</div>;
+  if (!currentFeature)
+    return <div className="text-center py-10">Feature not found</div>;
 
   return (
     <div className="container mx-auto p-6 py-12">
@@ -209,41 +328,49 @@ const FeatureDetails = () => {
           />
         )}
         <h1 className="text-3xl font-bold">
-          {selectedCategory?.title || location.state?.filterCategory || currentFeature.title}
+          {selectedCategory?.title ||
+            location.state?.filterCategory ||
+            currentFeature.title}
         </h1>
       </div>
 
       {/* Category filter (for doctors and shopping) */}
-      {(slug === "doctors" || (slug === "shopping" && shoppingCategories.length > 0)) && (
+      {(slug === "doctors" || slug === "shopping") && (
         <div className="mb-8">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilteredData(allData)}
-              className={`px-4 py-2 rounded ${!location.state?.filterCategory
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 hover:bg-gray-300'
-                }`}
+              className={`px-4 py-2 rounded ${
+                !location.state?.filterCategory
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
               All Categories
             </button>
-            {(slug === "doctors" ? doctorsCategories : shoppingCategories).map((category) => (
-              <button
-                key={category.title}
-                onClick={() => {
-                  const filtered = allData.filter(item =>
-                    item.category?.toLowerCase() === category.title.toLowerCase()
-                  );
-                  setFilteredData(filtered);
-                  setSelectedCategory(category);
-                }}
-                className={`px-4 py-2 rounded ${selectedCategory?.title === category.title
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300'
+            {(slug === "doctors" ? doctorsCategories : shoppingCategories).map(
+              (category) => (
+                <button
+                  key={category.title}
+                  onClick={() => {
+                    const filtered = allData.filter(
+                      (item) =>
+                        item.category?.toLowerCase() ===
+                        category.title.toLowerCase()
+                    );
+                    setFilteredData(filtered);
+                    setSelectedCategory(category);
+                  }}
+                  className={`px-4 py-2 rounded ${
+                    selectedCategory?.title === category.title
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 hover:bg-gray-300"
                   }`}
-              >
-                {category.title}
-              </button>
-            ))}
+                >
+                  {category.title}
+                </button>
+              )
+            )}
           </div>
         </div>
       )}
@@ -277,9 +404,7 @@ const FeatureDetails = () => {
               )}
 
               {/* Dynamic Content */}
-              <div className="flex-grow">
-                {renderContent(item)}
-              </div>
+              <div className="flex-grow">{renderContent(item)}</div>
             </div>
           ))}
         </div>
@@ -304,11 +429,35 @@ const FeatureDetails = () => {
                 <div key={index} className="border-b pb-4 mb-4">
                   <h4 className="font-semibold">চেম্বার {index + 1}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                    {chamber.chamber_name && <p><strong>চেম্বারের নাম:</strong> {chamber.chamber_name}</p>}
-                    {chamber.chamber_address && <p><strong>চেম্বারের ঠিকানা:</strong> {chamber.chamber_address}</p>}
-                    {chamber.chamber_contact && <p><strong>চেম্বারের যোগাযোগ নম্বর:</strong> {chamber.chamber_contact}</p>}
-                    {chamber.chamber_date && <p><strong>কোন কোন দিন খোলা থাকে:</strong> {chamber.chamber_date}</p>}
-                    {chamber.chamber_time && <p><strong>কয়টা থেকে কয়টা পর্যন্ত খোলা থাকে:</strong> {chamber.chamber_time}</p>}
+                    {chamber.chamber_name && (
+                      <p>
+                        <strong>চেম্বারের নাম:</strong> {chamber.chamber_name}
+                      </p>
+                    )}
+                    {chamber.chamber_address && (
+                      <p>
+                        <strong>চেম্বারের ঠিকানা:</strong>{" "}
+                        {chamber.chamber_address}
+                      </p>
+                    )}
+                    {chamber.chamber_contact && (
+                      <p>
+                        <strong>চেম্বারের যোগাযোগ নম্বর:</strong>{" "}
+                        {chamber.chamber_contact}
+                      </p>
+                    )}
+                    {chamber.chamber_date && (
+                      <p>
+                        <strong>কোন কোন দিন খোলা থাকে:</strong>{" "}
+                        {chamber.chamber_date}
+                      </p>
+                    )}
+                    {chamber.chamber_time && (
+                      <p>
+                        <strong>কয়টা থেকে কয়টা পর্যন্ত খোলা থাকে:</strong>{" "}
+                        {chamber.chamber_time}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

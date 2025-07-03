@@ -286,6 +286,13 @@ export const doctorsCategories = [
   },
 ];
 
+export const shoppingCategories = [
+  { title: "স্টোর" },
+  { title: "নতুন পণ্য" },
+  { title: "পুরাতন পণ্য" },
+  // Add more categories as needed
+];
+
 export const plans = [
   {
     title: "Basic",

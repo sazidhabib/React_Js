@@ -5,6 +5,7 @@ import {
   doctorsCategories,
   shoppingCategories,
   thanaPolishiceCategories,
+  BloodDonorsNeedersCategories,
 } from "../constant";
 import { imgLink } from "../constant";
 import HtmlRenderer from "./HtmlRenderer";
@@ -21,15 +22,44 @@ const FeatureDetails = () => {
   const [showChambersModal, setShowChambersModal] = useState(false);
 
   useEffect(() => {
-    const feature = keyFeatures.find((item) => item.path === slug || item.path2 === slug);
+    const feature = keyFeatures.find(
+      (item) => item.path === slug || item.path2 === slug
+    );
     setCurrentFeature(feature);
+
+    // Set initial category for thana/police
+    if (feature?.path === "donors" || feature?.path2 === "needers") {
+      const defaultCategory = BloodDonorsNeedersCategories.find(
+        (cat) => cat.slug === (slug === "needers" ? "needers" : "donors")
+      );
+      setSelectedCategory(defaultCategory);
+    }
 
     // Set initial category for thana/police
     if (feature?.path === "police" || feature?.path2 === "thana") {
       const defaultCategory = thanaPolishiceCategories.find(
-        cat => cat.slug === (slug === "thana" ? "thana" : "police")
+        (cat) => cat.slug === (slug === "thana" ? "thana" : "police")
       );
       setSelectedCategory(defaultCategory);
+    }
+
+    if (feature) {
+      // Determine which API to use based on slug
+      const apiUrl = slug === "needers" ? feature.api2 : feature.api;
+
+      fetch(apiUrl)
+        .then((res) => res.json())
+        .then((data) => {
+          setAllData(data);
+          setFilteredData(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching feature data:", error);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
     }
 
     if (feature) {
@@ -71,7 +101,7 @@ const FeatureDetails = () => {
               (item) =>
                 item.category &&
                 item.category.toLowerCase() ===
-                location.state.filterCategory.toLowerCase()
+                  location.state.filterCategory.toLowerCase()
             );
             setFilteredData(filtered);
           } else if (slug === "shopping" && location.state?.filterCategory) {
@@ -79,7 +109,7 @@ const FeatureDetails = () => {
               (item) =>
                 item.category &&
                 item.category.toLowerCase() ===
-                location.state.filterCategory.toLowerCase()
+                  location.state.filterCategory.toLowerCase()
             );
             setFilteredData(filtered);
           } else {
@@ -98,20 +128,41 @@ const FeatureDetails = () => {
   }, [slug, location.state]);
 
   // Handle category change for thana/police
+  const handleBloodCategoryChange = (category) => {
+    setSelectedCategory(category);
+
+    if (category.slug === "donors") {
+      fetch(currentFeature.api)
+        .then((res) => res.json())
+        .then((data) => {
+          setAllData(data);
+          setFilteredData(data);
+        });
+    } else if (category.slug === "needers") {
+      fetch(currentFeature.api2)
+        .then((res) => res.json())
+        .then((data) => {
+          setAllData(data);
+          setFilteredData(data);
+        });
+    }
+  };
+
+  // Handle category change for thana/police
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
 
     if (category.slug === "police") {
       fetch(currentFeature.api)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           setAllData(data);
           setFilteredData(data);
         });
     } else if (category.slug === "thana") {
       fetch(currentFeature.api2)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           setAllData(data);
           setFilteredData(data);
         });
@@ -240,21 +291,69 @@ const FeatureDetails = () => {
             </h2>
             <div className="space-y-2 text-sm text-left">
               {item.description && (
-                <p>
+                <div>
                   <span className="font-bold">বিস্তারিত:</span>
                   <HtmlRenderer encodedHtml={item.description} />
-                </p>
+                </div>
               )}
               {item.place_details && (
-                <p>
+                <div>
                   <span className="font-bold">বিস্তারিত:</span>
                   <HtmlRenderer encodedHtml={item.place_details} />
-                </p>
+                </div>
+              )}
+              {item.details && (
+                <div>
+                  <span className="font-bold">বিস্তারিত:</span>
+                  <HtmlRenderer encodedHtml={item.details} />
+                </div>
               )}
               {item.category && (
                 <p>
                   <strong>বাসার ধরণ: </strong>
                   {item.category}
+                </p>
+              )}
+              {item.blood_gorup && (
+                <p>
+                  <strong>ব্লাড গ্রুপ: </strong>
+                  {item.blood_gorup}
+                </p>
+              )}
+              {item.bag_amounts && (
+                <p>
+                  <strong>রক্তের পরিমাণ: </strong>
+                  {item.bag_amounts}
+                </p>
+              )}
+              {item.last_donate && (
+                <p>
+                  <strong>সর্বশেষ রক্তদান: </strong>
+                  {item.last_donate}
+                </p>
+              )}
+              {item.dateline && (
+                <p>
+                  <strong>তারিখ এবং সময়: </strong>
+                  {item.dateline}
+                </p>
+              )}
+              {item.gender && (
+                <p>
+                  <strong>লিঙ্গ: </strong>
+                  {item.gender}
+                </p>
+              )}
+              {item.comment && (
+                <p>
+                  <strong>মন্তব্য: </strong>
+                  {item.comment}
+                </p>
+              )}
+              {item.gift && (
+                <p>
+                  <strong>উপহার: </strong>
+                  {item.gift}
                 </p>
               )}
               {item.rent_available && (
@@ -297,6 +396,12 @@ const FeatureDetails = () => {
                 <p>
                   <strong>বিস্তারিত ঠিকানা: </strong>
                   {item.address}
+                </p>
+              )}
+              {item.hp_address && (
+                <p>
+                  <strong>হাসপাতালের ঠিকানা: </strong>
+                  {item.hp_address}
                 </p>
               )}
               {item.others_info && (
@@ -351,10 +456,32 @@ const FeatureDetails = () => {
               <button
                 key={category.title}
                 onClick={() => handleCategoryChange(category)}
-                className={`px-4 py-2 rounded ${selectedCategory?.slug === category.slug
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-                  }`}
+                className={`px-4 py-2 rounded ${
+                  selectedCategory?.slug === category.slug
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                {category.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Category filter for thana/police */}
+      {(slug === "needers" || slug === "donors") && (
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2">
+            {BloodDonorsNeedersCategories.map((category) => (
+              <button
+                key={category.title}
+                onClick={() => handleBloodCategoryChange(category)}
+                className={`px-4 py-2 rounded ${
+                  selectedCategory?.slug === category.slug
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
               >
                 {category.title}
               </button>
@@ -369,10 +496,11 @@ const FeatureDetails = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilteredData(allData)}
-              className={`px-4 py-2 rounded ${!location.state?.filterCategory
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
-                }`}
+              className={`px-4 py-2 rounded ${
+                !location.state?.filterCategory
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
             >
               All Categories
             </button>
@@ -389,10 +517,11 @@ const FeatureDetails = () => {
                     setFilteredData(filtered);
                     setSelectedCategory(category);
                   }}
-                  className={`px-4 py-2 rounded ${selectedCategory?.title === category.title
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                    }`}
+                  className={`px-4 py-2 rounded ${
+                    selectedCategory?.title === category.title
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 hover:bg-gray-300"
+                  }`}
                 >
                   {category.title}
                 </button>
@@ -422,8 +551,16 @@ const FeatureDetails = () => {
               {/* Image */}
               <div className="flex justify-center mb-4">
                 <img
-                  src={item.image ? `${imgLink}/${currentFeature.imagePath}/${item.image}` : '/image/logo-3.png'}
-                  alt={item.image ? (item.dr_name || item.title || item.name) : "Default"}
+                  src={
+                    item.image
+                      ? `${imgLink}/${currentFeature.imagePath}/${item.image}`
+                      : "/image/logo-3.png"
+                  }
+                  alt={
+                    item.image
+                      ? item.dr_name || item.title || item.name
+                      : "Default"
+                  }
                   className="w-full h-48 object-cover rounded-lg"
                 />
               </div>

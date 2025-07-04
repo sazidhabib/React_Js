@@ -91,21 +91,25 @@ export const keyFeatures = [
   },
   {
     title: "রক্ত",
-    path: "doners",
+    path: "donors",
     path2: "needers",
     icon: "https://img.icons8.com/?size=100&id=au6epl7oVxWj&format=png&color=000000",
-    api: "https://app.panchohub.com/api/doners",
+    api: "https://app.panchohub.com/api/donors",
     api2: "https://app.panchohub.com/api/needers",
   },
   {
     title: "হোটেল",
-    path: "/hoteles",
+    path: "hoteles",
+    imagePath: "hoteles",
     icon: "https://img.icons8.com/?size=100&id=Pt5hLogU2ncp&format=png&color=000000",
+    api: "https://app.panchohub.com/api/hoteles",
   },
   {
     title: "গাড়ি ভাড়া",
-    path: "/vehicle_rent",
+    path: "vehicle_rent",
+    imagePath: "vehicleRents",
     icon: "https://img.icons8.com/?size=100&id=nojiXtGu1G1D&format=png&color=000000",
+    api: "https://app.panchohub.com/api/vehicle_rent",
   },
   {
     title: "মিস্ত্রি",
@@ -144,8 +148,10 @@ export const keyFeatures = [
   },
   {
     title: "ফ্লাট ও জমি",
-    path: "/plot_sales",
+    path: "plot_sales",
+    imagePath: "plotSales",
     icon: "https://img.icons8.com/?size=100&id=2UAlpk_KzvhM&format=png&color=000000",
+    api: "https://app.panchohub.com/api/plot_sales",
   },
   {
     title: "ভিডিও",
@@ -304,23 +310,34 @@ export const shoppingCategories = [
 export const thanaPolishiceCategories = [
   {
     title: "পুলিশ",
-    slug: "police"
+    slug: "police",
   },
   {
     title: "থানা",
-    slug: "thana"
-  }
+    slug: "thana",
+  },
 ];
 
 export const BloodDonorsNeedersCategories = [
   {
     title: "রক্তদাতা",
-    slug: "Doners"
+    slug: "donors",
   },
   {
-    title: "থানা",
-    slug: "Needers"
-  }
+    title: "রক্তগ্রহীতা",
+    slug: "needers",
+  },
+];
+
+export const vrhicleRentCategories = [
+  { title: "বাস" },
+  { title: "মাইক্রোবাস" },
+  { title: "প্রাইভেট কার" },
+  { title: "ট্রাক" },
+  { title: "অটো" },
+  { title: "সিএনজি" },
+  { title: "অ্যাম্বুলেন্স" },
+  { title: "পিকাপ" },
 ];
 
 export const plans = [

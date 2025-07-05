@@ -329,11 +329,12 @@ export const BloodDonorsNeedersCategories = [
   },
 ];
 
-export const vrhicleRentCategories = [
+export const vehicleRentCategories = [
+  { title: "All Categories" },
   { title: "বাস" },
   { title: "মাইক্রোবাস" },
   { title: "প্রাইভেট কার" },
-  { title: "ট্রাক" },
+  { title: "ট্রাক", },
   { title: "অটো" },
   { title: "সিএনজি" },
   { title: "অ্যাম্বুলেন্স" },

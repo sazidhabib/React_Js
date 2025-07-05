@@ -6,9 +6,21 @@ import {
   shoppingCategories,
   thanaPolishiceCategories,
   BloodDonorsNeedersCategories,
+  vehicleRentCategories,
 } from "../constant";
 import { imgLink } from "../constant";
-import HtmlRenderer from "./HtmlRenderer";
+
+// Import our new components
+import { FeatureHeader } from "./FeatureHeader";
+import { CategoryFilterButtons } from "./CategoryFilterButtons";
+import {
+  DoctorContent,
+  ShoppingContent,
+  VehicleRentContent,
+  DefaultContent
+} from "./ContentRenderers";
+import { ChambersModal } from "./ChambersModal";
+import { DataGrid } from "./DataGrid";
 
 const FeatureDetails = () => {
   const { slug } = useParams();
@@ -20,14 +32,26 @@ const FeatureDetails = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedChambers, setSelectedChambers] = useState(null);
   const [showChambersModal, setShowChambersModal] = useState(false);
+  const [attemptedCategory, setAttemptedCategory] = useState(null);
 
+  // Data fetching and initialization
   useEffect(() => {
     const feature = keyFeatures.find(
       (item) => item.path === slug || item.path2 === slug
     );
     setCurrentFeature(feature);
 
-    // Set initial category for thana/police
+    // Initialize categories based on slug
+    initializeCategories(feature, slug);
+
+    if (feature) {
+      fetchData(feature, slug);
+    } else {
+      setLoading(false);
+    }
+  }, [slug, location.state]);
+
+  const initializeCategories = (feature, slug) => {
     if (feature?.path === "donors" || feature?.path2 === "needers") {
       const defaultCategory = BloodDonorsNeedersCategories.find(
         (cat) => cat.slug === (slug === "needers" ? "needers" : "donors")
@@ -35,7 +59,6 @@ const FeatureDetails = () => {
       setSelectedCategory(defaultCategory);
     }
 
-    // Set initial category for thana/police
     if (feature?.path === "police" || feature?.path2 === "thana") {
       const defaultCategory = thanaPolishiceCategories.find(
         (cat) => cat.slug === (slug === "thana" ? "thana" : "police")
@@ -43,129 +66,132 @@ const FeatureDetails = () => {
       setSelectedCategory(defaultCategory);
     }
 
-    if (feature) {
-      // Determine which API to use based on slug
-      const apiUrl = slug === "needers" ? feature.api2 : feature.api;
-
-      fetch(apiUrl)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-          setFilteredData(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching feature data:", error);
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-
-    if (feature) {
-      // Determine which API to use based on slug
-      const apiUrl = slug === "thana" ? feature.api2 : feature.api;
-
-      fetch(apiUrl)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-          setFilteredData(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching feature data:", error);
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-
-    if (slug === "doctors" && location.state?.filterCategory) {
-      const category = doctorsCategories.find(
-        (cat) =>
-          cat.title.toLowerCase() ===
-          location.state.filterCategory.toLowerCase()
-      );
-      setSelectedCategory(category);
-    }
-
-    if (feature) {
-      fetch(feature.api)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-
-          if (slug === "doctors" && location.state?.filterCategory) {
-            const filtered = data.filter(
-              (item) =>
-                item.category &&
-                item.category.toLowerCase() ===
-                  location.state.filterCategory.toLowerCase()
-            );
-            setFilteredData(filtered);
-          } else if (slug === "shopping" && location.state?.filterCategory) {
-            const filtered = data.filter(
-              (item) =>
-                item.category &&
-                item.category.toLowerCase() ===
-                  location.state.filterCategory.toLowerCase()
-            );
-            setFilteredData(filtered);
-          } else {
-            setFilteredData(data);
-          }
-
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching feature data:", error);
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-  }, [slug, location.state]);
-
-  // Handle category change for thana/police
-  const handleBloodCategoryChange = (category) => {
-    setSelectedCategory(category);
-
-    if (category.slug === "donors") {
-      fetch(currentFeature.api)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-          setFilteredData(data);
-        });
-    } else if (category.slug === "needers") {
-      fetch(currentFeature.api2)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-          setFilteredData(data);
-        });
+    if (slug === "vehicle_rent") {
+      const defaultCategory = { title: "All Categories" };
+      setSelectedCategory(defaultCategory);
     }
   };
 
-  // Handle category change for thana/police
+  const fetchData = async (feature, slug) => {
+    try {
+      const apiUrl = slug === "needers" ? feature.api2 :
+        slug === "thana" ? feature.api2 :
+          feature.api;
+
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      setAllData(data);
+      applyInitialFilters(data, slug);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching feature data:", error);
+      setLoading(false);
+    }
+  };
+
+  const applyInitialFilters = (data, slug) => {
+    if (location.state?.filterCategory) {
+      let category;
+      let filtered = data;
+
+      switch (slug) {
+        case "doctors":
+          category = doctorsCategories.find(
+            cat => cat.title.toLowerCase() ===
+              location.state.filterCategory.toLowerCase()
+          );
+          if (category) {
+            filtered = data.filter(item =>
+              item.category?.toLowerCase() ===
+              location.state.filterCategory.toLowerCase()
+            );
+          }
+          break;
+        case "shopping":
+          category = shoppingCategories.find(
+            cat => cat.title.toLowerCase() ===
+              location.state.filterCategory.toLowerCase()
+          );
+          if (category) {
+            filtered = data.filter(item =>
+              item.category?.toLowerCase() ===
+              location.state.filterCategory.toLowerCase()
+            );
+          }
+          break;
+        case "vehicle_rent":
+          category = vehicleRentCategories.find(
+            cat => cat.title === location.state.filterCategory
+          );
+          if (category) {
+            filtered = data.filter(item =>
+              item.category === category.title
+            );
+          }
+          break;
+        default:
+          break;
+      }
+
+      if (category) setSelectedCategory(category);
+      setFilteredData(filtered);
+    } else {
+      setFilteredData(data);
+    }
+  };
+
+  // Category handlers
+  const handleBloodCategoryChange = (category) => {
+    setSelectedCategory(category);
+    fetchCategoryData(currentFeature, category.slug);
+  };
+
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
+    fetchCategoryData(currentFeature, category.slug);
+  };
 
-    if (category.slug === "police") {
-      fetch(currentFeature.api)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-          setFilteredData(data);
-        });
-    } else if (category.slug === "thana") {
-      fetch(currentFeature.api2)
-        .then((res) => res.json())
-        .then((data) => {
-          setAllData(data);
-          setFilteredData(data);
-        });
+  // Update the vehicle rent handler
+  const handleVehicleRentCategoryChange = (category) => {
+    setAttemptedCategory(category);
+
+    if (category.title === "All Categories") {
+      setFilteredData(allData);
+      setSelectedCategory(category);
+    } else {
+      const filtered = allData.filter(item =>
+        item.category && item.category.trim() === category.title.trim()
+      );
+      setFilteredData(filtered);
+      setSelectedCategory(filtered.length > 0 ? category : null);
+    }
+  };
+
+  // Similar updates for other category handlers
+  const handleGenericCategoryChange = (category) => {
+    setAttemptedCategory(category);
+    const filtered = allData.filter(item =>
+      item.category?.toLowerCase() === category.title.toLowerCase()
+    );
+    setFilteredData(filtered);
+
+    // Only update selected category if we have results
+    setSelectedCategory(filtered.length > 0 ? category : null);
+  };
+
+  const fetchCategoryData = async (feature, categorySlug) => {
+    try {
+      const apiUrl = categorySlug === "needers" ? feature.api2 :
+        categorySlug === "thana" ? feature.api2 :
+          feature.api;
+
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      setAllData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error("Error fetching category data:", error);
     }
   };
 
@@ -174,468 +200,101 @@ const FeatureDetails = () => {
     setShowChambersModal(true);
   };
 
+  // Content renderer selector
   const renderContent = (item) => {
-    switch (slug) {
-      case "doctors":
-        return (
-          <>
-            <h2 className="text-xl font-semibold mb-2 text-center">
-              {item.dr_name}
-            </h2>
-            <div className="space-y-2 text-sm text-left">
-              {item.category && (
-                <p>
-                  <strong>বিশেষজ্ঞ:</strong> {item.category}
-                </p>
-              )}
-              {item.education_qualify && (
-                <p>
-                  <strong>শিক্ষাগত যোগ্যতা:</strong> {item.education_qualify}
-                </p>
-              )}
-              {item.current_servise && (
-                <p>
-                  <strong>বর্তমান কর্মস্থল:</strong> {item.current_servise}
-                </p>
-              )}
-              {item.spacialist && (
-                <div>
-                  <span className="font-bold">যেসব রোগের চিকিৎসা করেন:</span>
-                  <HtmlRenderer encodedHtml={item.spacialist} />
-                </div>
-              )}
-              {item.upazila && (
-                <p>
-                  <strong>উপজেলা:</strong> {item.upazila}
-                </p>
-              )}
-              {item.address && (
-                <p>
-                  <strong>বিস্তারিত ঠিকানা:</strong> {item.address}
-                </p>
-              )}
-              {item.contact && (
-                <p>
-                  <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-                </p>
-              )}
-              {item.facilities && (
-                <p>
-                  <strong>সুযোগ-সুবিধা:</strong> {item.facilities}
-                </p>
-              )}
-            </div>
-            {item.chambers?.length > 0 && (
-              <div className="mt-3">
-                <button
-                  onClick={() => handleShowChambers(item.chambers)}
-                  className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded hover:bg-blue-200"
-                >
-                  {item.chambers.length} Chamber(s) - Click to view
-                </button>
-              </div>
-            )}
-          </>
-        );
-      case "shopping":
-        return (
-          <>
-            <h2 className="text-xl font-semibold mb-2 text-center">
-              {item.title || item.hp_name || item.name || item.place_name}
-            </h2>
-            <div className="space-y-2 text-sm text-left">
-              {item.category && (
-                <p>
-                  <strong>শপিং এর ধরণ: </strong>
-                  {item.category}
-                </p>
-              )}
-              {item.details && (
-                <div>
-                  <span className="font-bold">বিস্তারিত:</span>
-                  <HtmlRenderer encodedHtml={item.details} />
-                </div>
-              )}
-              {item.price && (
-                <p>
-                  <strong>মূল্য: </strong>
-                  {item.price}
-                </p>
-              )}
+    const contentComponents = {
+      doctors: <DoctorContent item={item} onShowChambers={handleShowChambers} />,
+      shopping: <ShoppingContent item={item} />,
+      vehicle_rent: <VehicleRentContent item={item} />,
+    };
 
-              {item.address && (
-                <p>
-                  <strong>বিস্তারিত ঠিকানা: </strong>
-                  {item.address}
-                </p>
-              )}
-
-              {item.upazila && (
-                <p>
-                  <strong>উপজেলা:</strong> {item.upazila}
-                </p>
-              )}
-              {item.contact && (
-                <p>
-                  <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-                </p>
-              )}
-            </div>
-          </>
-        );
-      default:
-        return (
-          <>
-            <h2 className="text-xl font-semibold mb-2 text-center">
-              {item.title || item.hp_name || item.name || item.place_name}
-            </h2>
-            <div className="space-y-2 text-sm text-left">
-              {item.description && (
-                <div>
-                  <span className="font-bold">বিস্তারিত:</span>
-                  <HtmlRenderer encodedHtml={item.description} />
-                </div>
-              )}
-              {item.place_details && (
-                <div>
-                  <span className="font-bold">বিস্তারিত:</span>
-                  <HtmlRenderer encodedHtml={item.place_details} />
-                </div>
-              )}
-              {item.details && (
-                <div>
-                  <span className="font-bold">বিস্তারিত:</span>
-                  <HtmlRenderer encodedHtml={item.details} />
-                </div>
-              )}
-              {item.category && (
-                <p>
-                  <strong>বাসার ধরণ: </strong>
-                  {item.category}
-                </p>
-              )}
-              {item.blood_gorup && (
-                <p>
-                  <strong>ব্লাড গ্রুপ: </strong>
-                  {item.blood_gorup}
-                </p>
-              )}
-              {item.bag_amounts && (
-                <p>
-                  <strong>রক্তের পরিমাণ: </strong>
-                  {item.bag_amounts}
-                </p>
-              )}
-              {item.last_donate && (
-                <p>
-                  <strong>সর্বশেষ রক্তদান: </strong>
-                  {item.last_donate}
-                </p>
-              )}
-              {item.dateline && (
-                <p>
-                  <strong>তারিখ এবং সময়: </strong>
-                  {item.dateline}
-                </p>
-              )}
-              {item.gender && (
-                <p>
-                  <strong>লিঙ্গ: </strong>
-                  {item.gender}
-                </p>
-              )}
-              {item.comment && (
-                <p>
-                  <strong>মন্তব্য: </strong>
-                  {item.comment}
-                </p>
-              )}
-              {item.gift && (
-                <p>
-                  <strong>উপহার: </strong>
-                  {item.gift}
-                </p>
-              )}
-              {item.rent_available && (
-                <p>
-                  <strong>কোন মাস থেকে ভাড়া হবে: </strong>
-                  {item.rent_available}
-                </p>
-              )}
-              {item.area && (
-                <p>
-                  <strong>আয়তন: </strong>
-                  {item.area}
-                </p>
-              )}
-              {item.number_of_rooms && (
-                <p>
-                  <strong>রুম সংখ্যা: </strong>
-                  {item.number_of_rooms}
-                </p>
-              )}
-              {item.number_of_bath && (
-                <p>
-                  <strong>বাথরুম সংখ্যা: </strong>
-                  {item.number_of_bath}
-                </p>
-              )}
-              {item.rent_amount && (
-                <p>
-                  <strong>ভাড়ার পরিমান: </strong>
-                  {item.rent_amount}
-                </p>
-              )}
-              {item.facilities && (
-                <p>
-                  <span className="font-bold">সুযোগ-সুবিধা:</span>
-                  <HtmlRenderer encodedHtml={item.facilities} />
-                </p>
-              )}
-              {item.address && (
-                <p>
-                  <strong>বিস্তারিত ঠিকানা: </strong>
-                  {item.address}
-                </p>
-              )}
-              {item.hp_address && (
-                <p>
-                  <strong>হাসপাতালের ঠিকানা: </strong>
-                  {item.hp_address}
-                </p>
-              )}
-              {item.others_info && (
-                <p>
-                  <strong>অন্যান্য তথ্য: </strong>
-                  {item.others_info}
-                </p>
-              )}
-              {item.upazila && (
-                <p>
-                  <strong>উপজেলা:</strong> {item.upazila}
-                </p>
-              )}
-              {item.contact && (
-                <p>
-                  <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-                </p>
-              )}
-            </div>
-          </>
-        );
-    }
+    return contentComponents[slug] || <DefaultContent item={item} />;
   };
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
-  if (!currentFeature)
-    return <div className="text-center py-10">Feature not found</div>;
+  if (!currentFeature) return <div className="text-center py-10">Feature not found</div>;
 
   return (
     <div className="container mx-auto p-6 py-12">
-      {/* Feature Header */}
-      <div className="flex items-center gap-4 mb-8">
-        {currentFeature.icon && (
-          <img
-            src={currentFeature.icon}
-            alt={`${currentFeature.title} Icon`}
-            className="h-12 w-12 object-contain"
-          />
-        )}
-        <h1 className="text-3xl font-bold">
-          {selectedCategory?.title ||
-            location.state?.filterCategory ||
-            currentFeature.title}
-        </h1>
-      </div>
+      <FeatureHeader
+        feature={currentFeature}
+        selectedCategory={selectedCategory}
+        location={location}
+      />
 
-      {/* Category filter for thana/police */}
+      {/* Category filters */}
       {(slug === "thana" || slug === "police") && (
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            {thanaPolishiceCategories.map((category) => (
-              <button
-                key={category.title}
-                onClick={() => handleCategoryChange(category)}
-                className={`px-4 py-2 rounded ${
-                  selectedCategory?.slug === category.slug
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {category.title}
-              </button>
-            ))}
-          </div>
-        </div>
+        <CategoryFilterButtons
+          categories={thanaPolishiceCategories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleCategoryChange}
+        />
       )}
 
-      {/* Category filter for thana/police */}
       {(slug === "needers" || slug === "donors") && (
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-2">
-            {BloodDonorsNeedersCategories.map((category) => (
-              <button
-                key={category.title}
-                onClick={() => handleBloodCategoryChange(category)}
-                className={`px-4 py-2 rounded ${
-                  selectedCategory?.slug === category.slug
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
-                }`}
-              >
-                {category.title}
-              </button>
-            ))}
-          </div>
-        </div>
+        <CategoryFilterButtons
+          categories={BloodDonorsNeedersCategories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleBloodCategoryChange}
+        />
       )}
 
-      {/* Category filter (for doctors and shopping) */}
+      {slug === "vehicle_rent" && (
+        <CategoryFilterButtons
+          categories={vehicleRentCategories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleVehicleRentCategoryChange}
+          slugField="title"
+        />
+      )}
+
+      {/* For doctors and shopping categories */}
       {(slug === "doctors" || slug === "shopping") && (
         <div className="mb-8">
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setFilteredData(allData)}
-              className={`px-4 py-2 rounded ${
-                !location.state?.filterCategory
+              onClick={() => {
+                setAttemptedCategory(null);
+                setFilteredData(allData);
+                setSelectedCategory(null);
+              }}
+              className={`px-4 py-2 rounded ${!selectedCategory
                   ? "bg-blue-500 text-white"
                   : "bg-gray-200 hover:bg-gray-300"
-              }`}
+                }`}
             >
               All Categories
             </button>
-            {(slug === "doctors" ? doctorsCategories : shoppingCategories).map(
-              (category) => (
-                <button
-                  key={category.title}
-                  onClick={() => {
-                    const filtered = allData.filter(
-                      (item) =>
-                        item.category?.toLowerCase() ===
-                        category.title.toLowerCase()
-                    );
-                    setFilteredData(filtered);
-                    setSelectedCategory(category);
-                  }}
-                  className={`px-4 py-2 rounded ${
-                    selectedCategory?.title === category.title
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 hover:bg-gray-300"
+            {(slug === "doctors" ? doctorsCategories : shoppingCategories).map((category) => (
+              <button
+                key={category.title}
+                onClick={() => handleGenericCategoryChange(category)}
+                className={`px-4 py-2 rounded ${selectedCategory?.title === category.title
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"
                   }`}
-                >
-                  {category.title}
-                </button>
-              )
-            )}
+              >
+                {category.title}
+              </button>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Content Grid */}
-      {filteredData.length === 0 ? (
-        <div className="text-center py-10">
-          <p>No data found</p>
-          {location.state?.filterCategory && (
-            <p className="text-sm text-gray-500 mt-2">
-              No results found for "{location.state.filterCategory}"
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredData.map((item, index) => (
-            <div
-              key={index}
-              className="flex flex-col rounded-lg bg-white p-6 shadow-lg hover:shadow-xl transition cursor-pointer"
-            >
-              {/* Image */}
-              <div className="flex justify-center mb-4">
-                <img
-                  src={
-                    item.image
-                      ? `${imgLink}/${currentFeature.imagePath}/${item.image}`
-                      : "/image/logo-3.png"
-                  }
-                  alt={
-                    item.image
-                      ? item.dr_name || item.title || item.name
-                      : "Default"
-                  }
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-              </div>
+      <DataGrid
+        data={filteredData}
+        renderItem={renderContent}
+        imageLink={imgLink}
+        imagePath={currentFeature.imagePath}
+        attemptedCategory={attemptedCategory}
+        selectedCategory={selectedCategory}
+      />
 
-              {/* Dynamic Content */}
-              <div className="flex-grow">{renderContent(item)}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Chambers Modal */}
-      {showChambersModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">চেম্বারসমূহ</h3>
-              <button
-                onClick={() => setShowChambersModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {selectedChambers.map((chamber, index) => (
-                <div key={index} className="border-b pb-4 mb-4">
-                  <h4 className="font-semibold">চেম্বার {index + 1}</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                    {chamber.chamber_name && (
-                      <p>
-                        <strong>চেম্বারের নাম:</strong> {chamber.chamber_name}
-                      </p>
-                    )}
-                    {chamber.chamber_address && (
-                      <p>
-                        <strong>চেম্বারের ঠিকানা:</strong>{" "}
-                        {chamber.chamber_address}
-                      </p>
-                    )}
-                    {chamber.chamber_contact && (
-                      <p>
-                        <strong>চেম্বারের যোগাযোগ নম্বর:</strong>{" "}
-                        {chamber.chamber_contact}
-                      </p>
-                    )}
-                    {chamber.chamber_date && (
-                      <p>
-                        <strong>কোন কোন দিন খোলা থাকে:</strong>{" "}
-                        {chamber.chamber_date}
-                      </p>
-                    )}
-                    {chamber.chamber_time && (
-                      <p>
-                        <strong>কয়টা থেকে কয়টা পর্যন্ত খোলা থাকে:</strong>{" "}
-                        {chamber.chamber_time}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowChambersModal(false)}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ChambersModal
+        show={showChambersModal}
+        onClose={() => setShowChambersModal(false)}
+        chambers={selectedChambers}
+      />
     </div>
   );
 };

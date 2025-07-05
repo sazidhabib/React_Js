@@ -113,18 +113,23 @@ export const keyFeatures = [
   },
   {
     title: "মিস্ত্রি",
-    path: "/technicians",
+    path: "technicians",
+    imagePath: "technicians",
     icon: "https://img.icons8.com/?size=100&id=Ooo5WKiGjOZ6&format=png&color=000000",
+    api: "https://app.panchohub.com/api/technicians",
   },
   {
     title: "জরুরী সেবা",
-    path: "/emergency",
+    path: "emergency",
     icon: "https://img.icons8.com/?size=100&id=GxmEgKtqS42l&format=png&color=000000",
+    api: "https://app.panchohub.com/api/emergency",
   },
   {
     title: "চাকরি",
-    path: "/jobnews",
+    path: "jobnews",
+    imagePath: "jobNews",
     icon: "https://img.icons8.com/?size=100&id=91yUWhsUT0PQ&format=png&color=000000",
+    api: "https://app.panchohub.com/api/jobnews",
   },
   {
     title: "উদ্যোক্তা",

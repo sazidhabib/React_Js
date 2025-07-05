@@ -137,24 +137,14 @@ export const VehicleRentContent = ({ item }) => (
                     {item.seats}
                 </p>
             )}
-            {item.description && (
-                <div>
-                    <span className="font-bold">বিস্তারিত:</span>
-                    <HtmlRenderer encodedHtml={item.description} />
-                </div>
-            )}
-            {item.rent_per_hour && (
+            {item.others_info && (
                 <p>
-                    <strong>প্রতি ঘন্টার ভাড়া: </strong>
-                    {item.rent_per_hour}
+                    <strong>গাড়ি ভাড়ার বেপারে বিস্তারিত: </strong>
+                    {item.others_info}
                 </p>
             )}
-            {item.rent_per_day && (
-                <p>
-                    <strong>প্রতিদিনের ভাড়া: </strong>
-                    {item.rent_per_day}
-                </p>
-            )}
+
+
             {item.facilities && (
                 <p>
                     <span className="font-bold">সুযোগ-সুবিধা:</span>
@@ -181,12 +171,66 @@ export const VehicleRentContent = ({ item }) => (
     </>
 );
 
-export const DefaultContent = ({ item }) => (
+export const DefaultContent = ({ item, slug }) => (
     <>
         <h2 className="text-xl font-semibold mb-2 text-center">
-            {item.title || item.hp_name || item.name || item.place_name}
+            {item.title || item.hp_name || item.name || item.place_name || item.job_title}
         </h2>
         <div className="space-y-2 text-sm text-left">
+            {item.org_name && (
+                <p>
+                    <strong>প্রতিষ্ঠানের নাম: </strong>
+                    {item.org_name}
+                </p>
+            )}
+            {item.email && (
+                <p>
+                    <strong>প্রতিষ্ঠানের ইমেইল: </strong>
+                    {item.email}
+                </p>
+            )}
+            {item.position && (
+                <p>
+                    <strong>পদের নাম: </strong>
+                    {item.position}
+                </p>
+            )}
+            {item.vacancy && (
+                <p>
+                    <strong>পদের সংখ্যা: </strong>
+                    {item.vacancy}
+                </p>
+            )}
+            {item.education_qualify && (
+                <p>
+                    <strong>শিক্ষাগত যোগ্যতা প্রয়োজন: </strong>
+                    {item.education_qualify}
+                </p>
+            )}
+            {item.experience && (
+                <p>
+                    <strong>অভিজ্ঞতা প্রয়োজন: </strong>
+                    {item.experience}
+                </p>
+            )}
+            {item.salary && (
+                <p>
+                    <strong>বেতন: </strong>
+                    {item.salary}
+                </p>
+            )}
+            {item.salary && (
+                <p>
+                    <strong>বেতন: </strong>
+                    {item.salary}
+                </p>
+            )}
+            {item.salary && (
+                <p>
+                    <strong>বেতন: </strong>
+                    {item.salary}
+                </p>
+            )}
             {item.driver_name && (
                 <p>
                     <strong>ড্রাইভারের নাম: </strong>
@@ -249,7 +293,7 @@ export const DefaultContent = ({ item }) => (
             )}
             {item.dateline && (
                 <p>
-                    <strong>তারিখ এবং সময়: </strong>
+                    <strong>{slug === "jobnews" ? "আবেদনের সর্বশেষ তারিখ: " : "তারিখ এবং সময়: "}</strong>
                     {item.dateline}
                 </p>
             )}

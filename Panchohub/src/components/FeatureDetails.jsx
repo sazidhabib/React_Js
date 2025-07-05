@@ -208,7 +208,7 @@ const FeatureDetails = () => {
       vehicle_rent: <VehicleRentContent item={item} />,
     };
 
-    return contentComponents[slug] || <DefaultContent item={item} />;
+    return contentComponents[slug] || <DefaultContent item={item} slug={slug} />;
   };
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
@@ -259,8 +259,8 @@ const FeatureDetails = () => {
                 setSelectedCategory(null);
               }}
               className={`px-4 py-2 rounded ${!selectedCategory
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
                 }`}
             >
               All Categories
@@ -270,8 +270,8 @@ const FeatureDetails = () => {
                 key={category.title}
                 onClick={() => handleGenericCategoryChange(category)}
                 className={`px-4 py-2 rounded ${selectedCategory?.title === category.title
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 hover:bg-gray-300"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
                   }`}
               >
                 {category.title}

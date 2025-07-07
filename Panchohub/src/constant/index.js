@@ -133,8 +133,10 @@ export const keyFeatures = [
   },
   {
     title: "উদ্যোক্তা",
-    path: "/entrepreneurs",
+    path: "entrepreneurs",
+    imagePath: "entrepreneurs",
     icon: "https://img.icons8.com/?size=100&id=7w7BsvtPGGSw&format=png&color=000000",
+    api: "https://app.panchohub.com/api/entrepreneurs",
   },
   {
     title: "শিক্ষক",
@@ -339,7 +341,7 @@ export const vehicleRentCategories = [
   { title: "বাস" },
   { title: "মাইক্রোবাস" },
   { title: "প্রাইভেট কার" },
-  { title: "ট্রাক", },
+  { title: "ট্রাক" },
   { title: "অটো" },
   { title: "সিএনজি" },
   { title: "অ্যাম্বুলেন্স" },

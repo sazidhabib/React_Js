@@ -7,6 +7,7 @@ import {
   thanaPolishiceCategories,
   BloodDonorsNeedersCategories,
   vehicleRentCategories,
+  teachersCategories,
 } from "../constant";
 import { imgLink } from "../constant";
 
@@ -17,6 +18,7 @@ import {
   DoctorContent,
   ShoppingContent,
   VehicleRentContent,
+  TeachersContent,
   DefaultContent
 } from "./ContentRenderers";
 import { ChambersModal } from "./ChambersModal";
@@ -130,6 +132,16 @@ const FeatureDetails = () => {
             );
           }
           break;
+        case "teachers":
+          category = teachersCategories.find(
+            cat => cat.title === location.state.filterCategory
+          );
+          if (category) {
+            filtered = data.filter(item =>
+              item.category === category.title
+            );
+          }
+          break;
         default:
           break;
       }
@@ -154,6 +166,21 @@ const FeatureDetails = () => {
 
   // Update the vehicle rent handler
   const handleVehicleRentCategoryChange = (category) => {
+    setAttemptedCategory(category);
+
+    if (category.title === "All Categories") {
+      setFilteredData(allData);
+      setSelectedCategory(category);
+    } else {
+      const filtered = allData.filter(item =>
+        item.category && item.category.trim() === category.title.trim()
+      );
+      setFilteredData(filtered);
+      setSelectedCategory(filtered.length > 0 ? category : null);
+    }
+  };
+  // Update the vehicle rent handler
+  const handleTeachersCategoryChange = (category) => {
     setAttemptedCategory(category);
 
     if (category.title === "All Categories") {
@@ -206,6 +233,7 @@ const FeatureDetails = () => {
       doctors: <DoctorContent item={item} onShowChambers={handleShowChambers} />,
       shopping: <ShoppingContent item={item} />,
       vehicle_rent: <VehicleRentContent item={item} />,
+      teachers: <TeachersContent item={item} />,
     };
 
     return contentComponents[slug] || <DefaultContent item={item} slug={slug} />;
@@ -244,6 +272,14 @@ const FeatureDetails = () => {
           categories={vehicleRentCategories}
           selectedCategory={selectedCategory}
           onCategoryChange={handleVehicleRentCategoryChange}
+          slugField="title"
+        />
+      )}
+      {slug === "teachers" && (
+        <CategoryFilterButtons
+          categories={teachersCategories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleTeachersCategoryChange}
           slugField="title"
         />
       )}

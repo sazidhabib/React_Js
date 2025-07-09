@@ -9,10 +9,13 @@ import ListeningMusicSection from "../components/ListeningMusicSection";
 import ScrollToSection from "../components/ScrollToSection";
 import Footer from "../components/Footer";
 import PhotoGallery from "../components/PhotoGallery";
+import YouTubeGallery from "../components/YouTubeGallery";
 
 
 
 const HomeLayout = () => {
+
+
 
   return (
     <>
@@ -24,6 +27,7 @@ const HomeLayout = () => {
       <JetukuBoliniAga />
       <BookReadingSection />
       <PhotoGallery />
+      <YouTubeGallery />
 
 
       <ListeningMusicSection />

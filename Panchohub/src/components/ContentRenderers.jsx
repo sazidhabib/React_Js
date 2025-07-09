@@ -169,6 +169,68 @@ export const VehicleRentContent = ({ item }) => (
         </div>
     </>
 );
+export const TeachersContent = ({ item }) => (
+    <>
+        <h2 className="text-xl font-semibold mb-2 text-center">
+            {item.title || item.name}
+        </h2>
+        <div className="space-y-2 text-sm text-left">
+            {item.category && (
+                <p>
+                    <strong>গাড়ির ধরণ: </strong>
+                    {item.category}
+                </p>
+            )}
+            {item.driver_name && (
+                <p>
+                    <strong>ড্রাইভারের নাম: </strong>
+                    {item.driver_name}
+                </p>
+            )}
+            {item.capacity && (
+                <p>
+                    <strong>ধারণ ক্ষমতা: </strong>
+                    {item.capacity}
+                </p>
+            )}
+            {item.seats && (
+                <p>
+                    <strong>সিট সংখ্যা: </strong>
+                    {item.seats}
+                </p>
+            )}
+            {item.others_info && (
+                <p>
+                    <strong>গাড়ি ভাড়ার বেপারে বিস্তারিত: </strong>
+                    {item.others_info}
+                </p>
+            )}
+
+            {item.facilities && (
+                <p>
+                    <span className="font-bold">সুযোগ-সুবিধা:</span>
+                    <HtmlRenderer encodedHtml={item.facilities} />
+                </p>
+            )}
+            {item.address && (
+                <p>
+                    <strong>বিস্তারিত ঠিকানা: </strong>
+                    {item.address}
+                </p>
+            )}
+            {item.upazila && (
+                <p>
+                    <strong>উপজেলা:</strong> {item.upazila}
+                </p>
+            )}
+            {item.contact && (
+                <p>
+                    <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+                </p>
+            )}
+        </div>
+    </>
+);
 
 export const DefaultContent = ({ item, slug }) => (
     <>
@@ -273,6 +335,16 @@ export const DefaultContent = ({ item, slug }) => (
             {item.category && (
                 <p>
                     <strong>বাসার ধরণ: </strong>
+                    {item.category}
+                </p>
+            )}
+            {item.category && (
+                <p>
+                    <strong>
+                        {slug === "teachers"
+                            ? "ইমেইল: "
+                            : "প্রতিষ্ঠানের ইমেইল: "}
+                    </strong>
                     {item.category}
                 </p>
             )}

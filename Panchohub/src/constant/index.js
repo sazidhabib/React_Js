@@ -140,13 +140,16 @@ export const keyFeatures = [
   },
   {
     title: "শিক্ষক",
-    path: "/teachers",
+    path: "teachers",
+    imagePath: "teachers",
     icon: "https://img.icons8.com/?size=100&id=nhU042Vo72HB&format=png&color=000000",
+    api: "https://app.panchohub.com/api/teachers",
   },
   {
     title: "পার্লার-সেলুন",
-    path: "/salon_parlour",
+    path: "salon_parlour",
     icon: "https://img.icons8.com/?size=100&id=gAEXTJh4MwpS&format=png&color=000000",
+    api: "https://app.panchohub.com/api/salon_parlour",
   },
   {
     title: "রেস্টুরেন্ট",
@@ -347,6 +350,11 @@ export const vehicleRentCategories = [
   { title: "অ্যাম্বুলেন্স" },
   { title: "পিকাপ" },
 ];
+
+export const teachersCategories = [
+  { title: "পড়াতে চাই" },
+  { title: "শিক্ষক চাই" },
+]
 
 export const plans = [
   {

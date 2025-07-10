@@ -88,7 +88,7 @@ const YouTubeGallery = () => {
 
     return (
         <div className="youtube-gallery py-5 px-2">
-            <h2>YouTube Video Gallery</h2>
+            <h2>Video Gallery</h2>
             <div className="main-video-container">
                 <div id="youtube-player"></div>
                 <div className="video-info">

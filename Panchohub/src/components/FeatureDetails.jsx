@@ -8,6 +8,7 @@ import {
   BloodDonorsNeedersCategories,
   vehicleRentCategories,
   teachersCategories,
+  salon_parlourCategories,
 } from "../constant";
 import { imgLink } from "../constant";
 
@@ -19,6 +20,7 @@ import {
   ShoppingContent,
   VehicleRentContent,
   TeachersContent,
+  SalonParlurContent,
   DefaultContent
 } from "./ContentRenderers";
 import { ChambersModal } from "./ChambersModal";
@@ -142,6 +144,16 @@ const FeatureDetails = () => {
             );
           }
           break;
+        case "salon_parlour":
+          category = salon_parlourCategories.find(
+            cat => cat.title === location.state.filterCategory
+          );
+          if (category) {
+            filtered = data.filter(item =>
+              item.category === category.title
+            );
+          }
+          break;
         default:
           break;
       }
@@ -179,8 +191,22 @@ const FeatureDetails = () => {
       setSelectedCategory(filtered.length > 0 ? category : null);
     }
   };
-  // Update the vehicle rent handler
+  // Update the Teachers handler
   const handleTeachersCategoryChange = (category) => {
+    setAttemptedCategory(category);
+
+    if (category.title === "All Categories") {
+      setFilteredData(allData);
+      setSelectedCategory(category);
+    } else {
+      const filtered = allData.filter(item =>
+        item.category && item.category.trim() === category.title.trim()
+      );
+      setFilteredData(filtered);
+      setSelectedCategory(filtered.length > 0 ? category : null);
+    }
+  };
+  const handleSalunParlerCategoryChange = (category) => {
     setAttemptedCategory(category);
 
     if (category.title === "All Categories") {
@@ -234,6 +260,7 @@ const FeatureDetails = () => {
       shopping: <ShoppingContent item={item} />,
       vehicle_rent: <VehicleRentContent item={item} />,
       teachers: <TeachersContent item={item} />,
+      salon_parlour: <SalonParlurContent item={item} />,
     };
 
     return contentComponents[slug] || <DefaultContent item={item} slug={slug} />;
@@ -280,6 +307,14 @@ const FeatureDetails = () => {
           categories={teachersCategories}
           selectedCategory={selectedCategory}
           onCategoryChange={handleTeachersCategoryChange}
+          slugField="title"
+        />
+      )}
+      {slug === "salon_parlour" && (
+        <CategoryFilterButtons
+          categories={salon_parlourCategories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handleSalunParlerCategoryChange}
           slugField="title"
         />
       )}

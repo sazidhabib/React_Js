@@ -148,6 +148,7 @@ export const keyFeatures = [
   {
     title: "পার্লার-সেলুন",
     path: "salon_parlour",
+    imagePath: "salonParlours",
     icon: "https://img.icons8.com/?size=100&id=gAEXTJh4MwpS&format=png&color=000000",
     api: "https://app.panchohub.com/api/salon_parlour",
   },
@@ -354,6 +355,10 @@ export const vehicleRentCategories = [
 export const teachersCategories = [
   { title: "পড়াতে চাই" },
   { title: "শিক্ষক চাই" },
+]
+export const salon_parlourCategories = [
+  { title: "পার্লার" },
+  { title: "সেলুন" },
 ]
 
 export const plans = [

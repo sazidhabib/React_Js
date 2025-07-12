@@ -154,8 +154,10 @@ export const keyFeatures = [
   },
   {
     title: "রেস্টুরেন্ট",
-    path: "/restaurants",
+    path: "restaurants",
+    imagePath: "restaurants",
     icon: "https://img.icons8.com/?size=100&id=EWYoA86tRte2&format=png&color=000000",
+    api: "https://app.panchohub.com/api/restaurants",
   },
   {
     title: "ফ্লাট ও জমি",
@@ -166,23 +168,27 @@ export const keyFeatures = [
   },
   {
     title: "ভিডিও",
-    path: "/videos",
+    path: "videos",
     icon: "https://img.icons8.com/?size=100&id=NWKNVaoSVN3X&format=png&color=000000",
   },
   {
     title: "দৈনিক সংবাদ",
-    path: "/todaynews",
+    path: "todaynews",
     icon: "https://img.icons8.com/?size=100&id=U5UU7R7iBi6g&format=png&color=000000",
   },
   {
     title: "শিক্ষা প্রতিষ্ঠান",
-    path: "/institutions",
+    path: "institutions",
+    imagePath: "institutions",
     icon: "https://img.icons8.com/?size=100&id=7S1RDwNNNRuI&format=png&color=000000",
+    api: "https://app.panchohub.com/api/institutions",
   },
   {
     title: "নার্সারি",
-    path: "/nursery",
+    path: "nursery",
+    imagePath: "nursery",
     icon: "https://img.icons8.com/?size=100&id=zpBRDsIKR6su&format=png&color=000000",
+    api: "https://app.panchohub.com/api/nursery",
   },
   {
     title: "প্যাকেজ",
@@ -359,6 +365,10 @@ export const teachersCategories = [
 export const salon_parlourCategories = [
   { title: "পার্লার" },
   { title: "সেলুন" },
+]
+export const plot_salesCategories = [
+  { title: "ফ্লাট" },
+  { title: "জমি" },
 ]
 
 export const plans = [

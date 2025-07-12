@@ -145,10 +145,10 @@ export const VehicleRentContent = ({ item }) => (
       )}
 
       {item.facilities && (
-        <p>
+        <div>
           <span className="font-bold">সুযোগ-সুবিধা:</span>
           <HtmlRenderer encodedHtml={item.facilities} />
-        </p>
+        </div>
       )}
       {item.address && (
         <p>
@@ -219,10 +219,10 @@ export const TeachersContent = ({ item }) => (
       )}
 
       {item.facilities && (
-        <p>
+        <div>
           <span className="font-bold">সুযোগ-সুবিধা:</span>
           <HtmlRenderer encodedHtml={item.facilities} />
-        </p>
+        </div>
       )}
       {item.address && (
         <p>
@@ -251,22 +251,79 @@ export const SalonParlurContent = ({ item }) => (
     <div className="space-y-2 text-sm text-left">
       {item.category && (
         <p>
-          <strong>শিক্ষার ধরণ: </strong>
+          <strong>সেলন/পার্লারের ধরণ: </strong>
           {item.category}
         </p>
       )}
 
 
-      {item.facilities && (
-        <p>
+      {item.services && (
+        <div>
           <span className="font-bold">সুযোগ-সুবিধা:</span>
-          <HtmlRenderer encodedHtml={item.facilities} />
-        </p>
+          <HtmlRenderer encodedHtml={item.services} />
+        </div>
       )}
       {item.address && (
         <p>
           <strong>বিস্তারিত ঠিকানা: </strong>
           {item.address}
+        </p>
+      )}
+      {item.timetable && (
+        <p>
+          <strong>খোলা ও বন্ধের সময়: </strong>
+          {item.timetable}
+        </p>
+      )}
+      {item.upazila && (
+        <p>
+          <strong>উপজেলা:</strong> {item.upazila}
+        </p>
+      )}
+      {item.contact && (
+        <p>
+          <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+        </p>
+      )}
+    </div>
+  </>
+);
+export const FlatPlot_salesContent = ({ item }) => (
+  <>
+    <h2 className="text-xl font-semibold mb-2 text-center">
+      {item.title || item.name}
+    </h2>
+    <div className="space-y-2 text-sm text-left">
+      {item.category && (
+        <p>
+          <strong>ফ্লাট/জমির ধরণ: </strong>
+          {item.category}
+        </p>
+      )}
+
+
+      {item.services && (
+        <div>
+          <span className="font-bold">সুযোগ-সুবিধা:</span>
+          <HtmlRenderer encodedHtml={item.services} />
+        </div>
+      )}
+      {item.address && (
+        <p>
+          <strong>বিস্তারিত ঠিকানা: </strong>
+          {item.address}
+        </p>
+      )}
+      {item.area && (
+        <p>
+          <strong>আয়তন: </strong>
+          {item.area}
+        </p>
+      )}
+      {item.sale_price && (
+        <p>
+          <strong>সম্ভাব্য মূল্য: </strong>
+          {item.sale_price}
         </p>
       )}
       {item.upazila && (
@@ -341,6 +398,7 @@ export const DefaultContent = ({ item, slug }) => (
         </p>
       )}
 
+
       {item.salary && (
         <p>
           <strong>বেতন: </strong>
@@ -377,6 +435,22 @@ export const DefaultContent = ({ item, slug }) => (
           <HtmlRenderer encodedHtml={item.place_details} />
         </div>
       )}
+      {item.services && (
+        <div>
+          <span className="font-bold">সেবা সম্পর্কিত তথ্য:</span>
+          <HtmlRenderer encodedHtml={item.services} />
+        </div>
+      )}
+
+      {item.menus && (
+        <div>
+          <span className="font-bold">রেস্টুরেন্টের মেনু আইটেম:</span>
+          <HtmlRenderer encodedHtml={item.menus} />
+        </div>
+      )}
+
+
+
       {item.details && (
         <div>
           <span className="font-bold">বিস্তারিত:</span>
@@ -467,18 +541,13 @@ export const DefaultContent = ({ item, slug }) => (
         </p>
       )}
       {item.facilities && (
-        <p>
+        <div>
           <span className="font-bold">সুযোগ-সুবিধা:</span>
           <HtmlRenderer encodedHtml={item.facilities} />
-        </p>
+        </div>
       )}
       { }
-      {item.services && (
-        <p>
-          <span className="font-bold">সেবা সম্পর্কিত তথ্য:</span>
-          <HtmlRenderer encodedHtml={item.services} />
-        </p>
-      )}
+
 
       {item.address && (
         <p>
@@ -492,6 +561,7 @@ export const DefaultContent = ({ item, slug }) => (
           {item.timetable}
         </p>
       )}
+
       {item.hp_address && (
         <p>
           <strong>হাসপাতালের ঠিকানা: </strong>

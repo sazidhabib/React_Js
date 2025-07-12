@@ -9,6 +9,7 @@ import {
   vehicleRentCategories,
   teachersCategories,
   salon_parlourCategories,
+  plot_salesCategories,
 } from "../constant";
 import { imgLink } from "../constant";
 
@@ -21,6 +22,7 @@ import {
   VehicleRentContent,
   TeachersContent,
   SalonParlurContent,
+  FlatPlot_salesContent,
   DefaultContent
 } from "./ContentRenderers";
 import { ChambersModal } from "./ChambersModal";
@@ -154,6 +156,16 @@ const FeatureDetails = () => {
             );
           }
           break;
+        case "plot_sales":
+          category = plot_salesCategories.find(
+            cat => cat.title === location.state.filterCategory
+          );
+          if (category) {
+            filtered = data.filter(item =>
+              item.category === category.title
+            );
+          }
+          break;
         default:
           break;
       }
@@ -220,6 +232,20 @@ const FeatureDetails = () => {
       setSelectedCategory(filtered.length > 0 ? category : null);
     }
   };
+  const handlePlot_salesCategoryChange = (category) => {
+    setAttemptedCategory(category);
+
+    if (category.title === "All Categories") {
+      setFilteredData(allData);
+      setSelectedCategory(category);
+    } else {
+      const filtered = allData.filter(item =>
+        item.category && item.category.trim() === category.title.trim()
+      );
+      setFilteredData(filtered);
+      setSelectedCategory(filtered.length > 0 ? category : null);
+    }
+  };
 
   // Similar updates for other category handlers
   const handleGenericCategoryChange = (category) => {
@@ -261,6 +287,7 @@ const FeatureDetails = () => {
       vehicle_rent: <VehicleRentContent item={item} />,
       teachers: <TeachersContent item={item} />,
       salon_parlour: <SalonParlurContent item={item} />,
+      plot_sales: <FlatPlot_salesContent item={item} />,
     };
 
     return contentComponents[slug] || <DefaultContent item={item} slug={slug} />;
@@ -315,6 +342,14 @@ const FeatureDetails = () => {
           categories={salon_parlourCategories}
           selectedCategory={selectedCategory}
           onCategoryChange={handleSalunParlerCategoryChange}
+          slugField="title"
+        />
+      )}
+      {slug === "plot_sales" && (
+        <CategoryFilterButtons
+          categories={plot_salesCategories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={handlePlot_salesCategoryChange}
           slugField="title"
         />
       )}

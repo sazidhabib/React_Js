@@ -1,6 +1,6 @@
 const { check } = require('express-validator');
 
-exports.createVideoValidator = [
+const createVideoValidator = [
     check('title')
         .not()
         .isEmpty()
@@ -22,3 +22,5 @@ exports.createVideoValidator = [
         .matches(/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/)
         .withMessage('Please enter a valid YouTube URL')
 ];
+
+module.exports = createVideoValidator;

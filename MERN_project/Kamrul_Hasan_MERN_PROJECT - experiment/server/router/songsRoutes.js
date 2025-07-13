@@ -3,7 +3,7 @@ const router = express.Router();
 const songController = require('../controllers/songController');
 const validate = require('../middlewares/validate-middleware');
 const authMiddleware = require('../middlewares/auth-middleware');
-const songSchema = require('../Validators/song-validator'); // Correct import
+const songSchema = require('../validators/song-validator'); // Correct import
 
 // Routes
 router.post('/', authMiddleware, validate(songSchema), songController.createSong);

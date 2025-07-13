@@ -29,7 +29,7 @@ const VideoSchema = new mongoose.Schema({
     },
     user: {
         type: mongoose.Schema.ObjectId,
-        ref: 'videos',
+        ref: 'User',
         required: true
     }
 });

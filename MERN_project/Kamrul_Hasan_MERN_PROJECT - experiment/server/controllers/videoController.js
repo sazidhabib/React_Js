@@ -1,17 +1,17 @@
-const videos = require('../models/videos');
+const Video = require('../models/videos');
 
-exports.getVideos = async (req, res, next) => {
+const getVideos = async (req, res, next) => {
     try {
-        const videos = await videos.find().populate('user', 'name email');
-        res.status(200).json({ success: true, data: videos });
+        const videoList = await Video.find().populate('user', 'name email');
+        res.status(200).json({ success: true, data: videoList });
     } catch (err) {
         next(err);
     }
 };
 
-exports.getVideo = async (req, res, next) => {
+const getVideo = async (req, res, next) => {
     try {
-        const video = await videos.findById(req.params.id).populate('user', 'name email');
+        const video = await Video.findById(req.params.id).populate('user', 'name email');
 
         if (!video) {
             return res.status(404).json({
@@ -26,19 +26,19 @@ exports.getVideo = async (req, res, next) => {
     }
 };
 
-exports.createVideo = async (req, res, next) => {
+const createVideo = async (req, res, next) => {
     try {
         req.body.user = req.user.id;
-        const video = await videos.create(req.body);
+        const video = await Video.create(req.body);
         res.status(201).json({ success: true, data: video });
     } catch (err) {
         next(err);
     }
 };
 
-exports.updateVideo = async (req, res, next) => {
+const updateVideo = async (req, res, next) => {
     try {
-        let video = await videos.findById(req.params.id);
+        let video = await Video.findById(req.params.id);
 
         if (!video) {
             return res.status(404).json({
@@ -54,7 +54,7 @@ exports.updateVideo = async (req, res, next) => {
             });
         }
 
-        video = await videos.findByIdAndUpdate(req.params.id, req.body, {
+        video = await Video.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
@@ -65,9 +65,9 @@ exports.updateVideo = async (req, res, next) => {
     }
 };
 
-exports.deleteVideo = async (req, res, next) => {
+const deleteVideo = async (req, res, next) => {
     try {
-        const video = await videos.findById(req.params.id);
+        const video = await Video.findById(req.params.id);
 
         if (!video) {
             return res.status(404).json({
@@ -88,4 +88,12 @@ exports.deleteVideo = async (req, res, next) => {
     } catch (err) {
         next(err);
     }
+};
+
+module.exports = {
+    getVideos,
+    getVideo,
+    createVideo,
+    updateVideo,
+    deleteVideo
 };

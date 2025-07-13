@@ -68,6 +68,11 @@ function AdminSidebar({ isSidebarOpen }) {
             Songs
           </NavLink>
         </li>
+        <li className={`nav-item ${isActiveRoute("/admin/videos") ? "active-item" : ""}`}>
+          <NavLink to="/admin/videos" className="nav-link text-white">
+            Videos
+          </NavLink>
+        </li>
 
       </ul>
     </div>

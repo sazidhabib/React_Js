@@ -16,12 +16,12 @@ console.log("authMiddleware:", typeof authMiddleware);
 router
     .route('/')
     .get(videoController.getVideos)
-    .post(upload.single('thumbnail'), convertToWebp, authMiddleware, ...createVideoValidator, validate, videoController.createVideo);
+    .post(authMiddleware, upload.single('thumbnail'), convertToWebp, ...createVideoValidator, validate, videoController.createVideo);
 
 router
     .route('/:id')
     .get(videoController.getVideo)
-    .patch(upload.single('thumbnail'), convertToWebp, authMiddleware, videoController.updateVideo)
+    .patch(authMiddleware, upload.single('thumbnail'), convertToWebp, videoController.updateVideo)
     .delete(authMiddleware, videoController.deleteVideo);
 
 module.exports = router;

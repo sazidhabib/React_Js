@@ -32,6 +32,9 @@ const VideoDashboard = () => {
     const fetchVideos = async () => {
         try {
             const res = await axios.get(API_BASE_URL);
+            console.log("Fetch response:", res); // full Axios response
+            console.log("Fetched videos:", res.data); // response body
+
             if (res.data.success && Array.isArray(res.data.data)) {
                 setVideos(res.data.data);
             } else {
@@ -67,6 +70,10 @@ const VideoDashboard = () => {
 
     // Create or update a video
     const handleSubmit = async (e) => {
+        response = await axios.post(API_BASE_URL, formData, config);
+        console.log("Create response:", response); // ← full response object
+        console.log("Create response data:", response.data); // ← only response body
+
         e.preventDefault();
         console.log("Form submitted with data:", newVideo);
         if (!newVideo.title.trim() || !newVideo.src.trim()) {

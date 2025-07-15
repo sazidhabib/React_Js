@@ -35,6 +35,11 @@ app.use(cors(corsOptions));
 // JSON middleware
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.originalUrl}`);
+  next();
+});
+
 // Routers
 app.use("/api/auth", require("./router/auth-router"));
 app.use("/api/articles", require("./router/article-router"));
@@ -44,7 +49,7 @@ app.use('/api', photoRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/hero-section', heroSectionRoutes);
 app.use('/api/sections', sectionRoutes);
-app.use('/api/videos', videos);
+app.use('/api/v1/videos', videos);
 
 // Test Routes
 app.get("/", (req, res) => {

@@ -1,16 +1,16 @@
 const validate = (schema) => async (req, res, next) => {
     try {
-        await schema.parseAsync(req.body); // validate the body against the schema
+        // Parse and replace req.body with the validated data
+        req.body = await schema.parseAsync(req.body);
         next();
     } catch (error) {
         console.log("Validation error:", error);
-        // Check if it's a ZodError with issues
+
         if (error.errors && Array.isArray(error.errors)) {
             const message = error.errors[0].message;
-            res.status(400).json({ msg: message });
+            res.status(400).json({ success: false, message });
         } else {
-            // Fallback for unexpected errors
-            res.status(500).json({ msg: "Something went wrong during validation." });
+            res.status(500).json({ success: false, message: "Something went wrong during validation." });
         }
     }
 };

@@ -28,13 +28,35 @@ const getVideo = async (req, res, next) => {
 
 const createVideo = async (req, res, next) => {
     try {
-        req.body.user = req.user.id;
-        const video = await Video.create(req.body);
-        res.status(201).json({ success: true, data: video });
+        console.log("🔥 Controller reached");
+        console.log("Request received with files:", req.file);
+        console.log("Request body:", req.body);
+
+        const videoData = {
+            title: req.body.title,
+            description: req.body.description,
+            src: req.body.src,
+            user: req.user.id
+        };
+
+        // Add thumbnail path if file was uploaded
+        if (req.file) {
+            videoData.thumbnail = req.file.path;
+        }
+
+        const video = await Video.create(videoData);
+
+        console.log("Video created:", video);
+        res.status(201).json({
+            success: true,
+            data: video
+        });
     } catch (err) {
+        console.error("Full error:", err);
         next(err);
     }
 };
+
 
 const updateVideo = async (req, res, next) => {
     try {

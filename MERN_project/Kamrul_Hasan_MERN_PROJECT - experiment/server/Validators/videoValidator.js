@@ -1,26 +1,24 @@
-const { check } = require('express-validator');
+const { z } = require("zod");
 
-const createVideoValidator = [
-    check('title')
-        .not()
-        .isEmpty()
-        .withMessage('Title is required')
-        .isLength({ max: 100 })
-        .withMessage('Title must be less than 100 characters'),
+// Zod schema for video creation
+const videoSchema = z.object({
+    title: z
+        .string()
+        .min(1, "Title is required")
+        .max(100, "Title must be less than 100 characters"),
 
-    check('description')
-        .not()
-        .isEmpty()
-        .withMessage('Description is required')
-        .isLength({ max: 500 })
-        .withMessage('Description must be less than 500 characters'),
+    description: z
+        .string()
+        .min(1, "Description is required")
+        .max(500, "Description must be less than 500 characters"),
 
-    check('src')
-        .not()
-        .isEmpty()
-        .withMessage('Video URL is required')
-        .matches(/^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/)
-        .withMessage('Please enter a valid YouTube URL')
-];
+    src: z
+        .string()
+        .min(1, "Video URL is required")
+        .regex(
+            /^(http(s)?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
+            "Please enter a valid YouTube URL"
+        ),
+});
 
-module.exports = createVideoValidator;
+module.exports = videoSchema;

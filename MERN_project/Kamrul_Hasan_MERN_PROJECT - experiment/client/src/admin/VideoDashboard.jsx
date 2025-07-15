@@ -5,7 +5,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Modal, Button, Form } from 'react-bootstrap';
 
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/videos`;
+const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1/videos`;
+console.log("Full API URL:", API_BASE_URL);
 
 const VideoDashboard = () => {
     const [videos, setVideos] = useState([]);
@@ -70,12 +71,9 @@ const VideoDashboard = () => {
 
     // Create or update a video
     const handleSubmit = async (e) => {
-        response = await axios.post(API_BASE_URL, formData, config);
-        console.log("Create response:", response); // ← full response object
-        console.log("Create response data:", response.data); // ← only response body
-
         e.preventDefault();
         console.log("Form submitted with data:", newVideo);
+
         if (!newVideo.title.trim() || !newVideo.src.trim()) {
             toast.error("Title and YouTube URL are required!");
             return;
@@ -100,18 +98,17 @@ const VideoDashboard = () => {
             let response;
             if (editId) {
                 response = await axios.patch(`${API_BASE_URL}/${editId}`, formData, config);
-                console.log("Update response:", response.data);
             } else {
+
                 response = await axios.post(API_BASE_URL, formData, config);
-                console.log("Create response:", response.data);
+                console.log("Creating video with formData...");
             }
 
+            console.log("Create/Update response:", response);
+            console.log("Create/Update response data:", response.data);
+
             toast.success(`Video ${editId ? 'updated' : 'added'} successfully`);
-
-            // Add this debug log:
-            console.log("Refreshing video list...");
             await fetchVideos();
-
             resetForm();
         } catch (error) {
             console.error("Full error:", error);
@@ -120,6 +117,10 @@ const VideoDashboard = () => {
             toast.error(errorMsg);
         }
     };
+
+
+
+
 
     const handleEdit = (video) => {
         setNewVideo({
@@ -163,7 +164,10 @@ const VideoDashboard = () => {
     return (
         <div className="container custom-font-initial mt-5">
             <h2 className="mb-4">{editId ? 'Edit Video' : 'Add New Video'}</h2>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit(e);
+            }}>
                 <Form.Group className="mb-3">
                     <Form.Label>Title*</Form.Label>
                     <Form.Control

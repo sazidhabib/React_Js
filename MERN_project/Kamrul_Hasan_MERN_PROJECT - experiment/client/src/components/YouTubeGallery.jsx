@@ -1,84 +1,80 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/v1/videos`;
 
 const YouTubeGallery = () => {
-    // Video data included within the component
-    const videos = [
-        {
-            id: 1,
-            title: "Amazing Nature",
-            description: "Beautiful nature scenes from around the world",
-            src: "https://www.youtube.com/watch?v=LXb3EKWsInQ"
-        },
-        {
-            id: 2,
-            title: "City Time-lapse",
-            description: "Amazing cityscapes in time-lapse",
-            src: "https://www.youtube.com/watch?v=7ZmJtYaUTa0"
-        },
-        {
-            id: 3,
-            title: "Space Exploration",
-            description: "Journey through the cosmos",
-            src: "https://www.youtube.com/watch?v=libKVRa01L8"
-        }
-    ];
-
+    const [videos, setVideos] = useState([]);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-    const [player, setPlayer] = useState(null);
+    const [isPlayerReady, setIsPlayerReady] = useState(false);
+    const playerRef = useRef(null);
 
-    // Extract YouTube ID from URL
     const getYouTubeId = (url) => {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
-    // Initialize YouTube player
+    // Fetch videos from backend
+    useEffect(() => {
+        const fetchVideos = async () => {
+            try {
+                const res = await axios.get(API_URL);
+                if (res.data.success) {
+                    setVideos(res.data.data);
+                } else {
+                    console.error("Invalid video response format.");
+                }
+            } catch (error) {
+                console.error("Error fetching videos:", error);
+            }
+        };
+        fetchVideos();
+    }, []);
+
+    // Load YouTube IFrame API
     useEffect(() => {
         const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.body.appendChild(tag);
 
         window.onYouTubeIframeAPIReady = () => {
-            const newPlayer = new window.YT.Player('youtube-player', {
-                videoId: getYouTubeId(videos[currentVideoIndex].src),
-                playerVars: {
-                    autoplay: 0,
-                    controls: 1,
-                    modestbranding: 1,
-                    rel: 0
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-            setPlayer(newPlayer);
+            const firstVideoId = getYouTubeId(videos[0]?.src);
+            if (firstVideoId) {
+                playerRef.current = new window.YT.Player('youtube-player', {
+                    height: '390',
+                    width: '640',
+                    videoId: firstVideoId,
+                    playerVars: {
+                        autoplay: 0,
+                        controls: 1,
+                        modestbranding: 1,
+                        rel: 0
+                    },
+                    events: {
+                        onReady: () => setIsPlayerReady(true),
+                        onStateChange: () => { }
+                    }
+                });
+            }
         };
 
         return () => {
-            if (player) {
-                player.destroy();
+            if (playerRef.current) {
+                playerRef.current.destroy();
             }
         };
-    }, []);
+    }, [videos]);
 
-    // Update player when video changes
+    // Load selected video into player
     useEffect(() => {
-        if (player && player.loadVideoById) {
-            player.loadVideoById(getYouTubeId(videos[currentVideoIndex].src));
+        if (isPlayerReady && videos.length > 0) {
+            const videoId = getYouTubeId(videos[currentVideoIndex]?.src);
+            if (videoId && playerRef.current?.loadVideoById) {
+                playerRef.current.loadVideoById(videoId);
+            }
         }
-    }, [currentVideoIndex]);
-
-    const onPlayerReady = (event) => {
-        // Player is ready
-    };
-
-    const onPlayerStateChange = (event) => {
-        // Handle player state changes
-    };
+    }, [currentVideoIndex, isPlayerReady]);
 
     const selectVideo = (index) => {
         setCurrentVideoIndex(index);
@@ -89,6 +85,7 @@ const YouTubeGallery = () => {
     return (
         <div className="youtube-gallery py-5 px-2">
             <h2>Video Gallery</h2>
+
             <div className="main-video-container">
                 <div id="youtube-player"></div>
                 <div className="video-info">
@@ -104,7 +101,7 @@ const YouTubeGallery = () => {
 
                     return (
                         <div
-                            key={video.id}
+                            key={video._id || index}
                             className={`thumbnail ${index === currentVideoIndex ? 'active' : ''}`}
                             onClick={() => selectVideo(index)}
                         >

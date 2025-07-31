@@ -45,8 +45,21 @@ const BlogForm = ({ post, onSubmit, onCancel }) => {
         setIsSubmitting(true);
 
         try {
-            // In a real application, you would upload the image file here
-            const finalImageUrl = imageFile ? previewUrl : imageUrl;
+            let finalImageUrl = imageUrl;
+
+            // Upload image file if exists
+            if (imageFile) {
+                const formData = new FormData();
+                formData.append('image', imageFile);
+
+                const uploadResponse = await fetch('http://localhost:5000/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const uploadData = await uploadResponse.json();
+                finalImageUrl = uploadData.imageUrl;
+            }
 
             onSubmit({
                 title: title.trim(),

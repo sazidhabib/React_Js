@@ -11,73 +11,117 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for demonstration
   useEffect(() => {
-    const mockPosts = [
-      {
-        id: '1',
-        title: 'Getting Started with React',
-        content: 'React is a powerful JavaScript library for building user interfaces. In this post, we\'ll explore the fundamentals of React and how to create your first component.',
-        imageUrl: 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=800',
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-15')
-      },
-      {
-        id: '2',
-        title: 'Modern CSS Techniques',
-        content: 'CSS has evolved significantly over the years. Learn about CSS Grid, Flexbox, and other modern techniques that will improve your web development workflow.',
-        imageUrl: 'https://images.pexels.com/photos/1591062/pexels-photo-1591062.jpeg?auto=compress&cs=tinysrgb&w=800',
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-12')
-      },
-      {
-        id: '3',
-        title: 'Database Design Best Practices',
-        content: 'A well-designed database is crucial for any application. This post covers normalization, indexing, and other best practices for database design.',
-        imageUrl: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=800',
-        createdAt: new Date('2024-01-05'),
-        updatedAt: new Date('2024-01-05')
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/posts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+        const data = await response.json();
+        // Convert string dates to Date objects
+        const postsWithDates = data.map(post => ({
+          ...post,
+          createdAt: new Date(post.created_at),
+          updatedAt: new Date(post.updated_at)
+        }));
+        setPosts(postsWithDates);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setIsLoading(false);
       }
-    ];
-    setPosts(mockPosts);
+    };
+
+    fetchPosts();
   }, []);
 
-  const filteredPosts = posts.filter(post =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleCreatePost = async (postData) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: postData.title,
+          content: postData.content,
+          imageUrl: postData.imageUrl
+        }),
+      });
 
-  const handleCreatePost = (postData) => {
-    const newPost = {
-      ...postData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    setPosts(prev => [newPost, ...prev]);
-    setIsModalOpen(false);
+      if (!response.ok) {
+        throw new Error('Failed to create post');
+      }
+
+      const newPost = await response.json();
+      // Convert string dates to Date objects
+      const postWithDates = {
+        ...newPost,
+        createdAt: new Date(newPost.created_at),
+        updatedAt: new Date(newPost.updated_at)
+      };
+      setPosts(prev => [postWithDates, ...prev]);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
   };
 
-  const handleUpdatePost = (postData) => {
+  const handleUpdatePost = async (postData) => {
     if (!editingPost) return;
 
-    const updatedPost = {
-      ...postData,
-      id: editingPost.id,
-      createdAt: editingPost.createdAt,
-      updatedAt: new Date()
-    };
+    try {
+      const response = await fetch(`http://localhost:5000/api/posts/${editingPost.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: postData.title,
+          content: postData.content,
+          imageUrl: postData.imageUrl
+        }),
+      });
 
-    setPosts(prev => prev.map(post =>
-      post.id === editingPost.id ? updatedPost : post
-    ));
-    setEditingPost(null);
-    setIsModalOpen(false);
+      if (!response.ok) {
+        throw new Error('Failed to update post');
+      }
+
+      const updatedPost = await response.json();
+      // Convert string dates to Date objects
+      const postWithDates = {
+        ...updatedPost,
+        createdAt: new Date(editingPost.createdAt),
+        updatedAt: new Date(updatedPost.updated_at)
+      };
+
+      setPosts(prev => prev.map(post =>
+        post.id === editingPost.id ? postWithDates : post
+      ));
+      setEditingPost(null);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error updating post:', error);
+    }
   };
 
-  const handleDeletePost = (id) => {
-    setPosts(prev => prev.filter(post => post.id !== id));
+  const handleDeletePost = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/posts/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete post');
+      }
+
+      setPosts(prev => prev.filter(post => post.id !== id));
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
   };
 
   const handleEditPost = (post) => {
@@ -89,6 +133,11 @@ function App() {
     setIsModalOpen(false);
     setEditingPost(null);
   };
+
+  const filteredPosts = posts.filter(post =>
+    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.content.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,7 +159,11 @@ function App() {
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
         </div>
 
-        {filteredPosts.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg">Loading posts...</div>
+          </div>
+        ) : filteredPosts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg">
               {searchTerm ? 'No posts found matching your search.' : 'No blog posts yet. Create your first post!'}

@@ -1,245 +1,268 @@
 import React from "react";
 import HtmlRenderer from "./HtmlRenderer";
 
-export const DoctorContent = ({ item, onShowChambers }) => (
+export const DoctorContent = ({ item, onShowChambers, onClick }) => (
   <>
-    <h2 className="text-xl font-semibold mb-2 text-center">{item.dr_name}</h2>
-    <div className="space-y-2 text-sm text-left">
-      {/* Doctor specific content */}
-      {item.category && (
-        <p>
-          <strong>বিশেষজ্ঞ:</strong> {item.category}
-        </p>
-      )}
-      {item.education_qualify && (
-        <p>
-          <strong>শিক্ষাগত যোগ্যতা:</strong> {item.education_qualify}
-        </p>
-      )}
-      {item.current_servise && (
-        <p>
-          <strong>বর্তমান কর্মস্থল:</strong> {item.current_servise}
-        </p>
-      )}
-      {item.spacialist && (
-        <div>
-          <span className="font-bold">যেসব রোগের চিকিৎসা করেন:</span>
-          <HtmlRenderer encodedHtml={item.spacialist} />
-        </div>
-      )}
-      {item.upazila && (
-        <p>
-          <strong>উপজেলা:</strong> {item.upazila}
-        </p>
-      )}
-      {item.address && (
-        <p>
-          <strong>বিস্তারিত ঠিকানা:</strong> {item.address}
-        </p>
-      )}
-      {item.contact && (
-        <p>
-          <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-        </p>
-      )}
-      {item.facilities && (
-        <p>
-          <strong>সুযোগ-সুবিধা:</strong> {item.facilities}
-        </p>
-      )}
-      {item.chambers?.length > 0 && (
-        <div className="mt-3">
-          <button
-            onClick={() => onShowChambers(item.chambers)}
-            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded hover:bg-blue-200"
-          >
-            {item.chambers.length} Chamber(s) - Click to view
-          </button>
-        </div>
-      )}
+    <div
+      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <h2 className="text-xl font-semibold mb-2 text-center">{item.dr_name}</h2>
+      <div className="space-y-2 text-sm text-left">
+        {/* Doctor specific content */}
+        {item.category && (
+          <p>
+            <strong>বিশেষজ্ঞ:</strong> {item.category}
+          </p>
+        )}
+        {item.education_qualify && (
+          <p>
+            <strong>শিক্ষাগত যোগ্যতা:</strong> {item.education_qualify}
+          </p>
+        )}
+        {item.current_servise && (
+          <p>
+            <strong>বর্তমান কর্মস্থল:</strong> {item.current_servise}
+          </p>
+        )}
+        {item.spacialist && (
+          <div>
+            <span className="font-bold">যেসব রোগের চিকিৎসা করেন:</span>
+            <HtmlRenderer encodedHtml={item.spacialist} />
+          </div>
+        )}
+        {item.upazila && (
+          <p>
+            <strong>উপজেলা:</strong> {item.upazila}
+          </p>
+        )}
+        {item.address && (
+          <p>
+            <strong>বিস্তারিত ঠিকানা:</strong> {item.address}
+          </p>
+        )}
+        {item.contact && (
+          <p>
+            <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+          </p>
+        )}
+        {item.facilities && (
+          <p>
+            <strong>সুযোগ-সুবিধা:</strong> {item.facilities}
+          </p>
+        )}
+        {item.chambers?.length > 0 && (
+          <div className="mt-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowChambers(item.chambers);
+              }}
+              className="mt-2 text-blue-500 hover:text-blue-700"
+            >
+              View Chambers
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   </>
 );
 
-export const ShoppingContent = ({ item }) => (
+export const ShoppingContent = ({ item, onClick }) => (
   <>
-    <h2 className="text-xl font-semibold mb-2 text-center">
-      {item.title || item.hp_name || item.name || item.place_name}
-    </h2>
-    <div className="space-y-2 text-sm text-left">
-      {item.category && (
-        <p>
-          <strong>শপিং এর ধরণ: </strong>
-          {item.category}
-        </p>
-      )}
-      {item.details && (
-        <div>
-          <span className="font-bold">বিস্তারিত:</span>
-          <HtmlRenderer encodedHtml={item.details} />
-        </div>
-      )}
-      {item.price && (
-        <p>
-          <strong>মূল্য: </strong>
-          {item.price}
-        </p>
-      )}
+    <div
+      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <h2 className="text-xl font-semibold mb-2 text-center">
+        {item.title || item.hp_name || item.name || item.place_name}
+      </h2>
+      <div className="space-y-2 text-sm text-left">
+        {item.category && (
+          <p>
+            <strong>শপিং এর ধরণ: </strong>
+            {item.category}
+          </p>
+        )}
+        {item.details && (
+          <div>
+            <span className="font-bold">বিস্তারিত:</span>
+            <HtmlRenderer encodedHtml={item.details} />
+          </div>
+        )}
+        {item.price && (
+          <p>
+            <strong>মূল্য: </strong>
+            {item.price}
+          </p>
+        )}
 
-      {item.address && (
-        <p>
-          <strong>বিস্তারিত ঠিকানা: </strong>
-          {item.address}
-        </p>
-      )}
+        {item.address && (
+          <p>
+            <strong>বিস্তারিত ঠিকানা: </strong>
+            {item.address}
+          </p>
+        )}
 
-      {item.upazila && (
-        <p>
-          <strong>উপজেলা:</strong> {item.upazila}
-        </p>
-      )}
-      {item.contact && (
-        <p>
-          <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-        </p>
-      )}
+        {item.upazila && (
+          <p>
+            <strong>উপজেলা:</strong> {item.upazila}
+          </p>
+        )}
+        {item.contact && (
+          <p>
+            <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+          </p>
+        )}
+      </div>
     </div>
   </>
 );
 
-export const VehicleRentContent = ({ item }) => (
+export const VehicleRentContent = ({ item, onClick }) => (
   <>
-    <h2 className="text-xl font-semibold mb-2 text-center">
-      {item.title || item.name}
-    </h2>
-    <div className="space-y-2 text-sm text-left">
-      {item.category && (
-        <p>
-          <strong>গাড়ির ধরণ: </strong>
-          {item.category}
-        </p>
-      )}
-      {item.driver_name && (
-        <p>
-          <strong>ড্রাইভারের নাম: </strong>
-          {item.driver_name}
-        </p>
-      )}
-      {item.capacity && (
-        <p>
-          <strong>ধারণ ক্ষমতা: </strong>
-          {item.capacity}
-        </p>
-      )}
-      {item.seats && (
-        <p>
-          <strong>সিট সংখ্যা: </strong>
-          {item.seats}
-        </p>
-      )}
-      {item.others_info && (
-        <p>
-          <strong>গাড়ি ভাড়ার বেপারে বিস্তারিত: </strong>
-          {item.others_info}
-        </p>
-      )}
+    <div
+      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <h2 className="text-xl font-semibold mb-2 text-center">
+        {item.title || item.name}
+      </h2>
+      <div className="space-y-2 text-sm text-left">
+        {item.category && (
+          <p>
+            <strong>গাড়ির ধরণ: </strong>
+            {item.category}
+          </p>
+        )}
+        {item.driver_name && (
+          <p>
+            <strong>ড্রাইভারের নাম: </strong>
+            {item.driver_name}
+          </p>
+        )}
+        {item.capacity && (
+          <p>
+            <strong>ধারণ ক্ষমতা: </strong>
+            {item.capacity}
+          </p>
+        )}
+        {item.seats && (
+          <p>
+            <strong>সিট সংখ্যা: </strong>
+            {item.seats}
+          </p>
+        )}
+        {item.others_info && (
+          <p>
+            <strong>গাড়ি ভাড়ার বেপারে বিস্তারিত: </strong>
+            {item.others_info}
+          </p>
+        )}
 
-      {item.facilities && (
-        <div>
-          <span className="font-bold">সুযোগ-সুবিধা:</span>
-          <HtmlRenderer encodedHtml={item.facilities} />
-        </div>
-      )}
-      {item.address && (
-        <p>
-          <strong>বিস্তারিত ঠিকানা: </strong>
-          {item.address}
-        </p>
-      )}
-      {item.upazila && (
-        <p>
-          <strong>উপজেলা:</strong> {item.upazila}
-        </p>
-      )}
-      {item.contact && (
-        <p>
-          <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-        </p>
-      )}
+        {item.facilities && (
+          <div>
+            <span className="font-bold">সুযোগ-সুবিধা:</span>
+            <HtmlRenderer encodedHtml={item.facilities} />
+          </div>
+        )}
+        {item.address && (
+          <p>
+            <strong>বিস্তারিত ঠিকানা: </strong>
+            {item.address}
+          </p>
+        )}
+        {item.upazila && (
+          <p>
+            <strong>উপজেলা:</strong> {item.upazila}
+          </p>
+        )}
+        {item.contact && (
+          <p>
+            <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+          </p>
+        )}
+      </div>
     </div>
   </>
 );
-export const TeachersContent = ({ item }) => (
+export const TeachersContent = ({ item, onClick }) => (
   <>
-    <h2 className="text-xl font-semibold mb-2 text-center">
-      {item.title || item.name}
-    </h2>
-    <div className="space-y-2 text-sm text-left">
-      {item.category && (
-        <p>
-          <strong>শিক্ষার ধরণ: </strong>
-          {item.category}
-        </p>
-      )}
-      {item.name && (
-        <p>
-          <strong>শিক্ষকের নাম: </strong>
-          {item.name}
-        </p>
-      )}
-      {item.classess && (
-        <p>
-          <strong>শ্রেণীর: </strong>
-          {item.classess}
-        </p>
-      )}
-      {item.subjects && (
-        <p>
-          <strong>সাবজেক্ট: </strong>
-          {item.subjects}
-        </p>
-      )}
-      {item.time_period && (
-        <p>
-          <strong>দিন সমূহ: </strong>
-          {item.time_period}
-        </p>
-      )}
-      {item.gender && (
-        <p>
-          <strong>লিঙ্গ: </strong>
-          {item.gender}
-        </p>
-      )}
-      {item.salary && (
-        <p>
-          <strong>বেতন: </strong>
-          {item.salary}
-        </p>
-      )}
+    <div
+      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <h2 className="text-xl font-semibold mb-2 text-center">
+        {item.title || item.name}
+      </h2>
+      <div className="space-y-2 text-sm text-left">
+        {item.category && (
+          <p>
+            <strong>শিক্ষার ধরণ: </strong>
+            {item.category}
+          </p>
+        )}
+        {item.name && (
+          <p>
+            <strong>শিক্ষকের নাম: </strong>
+            {item.name}
+          </p>
+        )}
+        {item.classess && (
+          <p>
+            <strong>শ্রেণীর: </strong>
+            {item.classess}
+          </p>
+        )}
+        {item.subjects && (
+          <p>
+            <strong>সাবজেক্ট: </strong>
+            {item.subjects}
+          </p>
+        )}
+        {item.time_period && (
+          <p>
+            <strong>দিন সমূহ: </strong>
+            {item.time_period}
+          </p>
+        )}
+        {item.gender && (
+          <p>
+            <strong>লিঙ্গ: </strong>
+            {item.gender}
+          </p>
+        )}
+        {item.salary && (
+          <p>
+            <strong>বেতন: </strong>
+            {item.salary}
+          </p>
+        )}
 
-      {item.facilities && (
-        <div>
-          <span className="font-bold">সুযোগ-সুবিধা:</span>
-          <HtmlRenderer encodedHtml={item.facilities} />
-        </div>
-      )}
-      {item.address && (
-        <p>
-          <strong>বিস্তারিত ঠিকানা: </strong>
-          {item.address}
-        </p>
-      )}
-      {item.upazila && (
-        <p>
-          <strong>উপজেলা:</strong> {item.upazila}
-        </p>
-      )}
-      {item.contact && (
-        <p>
-          <strong>যোগাযোগ নম্বর:</strong> {item.contact}
-        </p>
-      )}
+        {item.facilities && (
+          <div>
+            <span className="font-bold">সুযোগ-সুবিধা:</span>
+            <HtmlRenderer encodedHtml={item.facilities} />
+          </div>
+        )}
+        {item.address && (
+          <p>
+            <strong>বিস্তারিত ঠিকানা: </strong>
+            {item.address}
+          </p>
+        )}
+        {item.upazila && (
+          <p>
+            <strong>উপজেলা:</strong> {item.upazila}
+          </p>
+        )}
+        {item.contact && (
+          <p>
+            <strong>যোগাযোগ নম্বর:</strong> {item.contact}
+          </p>
+        )}
+      </div>
     </div>
   </>
 );

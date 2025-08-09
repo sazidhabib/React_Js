@@ -15,6 +15,7 @@ import { imgLink } from "../constant";
 
 // Import our new components
 import { FeatureHeader } from "./FeatureHeader";
+import { CardDetailsModal } from "./CardDetailsModal";
 import { CategoryFilterButtons } from "./CategoryFilterButtons";
 import {
   DoctorContent,
@@ -39,6 +40,10 @@ const FeatureDetails = () => {
   const [selectedChambers, setSelectedChambers] = useState(null);
   const [showChambersModal, setShowChambersModal] = useState(false);
   const [attemptedCategory, setAttemptedCategory] = useState(null);
+
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
 
   // Data fetching and initialization
   useEffect(() => {
@@ -177,6 +182,12 @@ const FeatureDetails = () => {
     }
   };
 
+
+  const handleCardClick = (item) => {
+    setSelectedItem(item);
+    setShowDetailsModal(true);
+  };
+
   // Category handlers
   const handleBloodCategoryChange = (category) => {
     setSelectedCategory(category);
@@ -282,15 +293,15 @@ const FeatureDetails = () => {
   // Content renderer selector
   const renderContent = (item) => {
     const contentComponents = {
-      doctors: <DoctorContent item={item} onShowChambers={handleShowChambers} />,
-      shopping: <ShoppingContent item={item} />,
-      vehicle_rent: <VehicleRentContent item={item} />,
-      teachers: <TeachersContent item={item} />,
-      salon_parlour: <SalonParlurContent item={item} />,
-      plot_sales: <FlatPlot_salesContent item={item} />,
+      doctors: <DoctorContent item={item} onShowChambers={handleShowChambers} onClick={() => handleCardClick(item)} />,
+      shopping: <ShoppingContent item={item} onClick={() => handleCardClick(item)} />,
+      vehicle_rent: <VehicleRentContent item={item} onClick={() => handleCardClick(item)} />,
+      teachers: <TeachersContent item={item} onClick={() => handleCardClick(item)} />,
+      salon_parlour: <SalonParlurContent item={item} onClick={() => handleCardClick(item)} />,
+      plot_sales: <FlatPlot_salesContent item={item} onClick={() => handleCardClick(item)} />,
     };
 
-    return contentComponents[slug] || <DefaultContent item={item} slug={slug} />;
+    return contentComponents[slug] || <DefaultContent item={item} slug={slug} onClick={() => handleCardClick(item)} />;
   };
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
@@ -401,6 +412,7 @@ const FeatureDetails = () => {
         onClose={() => setShowChambersModal(false)}
         chambers={selectedChambers}
       />
+
     </div>
   );
 };

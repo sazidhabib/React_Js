@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Edit, Trash2, Calendar, Eye } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 
 const BlogCard = ({ post, onEdit, onDelete }) => {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [imageStatus, setImageStatus] = useState('loading'); // 'loading', 'loaded', 'error'
+    const [imgSrc, setImgSrc] = useState('');
+
 
     const handleDelete = () => {
         onDelete(post.id);
@@ -24,17 +27,59 @@ const BlogCard = ({ post, onEdit, onDelete }) => {
         return content.substring(0, maxLength) + '...';
     };
 
+    // Add this effect to handle image loading
+    useEffect(() => {
+        if (!post.imageUrl) {
+            setImageStatus('error');
+            return;
+        }
+
+        // Create a proxy URL if needed (see alternative solution below)
+        const finalUrl = post.imageUrl.startsWith('http')
+            ? post.imageUrl
+            : `http://localhost:5000${post.imageUrl}`;
+
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.src = post.imageUrl;
+
+        img.onload = () => {
+            console.log('Image loaded:', post.imageUrl);
+            setImgSrc(finalUrl);
+            setImageStatus('loaded');
+        };
+
+        img.onerror = () => {
+            console.error('Failed to load image:', post.imageUrl);
+            setImageStatus('error');
+            if (!finalUrl.includes('/proxy-image')) {
+                setImgSrc(`/proxy-image?url=${encodeURIComponent(finalUrl)}`);
+            }
+        };
+    }, [post.imageUrl]);
+
     return (
         <>
             <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group">
                 {post.imageUrl && (
                     <div className="relative h-48 overflow-hidden">
-                        <img
-                            src={post.imageUrl}
-                            alt={post.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        {imageStatus === 'loaded' ? (
+                            <img
+                                src={imgSrc}
+                                alt={post.title}
+                                crossOrigin="anonymous"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onError={() => setImageStatus('error')}
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                {imageStatus === 'loading' ? (
+                                    <span className="text-gray-500">Loading image...</span>
+                                ) : (
+                                    <span className="text-gray-500">Image not available</span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
 

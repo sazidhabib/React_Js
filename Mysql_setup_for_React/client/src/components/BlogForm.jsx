@@ -57,17 +57,38 @@ const BlogForm = ({ post, onSubmit, onCancel }) => {
                     body: formData,
                 });
 
+                if (!uploadResponse.ok) {
+                    const errorData = await uploadResponse.json();
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+
                 const uploadData = await uploadResponse.json();
                 finalImageUrl = uploadData.imageUrl;
             }
 
-            onSubmit({
-                title: title.trim(),
-                content: content.trim(),
-                imageUrl: finalImageUrl
+            // Submit post data
+            const response = await fetch('http://localhost:5000/api/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: title.trim(),
+                    content: content.trim(),
+                    imageUrl: finalImageUrl
+                }),
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create post');
+            }
+
+            const newPost = await response.json();
+            onSubmit(newPost); // Pass the complete post data back to parent
         } catch (error) {
             console.error('Error submitting form:', error);
+            alert(`Error: ${error.message}`); // Or use a better notification system
         } finally {
             setIsSubmitting(false);
         }

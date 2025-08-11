@@ -3,16 +3,10 @@ const cors = require("cors");
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const connectDB = require("./db/connect");
+const sequelize = require('./db/database');
 const errorMiddleware = require("./middlewares/error-middleware");
-const songRoutes = require('./router/songsRoutes');
-const photoRoutes = require('./router/photoRoutes');
-const menuRoutes = require('./router/menu-routes');
-const heroSectionRoutes = require('./router/heroSectionRoutes');
-const sectionRoutes = require('./router/sectionRoutes');
-const videos = require('./router/videoRoutes');
 
-connectDB();
+// Create Express app FIRST
 const app = express();
 
 // Ensure "uploads" folder exists
@@ -40,6 +34,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Import routes
+const songRoutes = require('./router/songsRoutes');
+const photoRoutes = require('./router/photoRoutes');
+const menuRoutes = require('./router/menu-routes');
+const heroSectionRoutes = require('./router/heroSectionRoutes');
+const sectionRoutes = require('./router/sectionRoutes');
+const videos = require('./router/videoRoutes');
+
 // Routers
 app.use("/api/auth", require("./router/auth-router"));
 app.use("/api/articles", require("./router/article-router"));
@@ -62,6 +64,26 @@ app.get("/register", (req, res) => {
 // Error middleware
 app.use(errorMiddleware);
 
-// Start server
-const PORT = process.env.PORT;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Connect to database and start server
+const startServer = async () => {
+  try {
+    // Test connection
+    await sequelize.authenticate();
+    console.log('MySQL connection established successfully.');
+
+    // Import models
+    require('./models/user-model');
+
+    // Sync models
+    await sequelize.sync({ alter: true });
+    console.log('Database synchronized');
+
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (error) {
+    console.error('Server startup failed:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

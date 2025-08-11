@@ -1,16 +1,13 @@
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-dotenv.config();
+const sequelize = require('./database');
 
-const URI = process.env.MONGODB_URI;
 const connectDB = async () => {
   try {
-    console.log("MongoDB URI:", process.env.MONGODB_URI);
-    await mongoose.connect(URI);
-    console.log("Database is connected");
+    await sequelize.authenticate();
+    console.log('MySQL connection established successfully.');
+    return sequelize;
   } catch (error) {
-    console.error("database connection failed");
-    process.exit(0);
+    console.error('Unable to connect to MySQL:', error);
+    process.exit(1);
   }
 };
 

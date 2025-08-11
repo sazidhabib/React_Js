@@ -9,12 +9,11 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: "Access Denied: No Token Provided" });
     }
 
-    // Extract the token after "Bearer "
     const token = authHeader.split(" ")[1];
-
-    // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    const user = await User.findById(decoded.userId);
+
+    // Find user by primary key (id)
+    const user = await User.findByPk(decoded.userId);
 
     if (!user || !user.isAdmin) {
       return res.status(403).json({ message: "Unauthorized: Not an Admin" });

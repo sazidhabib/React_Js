@@ -27,12 +27,12 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/*"
                   className="text-gray-400 hover:text-white transition"
                 >
                   Home
-                </a>
+                </Link>
               </li>
               <li>
                 <a
@@ -73,9 +73,9 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <ul className="text-gray-400 space-y-2">
-              <li>info@company.com</li>
-              <li>+1 (123) 456-7890</li>
-              <li>123 Street, City, Country</li>
+              <li>support@panchohub.com</li>
+              <li>+8801830996044</li>
+              <li>Dhaka, Bangladesh</li>
             </ul>
           </div>
 
@@ -85,7 +85,7 @@ const Footer = () => {
 
             {/* Social Media Icons */}
             <div className="flex space-x-4 justify-center mb-6">
-              <a href="#" className="text-gray-400 hover:text-white transition">
+              <a href="www.facebook.com/PanchoHubOfficial/" className="text-gray-400 hover:text-white transition">
                 <FaFacebook className="w-6 h-6" />
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition">

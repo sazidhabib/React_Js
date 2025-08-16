@@ -10,9 +10,10 @@ const ScreenshotsSection = () => {
     { id: 1, src: "image/Screenshot_1.png", alt: "screenshot" },
     { id: 2, src: "image/Screenshot_2.png", alt: "screenshot" },
     { id: 3, src: "image/Screenshot_3.png", alt: "screenshot" },
-    { id: 4, src: "image/Screenshot_4.jpg", alt: "screenshot" },
-    { id: 5, src: "image/Screenshot_5.jpg", alt: "screenshot" },
-    { id: 6, src: "image/Screenshot_6.jpg", alt: "screenshot" },
+    { id: 4, src: "image/Screenshot_4.png", alt: "screenshot" },
+    { id: 5, src: "image/Screenshot_5.png", alt: "screenshot" },
+    { id: 6, src: "image/Screenshot_6.png", alt: "screenshot" },
+    { id: 7, src: "image/Screenshot_7.png", alt: "screenshot" },
   ];
 
   const prevRef = useRef(null);
@@ -32,16 +33,14 @@ const ScreenshotsSection = () => {
     <section id="screens" className="relative z-20 pt-[110px]">
       <div className="container mx-auto">
         <div
-          className="wow fadeInUp mx-auto mb-10 max-w-[690px] text-center"
+          className="wow fadeInUp mx-auto mb-10 max-w-[900px] text-center"
           data-wow-delay=".2s"
         >
           <h2 className="mb-4 text-3xl font-bold text-black dark:text-white sm:text-4xl md:text-[44px] md:leading-tight">
             App Screenshots
           </h2>
           <p className="text-base text-body">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In
-            convallis tortor eros. Donec vitae tortor lacus. Phasellus aliquam
-            ante in maximus.
+            এখানে আমরা আমাদের অ্যাপের লাইভ স্ক্রিনশট শেয়ার করেছি, যাতে আপনি সহজেই এর ডিজাইন, ফিচার এবং ব্যবহার পদ্ধতি সম্পর্কে ধারণা নিতে পারেন। স্ক্রিনশটগুলো দেখে আপনি অ্যাপের ভেতরের ইন্টারফেস ও কার্যপ্রণালী আগে থেকেই বুঝতে পারবেন, যা আপনাকে ডাউনলোড করার আগে একটি পরিষ্কার অভিজ্ঞতা দিবে।.
           </p>
         </div>
       </div>

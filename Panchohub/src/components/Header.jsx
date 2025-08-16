@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import React, { useState } from "react";
 import { IoMdNotificationsOutline } from "react-icons/io"; // Bell icon
 import { LiaSmsSolid } from "react-icons/lia"; // Chat icon
@@ -71,13 +72,13 @@ const Header = () => {
       <div className="border-t">
         <div className="container mx-auto flex space-x-6 px-6 py-4 items-center justify-center ">
           {["Home", "About", "Features", "Pricing"].map((link, index) => (
-            <a
+            <Link
               key={index}
-              href="#"
+              to="/*"
               className="text-sm text-gray-700 hover:text-blue-600"
             >
               {link}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

@@ -15,6 +15,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import FaqSection from "./components/FaqSection";
 import PricingSection from "./components/PricingSection";
 import Testimonials from "./components/Testimonials";
+import AboutUs from "./components/AboutUs";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
                 <Route path="/feature/:slug" element={<FeatureDetails />} />
                 <Route path="/doctors" element={<DoctorCategories />} />
               </Routes>
+              <AboutUs />
               <ScreenshotsSection />
               <Testimonials />
               <FaqSection />

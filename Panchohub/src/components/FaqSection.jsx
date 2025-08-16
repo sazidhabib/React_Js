@@ -5,31 +5,31 @@ import FAQItem from "./FAQItem";
 import clsx from "clsx";
 
 const FaqSection = () => {
+    // Define animation variants
+    const item = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5 }
+        }
+    };
+
     const faqs = [
         {
-            question: "What makes MVPBlocks unique?",
+            question: "পঞ্চহাব কি?",
             answer:
-                "MVPBlocks stands out through its intuitive design, powerful component library, and seamless integration options. We've focused on creating a user experience that combines simplicity with advanced features, all while maintaining excellent performance and accessibility.",
+                "এটি একটি অ্যাপ | এই অ্যাপের মাধ্যমে পঞ্চগড় জেলার মানুষ নিজ জেলার তথ্য, যোগাযোগ, জরুরি নম্বর, চাকরির খবর, বাস-ট্রেনের সময়সূচি, রক্তদাতা খোঁজা, ঘর-বাড়ি ভাড়া এবং কেনা-বেচা, শিক্ষা ও স্বাস্থ্যসেবা সংক্রান্ত সহায়তা ইত্যাদি পাবে একদম সহজে।",
         },
         {
-            question: "How can I customize the components?",
+            question: "আমাদের সেবা সমূহ কি কি?",
             answer:
-                "All components are built with Tailwind CSS, making them highly customizable. You can modify colors, spacing, typography, and more by simply adjusting the class names or using our theme variables to match your brand identity.",
+                "ডিজিটাল সেবা সমূহ: 🩺 ডাক্তারদের তথ্য(চেম্বার টাইম, নাম্বার) 🩸 রক্তদাতা খোঁজা(গ্রুপ ও অবস্থান অনুযায়ী)🏢 সরকারি অফিস ও কর্মকর্তা তথ্য 🏞️ দর্শনীয় স্থান, হোটেল, খাবারের দোকান ও ম্যাপ 🚑 হাসপাতাল, ক্লিনিক, অ্যাম্বুলেন্স ও টেলিমেডিসিন 🌾 আবহাওয়া ও কৃষি গাইডলাইন 💼 চাকরি, ইভেন্ট, ও ছোট ব্যবসা তথ্য 🛣️ বাস ও ট্রেন টাইমটেবিল 🏠 বাসা, ফ্ল্যাট ও জমি ভাড়া এবং ক্রয় - বিক্রয় 🛍️ নতুন ও পুরাতন পণ্যের ক্রয় - বিক্রয় 🚒 ফায়ার সার্ভিস অফিসের তথ্য 📦 কুরিয়ার সার্ভিস ও ডেলিভারি তথ্য 👮 থানা ও পুলিশ স্টেশনের তথ্য 🌐 পঞ্চগড়ের সরকারি ও সামাজিক ওয়েবসাইট লিংক 🔌 বিদ্যুৎ অফিসের ঠিকানা ও কাস্টমার সাপোর্ট 🏨 হোটেল ও রেস্টুরেন্ট বুকিং সুবিধা 🚗 গাড়ি ভাড়া সুবিধা 🔧 মেকানিক খোঁজা(বাইক / গাড়ি) 👩‍🏫 টিউটর খোঁজা 💇 সেলুন ও পার্লার সার্ভিস 🌱 নার্সারি ও গাছপালা সংক্রান্ত তথ্য |",
         },
         {
-            question: "Do the components work with dark mode?",
+            question: "আমাদের উদেশ্য  কি?",
             answer:
-                "Yes, all MVPBlocks components are designed to work seamlessly with both light and dark modes. They automatically adapt to your site's theme settings, providing a consistent user experience regardless of the user's preference.",
-        },
-        {
-            question: "How can I get started with MVPBlocks?",
-            answer:
-                "You can get started by browsing our component library and copying the code for the components you need. Our documentation provides clear instructions for installation and usage, and you can always reach out to our support team if you need assistance.",
-        },
-        {
-            question: "Can I use MVPBlocks for commercial projects?",
-            answer:
-                "Absolutely! MVPBlocks is free to use for both personal and commercial projects. There are no licensing fees or attribution requirements—just build and launch your MVP faster than ever before.",
+                "প্রযুক্তির মাধ্যমে পঞ্চগড়কে বিশ্বে তুলে ধরা এবং জেলা ও গ্রামের মানুষের জীবনকে সহজতর করা। আমরা চাই কেউ যেন নিজের জেলা থেকে বিচ্ছিন্ন না থাকে। আমরা প্রতিটি থানা, গ্রাম ও ইউনিয়নের খবর ও তথ্য তুলে ধরবো।",
         },
     ];
 
@@ -47,7 +47,6 @@ const FaqSection = () => {
                     transition={{ duration: 0.5, delay: 0.3 }}
                     className="mx-auto mb-12 max-w-2xl text-center"
                 >
-
                     <div className="inline-block border px-3 py-1 text-xs font-medium uppercase tracking-wider text-blue-600 border-blue-600 rounded">
                         FAQs
                     </div>
@@ -55,7 +54,7 @@ const FaqSection = () => {
                         Frequently Asked Questions
                     </h2>
                     <p className="text-sm text-gray-500">
-                        Everything you need to know about MVPBlocks
+                        Everything you need to know about PanchoHub
                     </p>
                 </motion.div>
 
@@ -67,7 +66,8 @@ const FaqSection = () => {
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                     className="mx-auto mt-12 max-w-md rounded-lg p-6 text-center"
                 >
@@ -76,14 +76,15 @@ const FaqSection = () => {
                     </div>
                     <p className="text-black mb-1 text-sm font-medium">Still have questions?</p>
                     <p className="text-gray-500 mb-4 text-xs">We're here to help you</p>
-                    <button
-                        type="button"
-                        className={clsx(
-                            "rounded-md px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-500 transition-colors duration-200"
-                        )}
+                    <motion.a
+                        href="mailto:support@panchohub.com"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-white transition-all hover:bg-blue-700 hover:shadow-md"
                     >
+                        <Mail className="h-5 w-5" />
                         Contact Support
-                    </button>
+                    </motion.a>
                 </motion.div>
             </div>
         </section>

@@ -17,7 +17,7 @@ const KeyFeatures = () => {
 
 
   return (
-    <section className="relative w-full bg-gray-100 py-12 lg:py-20">
+    <section id="features" className="relative w-full bg-gray-100 py-12 lg:py-20">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <div className="flex flex-col items-center text-center">

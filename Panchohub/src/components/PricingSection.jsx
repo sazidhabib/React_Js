@@ -4,7 +4,7 @@ import { BGComponent1, BGComponent2, BGComponent3 } from "./PricingBackgrounds";
 
 const PricingSection = () => {
   return (
-    <section className="bg-background px-4 py-12 transition-colors">
+    <section id="pricing" className="bg-background px-4 py-12 transition-colors">
       <h1 className="text-4xl font-bold text-center mb-12 text-gray-800">
         Pricing Plans
       </h1>

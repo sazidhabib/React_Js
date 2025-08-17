@@ -1,13 +1,20 @@
-import { Link } from "react-router-dom";
 import React, { useState } from "react";
-import { IoMdNotificationsOutline } from "react-icons/io"; // Bell icon
-import { LiaSmsSolid } from "react-icons/lia"; // Chat icon
+import { IoMdNotificationsOutline } from "react-icons/io";
+import { LiaSmsSolid } from "react-icons/lia";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Function to handle smooth scrolling to sections
+  const scrollToSection = (sectionId) => {
+    const section = document.getElementById(sectionId.toLowerCase());
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo Section */}
         <div className="flex items-center space-x-4">
@@ -70,15 +77,15 @@ const Header = () => {
 
       {/* Navigation Links */}
       <div className="border-t">
-        <div className="container mx-auto flex space-x-6 px-6 py-4 items-center justify-center ">
+        <div className="container mx-auto flex space-x-6 px-6 py-4 items-center justify-center">
           {["Home", "About", "Features", "Pricing"].map((link, index) => (
-            <Link
+            <button
               key={index}
-              to="/*"
-              className="text-sm text-gray-700 hover:text-blue-600"
+              onClick={() => scrollToSection(link.toLowerCase())}
+              className="text-sm text-gray-700 hover:text-blue-600 cursor-pointer"
             >
               {link}
-            </Link>
+            </button>
           ))}
         </div>
       </div>

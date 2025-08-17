@@ -47,7 +47,7 @@ const AppDownload = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full">
+    <div id="home" className="relative min-h-screen w-full">
       {/* Hero Section */}
       <header className="grid !min-h-[49rem] bg-blue-600 px-8 overflow-hidden">
         <div className="container mx-auto mt-32 grid h-full w-full grid-cols-1 place-items-center lg:mt-14 lg:grid-cols-2">

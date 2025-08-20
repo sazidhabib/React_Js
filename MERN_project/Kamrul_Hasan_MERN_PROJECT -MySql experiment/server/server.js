@@ -4,11 +4,18 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const sequelize = require('./db/database');
+const Article = require("./models/article-model");
 const errorMiddleware = require("./middlewares/error-middleware");
 
 // Create Express app FIRST
 const app = express();
 
+
+
+// ✅ Sync database
+sequelize.sync({ alter: true })
+  .then(() => console.log("✅ MySQL tables created or updated"))
+  .catch(err => console.error("❌ Error syncing DB:", err));
 // Ensure "uploads" folder exists
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) {

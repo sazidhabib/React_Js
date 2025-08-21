@@ -31,8 +31,8 @@ const createArticle = async (req, res) => {
 
         res.status(201).json({ message: "Article Created", article: newArticle });
     } catch (error) {
-        console.error("Create Article Error:", error.message);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("Create Article Error:", error);
+        res.status(500).json({ message: "Internal Server Error", error });
     }
 };
 

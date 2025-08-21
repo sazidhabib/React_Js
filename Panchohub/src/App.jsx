@@ -16,6 +16,7 @@ import FaqSection from "./components/FaqSection";
 import PricingSection from "./components/PricingSection";
 import Testimonials from "./components/Testimonials";
 import AboutUs from "./components/AboutUs";
+import DeleteAccountPage from "./components/DeleteAccountPage";
 
 function App() {
   return (
@@ -51,6 +52,15 @@ function App() {
           element={
             <StandaloneLayout>
               <PrivacyPolicy />
+            </StandaloneLayout>
+          }
+        />
+        {/* Delete account route */}
+        <Route
+          path="/delete-account"
+          element={
+            <StandaloneLayout>
+              <DeleteAccountPage />
             </StandaloneLayout>
           }
         />

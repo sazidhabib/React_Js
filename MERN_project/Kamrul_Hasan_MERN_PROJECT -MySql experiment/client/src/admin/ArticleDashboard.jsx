@@ -120,7 +120,7 @@ const ArticleDashboard = () => {
             await axios.delete(`${API_URL}/${deleteId}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setArticles(prev => prev.filter(article => article._id !== deleteId));
+            setArticles(prev => prev.filter(article => article.id !== deleteId));
             toast.success("Article deleted successfully.");
         } catch (error) {
             console.error("Error deleting article:", error);
@@ -193,7 +193,7 @@ const ArticleDashboard = () => {
                 // In handleSubmit, after updating articles:
                 setArticles(prevArticles => {
                     const updated = editingId
-                        ? prevArticles.map(article => article._id === editingId ? response.data.article : article)
+                        ? prevArticles.map(article => article.id === editingId ? response.data.article : article)
                         : [...prevArticles, response.data.article];
 
                     // Sort by publishDate descending
@@ -243,7 +243,7 @@ const ArticleDashboard = () => {
             ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${article.image}`
             : null
         );
-        setEditingId(article._id);
+        setEditingId(article.id);
     };
 
 
@@ -262,7 +262,7 @@ const ArticleDashboard = () => {
                 }
             );
             setArticles(articles.map(article =>
-                article._id === id ? response.data.article : article
+                article.id === id ? response.data.article : article
             ));
         } catch (error) {
             console.error("Error updating article status:", error);
@@ -380,7 +380,7 @@ const ArticleDashboard = () => {
                 <tbody>
                     {currentArticles.map((article, index) => (
 
-                        <tr key={article._id}>
+                        <tr key={article.id}>
                             <td>{indexOfFirstArticle + index + 1}</td>
                             <td>
                                 {formatDateBangla(article.publishDate)}
@@ -404,7 +404,7 @@ const ArticleDashboard = () => {
                                 <Form.Check
                                     type="switch"
                                     checked={article.status}
-                                    onChange={() => handleToggleStatus(article._id, article.status)}
+                                    onChange={() => handleToggleStatus(article.id, article.status)}
                                     label={article.status ? "Visible" : "Hidden"}
                                 />
                             </td>
@@ -412,7 +412,7 @@ const ArticleDashboard = () => {
                                 <Button variant="info" size="sm" className="me-2" onClick={() => handleEdit(article)}>
                                     ✏️ Edit
                                 </Button>
-                                <Button variant="danger" size="sm" onClick={() => { setDeleteId(article._id); setShowConfirm(true); }}>
+                                <Button variant="danger" size="sm" onClick={() => { setDeleteId(article.id); setShowConfirm(true); }}>
                                     🗑️ Delete
                                 </Button>
                             </td>

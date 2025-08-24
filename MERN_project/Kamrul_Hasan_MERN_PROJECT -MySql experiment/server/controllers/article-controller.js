@@ -1,6 +1,9 @@
 const Article = require("../models/article-model");
 const fs = require("fs");
 const path = require("path");
+const { Sequelize } = require('sequelize');
+const sequelize = require('../db/database'); // Import the sequelize instance
+const { Op } = require("sequelize");
 
 // ✅ Create Article
 const createArticle = async (req, res) => {
@@ -12,8 +15,16 @@ const createArticle = async (req, res) => {
             return res.status(400).json({ message: "Title and Description are required" });
         }
 
-        // ❗ Check duplicate title
-        const existing = await Article.findOne({ where: { title } });
+        // ❗ Check duplicate title with collation-safe comparison
+        // Using Sequelize literal to avoid collation issues
+        const existing = await Article.findOne({
+            where: Sequelize.where(
+                Sequelize.literal('BINARY title'),
+                '=',
+                title
+            )
+        });
+
         if (existing) {
             return res.status(409).json({ message: "An article with this title already exists." });
         }
@@ -24,7 +35,7 @@ const createArticle = async (req, res) => {
             title,
             description,
             status: parsedStatus,
-            author: req.user.id, // user ID from authMiddleware
+            author: req.user.id,
             image: imagePath,
             publishDate: publishDate || new Date(),
         });
@@ -32,18 +43,6 @@ const createArticle = async (req, res) => {
         res.status(201).json({ message: "Article Created", article: newArticle });
     } catch (error) {
         console.error("Create Article Error:", error);
-        res.status(500).json({ message: "Internal Server Error", error });
-    }
-};
-
-// ✅ Get All Articles
-const getAllArticles = async (req, res) => {
-    try {
-        const articles = await Article.findAll({
-            order: [["publishDate", "DESC"], ["createdAt", "DESC"]],
-        });
-        res.status(200).json(articles);
-    } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
@@ -59,8 +58,20 @@ const updateArticle = async (req, res) => {
             return res.status(404).json({ message: "Article Not Found" });
         }
 
-        // ❗ Check duplicate title (exclude current)
-        const duplicate = await Article.findOne({ where: { title, id: { [require("sequelize").Op.ne]: req.params.id } } });
+        // ❗ Check duplicate title (exclude current) with collation-safe comparison
+        const duplicate = await Article.findOne({
+            where: {
+                [Op.and]: [
+                    Sequelize.where(
+                        Sequelize.literal('BINARY title'),
+                        '=',
+                        title
+                    ),
+                    { id: { [Op.ne]: req.params.id } }
+                ]
+            }
+        });
+
         if (duplicate) {
             return res.status(409).json({ message: "Another article with this title already exists." });
         }
@@ -80,6 +91,18 @@ const updateArticle = async (req, res) => {
         });
 
         res.status(200).json({ message: "Article Updated", article: updatedArticle });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+// ✅ Get All Articles
+const getAllArticles = async (req, res) => {
+    try {
+        const articles = await Article.findAll({
+            order: [["publishDate", "DESC"], ["createdAt", "DESC"]],
+        });
+        res.status(200).json(articles);
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }

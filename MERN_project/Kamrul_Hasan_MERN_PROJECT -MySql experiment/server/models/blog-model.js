@@ -1,31 +1,38 @@
-const mongoose = require("mongoose");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../db/database");
 
-const blogSchema = new mongoose.Schema({
+const Blog = sequelize.define("Blog", {
     image: {
-        type: String,
-        required: true
+        type: DataTypes.STRING, // store image path
     },
     title: {
-        type: String,
-        required: true
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true, // prevent duplicate title
     },
     description: {
-        type: String,
-        required: true
+        type: DataTypes.TEXT,
+        allowNull: false,
     },
     status: {
-        type: Boolean,
-        default: true
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
+
     publishDate: {
-        type: Date, // Store as ISO date for sorting
-        required: false, // Optional, but you can make it required if you like
+        type: DataTypes.DATE,
+        allowNull: true, // Optional, but you can make it required if you like
     },
+    author: {
+        type: DataTypes.INTEGER, // foreign key (User ID)
+        allowNull: false,
+    },
+
+}, {
+    timestamps: true,
+    charset: "utf8mb4",
+    collate: "utf8mb4_unicode_ci"
 });
 
-const Blog = mongoose.model("Blog", blogSchema);
+
 module.exports = Blog;

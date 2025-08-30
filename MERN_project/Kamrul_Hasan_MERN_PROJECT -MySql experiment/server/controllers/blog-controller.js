@@ -1,44 +1,66 @@
 const Blog = require("../models/blog-model");
+const fs = require("fs");
+const path = require("path");
+const { Sequelize } = require('sequelize');
+const sequelize = require('../db/database'); // Import the sequelize instance
+const { Op } = require("sequelize");
 
 // ✅ Create Blog
 const createBlog = async (req, res) => {
     try {
         const { title, description, status, publishDate } = req.body;
 
-        if (!title || !title.trim()) {
-            return res.status(400).json({ message: "Title is required." });
-        }
+        // Get the authenticated user's ID from authMiddleware
+        const author = req.user.id; // This should come from your auth middleware
 
-        if (!req.file) {
-            return res.status(400).json({ message: "Image is required." });
-        }
-
-        const existingBlog = await Blog.findOne({ title: { $regex: new RegExp(`^${title}$`, 'i') } });
-        if (existingBlog) {
-            return res.status(400).json({ message: "A blog with this title already exists." });
-        }
-
-        const newBlog = new Blog({
+        const blog = await Blog.create({
             title,
             description,
-            status,
-            image: req.file.filename,
-            publishDate: publishDate ? new Date(publishDate) : new Date(),
+            status: status || true,
+            publishDate: publishDate || new Date(),
+            author: author, // Use the authenticated user's ID
+            image: req.file ? req.file.filename : null // Handle uploaded image
         });
 
-        await newBlog.save();
-        res.status(201).json({ blog: newBlog });
+        res.status(201).json({
+            success: true,
+            message: "Blog created successfully",
+            data: blog
+        });
     } catch (error) {
-        console.error("Error in createBlog:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("Error creating blog:", error);
+
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: "Validation error",
+                errors: error.errors.map(e => e.message)
+            });
+        }
+
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(400).json({
+                success: false,
+                message: "Blog title already exists"
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
     }
 };
 
 // ✅ Get All Blogs
 const getAllBlogs = async (req, res) => {
     try {
-        const blogs = await Blog.find()
-            .sort({ publishDate: -1, createdAt: -1 });
+        const blogs = await Blog.findAll({
+            order: [
+                ['publishDate', 'DESC'],
+                ['createdAt', 'DESC']
+            ]
+        });
         res.status(200).json(blogs);
     } catch (error) {
         console.error("Error in getAllBlogs:", error);
@@ -50,42 +72,50 @@ const getAllBlogs = async (req, res) => {
 // ✅ Update Blog (Partial Update)
 const updateBlog = async (req, res) => {
     try {
-        const { id } = req.params;
-        const updateFields = {};
+        const { title, description, status, publishDate } = req.body;
+        const parsedStatus = status === "true" || status === true;
 
         // Extract fields from req.body only if they exist
-        if (req.body.title) {
-            if (!req.body.title.trim()) {
-                return res.status(400).json({ message: "Title cannot be empty." });
-            }
 
-            const existingBlog = await Blog.findOne({
-                _id: { $ne: id },
-                title: { $regex: new RegExp(`^${req.body.title}$`, 'i') }
-            });
 
-            if (existingBlog) {
-                return res.status(400).json({ message: "A blog with this title already exists." });
-            }
-
-            updateFields.title = req.body.title;
+        const existingBlog = await Blog.findByPk(req.params.id);
+        if (!existingBlog) {
+            return res.status(404).json({ message: "Blog Not Found" });
         }
 
-        if (typeof req.body.title !== "undefined") updateFields.title = req.body.title;
-        if (typeof req.body.description !== "undefined") updateFields.description = req.body.description;
-        if (typeof req.body.publishDate !== "undefined") updateFields.publishDate = req.body.publishDate;
-        if (typeof req.body.status !== "undefined") updateFields.status = req.body.status;
+        // ❗ Check duplicate title (exclude current) with collation-safe comparison
+        const duplicate = await Blog.findOne({
+            where: {
+                [Op.and]: [
+                    Sequelize.where(
+                        Sequelize.literal('BINARY title'),
+                        '=',
+                        title
+                    ),
+                    { id: { [Op.ne]: req.params.id } }
+                ]
+            }
+        });
 
-        // If no fields are provided, return an error
-        if (Object.keys(updateFields).length === 0) {
-            return res.status(400).json({ message: "No fields provided for update." });
+        if (duplicate) {
+            return res.status(400).json({ message: "A blog with this title already exists." });
         }
 
-        const updatedBlog = await Blog.findByIdAndUpdate(id, updateFields, { new: true });
+        // Delete old image if new one is uploaded
+        if (req.file && existingBlog.image) {
+            const oldImagePath = path.join(__dirname, "..", "uploads", existingBlog.image);
+            if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
+        }
+        const updatedBlog = await existingBlog.update({
+            title,
+            description,
+            status: parsedStatus,
+            image: req.file ? req.file.filename : existingBlog.image,
+            publishDate,
+        });
 
-        if (!updatedBlog) return res.status(404).json({ message: "Blog not found." });
+        res.status(200).json({ message: "Blog Updated", blog: updatedBlog });
 
-        res.status(200).json({ blog: updatedBlog });
     } catch (error) {
         console.error("Error in updateBlog:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -96,8 +126,14 @@ const updateBlog = async (req, res) => {
 // ✅ Delete Blog
 const deleteBlog = async (req, res) => {
     try {
-        const blog = await Blog.findByIdAndDelete(req.params.id);
+        const blog = await Blog.findByPk(req.params.id);
         if (!blog) return res.status(404).json({ message: "Blog Not Found" });
+
+        if (blog.image) {
+            const imagePath = path.join(__dirname, "..", "uploads", blog.image);
+            if (fs.existsSync(image)) fs.unlinkSync(imagePath);
+        }
+        await blog.destroy();
         res.status(200).json({ message: "Blog Deleted" });
     } catch (error) {
         console.error("Error in deleteBlog:", error);

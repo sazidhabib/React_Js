@@ -143,6 +143,12 @@ const BlogPostDashboard = () => {
             formData.append("title", newBlog.title);
             formData.append("description", newBlog.description);
             formData.append("status", newBlog.status);
+
+            // Add author field - you need to get this from your authentication
+            // If you have user data in localStorage or context
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            formData.append("author", userData.id || 1); // Fallback to 1 if not available
+
             if (newBlog.publishDate) {
                 formData.append("publishDate", newBlog.publishDate.toISOString());
             }
@@ -178,12 +184,12 @@ const BlogPostDashboard = () => {
                 );
             }
 
-
             setNewBlog({ title: "", description: "", status: false, image: null, publishDate: null });
             setImagePreview(null);
             toast.success(editingId ? "Blog updated!" : "Blog added!");
             setEditingId(null);
         } catch (error) {
+            console.error("Error details:", error.response?.data);
             toast.error(error.response?.data?.message || "An unexpected error occurred.");
         } finally {
             setLoading(false);

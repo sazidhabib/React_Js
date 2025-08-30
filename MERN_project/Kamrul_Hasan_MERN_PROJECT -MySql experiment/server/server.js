@@ -50,6 +50,7 @@ const startServer = async () => {
 
     require("./models/user-model"); // load models
 
+
     await sequelize.sync({ alter: true });
     console.log("✅ Database synchronized");
 

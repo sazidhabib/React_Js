@@ -11,7 +11,11 @@ import DatePicker from "react-datepicker";
 import moment from "moment";
 import 'moment/locale/bn';
 import "react-datepicker/dist/react-datepicker.css";
+import { registerLocale, setDefaultLocale } from "react-datepicker";
+import bn from 'date-fns/locale/bn'; // Import Bengali locale from date-fns
 
+// Register the Bengali locale
+registerLocale('bn', bn);
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/articles`;
 

@@ -131,7 +131,7 @@ const deleteBlog = async (req, res) => {
 
         if (blog.image) {
             const imagePath = path.join(__dirname, "..", "uploads", blog.image);
-            if (fs.existsSync(image)) fs.unlinkSync(imagePath);
+            if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
         }
         await blog.destroy();
         res.status(200).json({ message: "Blog Deleted" });

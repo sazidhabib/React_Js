@@ -104,7 +104,7 @@ const BlogPostDashboard = () => {
             await axios.delete(`${API_URL}/${selectedBlogId}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
-            setBlogs(blogs.filter(blog => blog._id !== selectedBlogId));
+            setBlogs(blogs.filter(blog => blog.id !== selectedBlogId));
             toast.success("Blog deleted successfully!");
         } catch (error) {
             toast.error(`Failed to delete: ${error.message}`);
@@ -167,7 +167,7 @@ const BlogPostDashboard = () => {
                 });
                 setBlogs(
                     blogs
-                        .map(blog => blog._id === editingId ? response.data.blog : blog)
+                        .map(blog => blog.id === editingId ? response.data.blog : blog)
                         .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
                 );
             } else {
@@ -205,7 +205,7 @@ const BlogPostDashboard = () => {
             image: null,
             publishDate: blog.publishDate ? new Date(blog.publishDate) : null, // Reset image to null when editing
         });
-        setEditingId(blog._id);
+        setEditingId(blog.id);
         setImagePreview(blog.image ? `${IMG_URL}${blog.image.startsWith("/") ? "" : "/"}${blog.image}` : null);
     };
 
@@ -229,7 +229,7 @@ const BlogPostDashboard = () => {
             );
             setBlogs(
                 blogs
-                    .map(blog => blog._id === id ? { ...blog, status: !currentStatus } : blog)
+                    .map(blog => blog.id === id ? { ...blog, status: !currentStatus } : blog)
                     .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
             );
         } catch (error) {
@@ -347,7 +347,7 @@ const BlogPostDashboard = () => {
                 </thead>
                 <tbody>
                     {currentBlogs.map((blog, index) => (
-                        <tr key={blog._id}>
+                        <tr key={blog.id}>
                             <td>{index + 1}</td>
                             <td>
                                 {blog.image ? (
@@ -368,7 +368,7 @@ const BlogPostDashboard = () => {
                                 <Form.Check
                                     type="switch"
                                     checked={blog.status}
-                                    onChange={() => handleToggleStatus(blog._id, blog.status)}
+                                    onChange={() => handleToggleStatus(blog.id, blog.status)}
                                     label={blog.status ? "Visible" : "Hidden"}
                                 />
                             </td>
@@ -385,7 +385,7 @@ const BlogPostDashboard = () => {
                                     variant="danger"
                                     size="sm"
                                     onClick={() => {
-                                        setSelectedBlogId(blog._id);
+                                        setSelectedBlogId(blog.id);
                                         setShowModal(true);
                                     }}
                                 >

@@ -1,20 +1,35 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../db/database");
 
-const songSchema = new mongoose.Schema({
+const Song = sequelize.define("Song", {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     title: {
-        type: String,
-        required: true,
-        unique: true, // Prevent duplicate titles
-        trim: true,
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            notEmpty: true
+        }
     },
     youtubeUrl: {
-        type: String,
-        required: true,
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            isUrl: true
+        }
     },
     position: {
-        type: Number,
-        default: 9999, // fallback position
-    },
-}, { timestamps: true });
+        type: DataTypes.INTEGER,
+        defaultValue: 9999
+    }
+}, {
+    timestamps: true,
+    tableName: 'songs' // explicit table name
+});
 
-module.exports = mongoose.model('Song', songSchema);
+module.exports = Song;

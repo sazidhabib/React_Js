@@ -5,7 +5,13 @@ const fs = require("fs");
 require("dotenv").config();
 
 const sequelize = require("./db/database");
+const Song = require('./models/song');
 const errorMiddleware = require("./middlewares/error-middleware");
+
+// Sync all models
+sequelize.sync({ force: false }) // set force: true to drop and recreate tables
+  .then(() => console.log('Database & tables created!'))
+  .catch(err => console.error('Error syncing database:', err));
 
 const app = express();
 

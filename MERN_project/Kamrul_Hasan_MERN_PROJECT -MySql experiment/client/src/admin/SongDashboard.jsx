@@ -108,7 +108,7 @@ const SongDashboard = () => {
 
     const handleEdit = (song) => {
         setNewSong({ title: song.title, youtubeUrl: song.youtubeUrl, position: song.position });
-        setEditId(song._id);
+        setEditId(song.id);
     };
 
     const confirmDelete = (id) => {
@@ -183,7 +183,7 @@ const SongDashboard = () => {
                     </thead>
                     <tbody>
                         {currentSongs.map((song) => (
-                            <tr key={song._id}>
+                            <tr key={song.id}>
                                 <td>{song.position}</td>
                                 <td>{song.title}</td>
                                 <td>
@@ -195,7 +195,7 @@ const SongDashboard = () => {
                                     <Button variant="info" size="sm" onClick={() => handleEdit(song)} className="me-2">
                                         Edit
                                     </Button>
-                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(song._id)}>
+                                    <Button variant="danger" size="sm" onClick={() => confirmDelete(song.id)}>
                                         Delete
                                     </Button>
                                 </td>

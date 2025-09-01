@@ -54,7 +54,7 @@ const About = () => {
             <div className="col-lg-6 text-center text-lg-end">
               <img
                 src={aboutData?.imageUrl
-                  ? `${import.meta.env.VITE_API_BASE_URL}/${aboutData.imageUrl.replace(/^\/+/, "")}`
+                  ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${aboutData.imageUrl.replace(/^\/+/, "")}`
                   : "/images/kamrul_hasan_bio2.jpg"}
                 alt="kamrulhasan_bio"
                 className="img-fluid profile-image"

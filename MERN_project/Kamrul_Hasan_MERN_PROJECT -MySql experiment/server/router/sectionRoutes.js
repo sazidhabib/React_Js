@@ -1,46 +1,51 @@
-const express = require('express');
+const express = require("express");
+const router = express.Router();
+const { upload, convertToWebp } = require("../middlewares/multer-config");
 const {
     upsertSection,
+    updateSectionById,
     getSections,
-    getSectionByType
-} = require('../controllers/sectionController');
-const { upload, convertToWebp } = require('../middlewares/multer-config');
+    getSectionByType,
+    deleteSection
+} = require("../controllers/sectionController");
+const authMiddleware = require("../middlewares/auth-middleware");
 const validate = require('../middlewares/validate-middleware');
 const { z } = require('zod');
-const authMiddleware = require('../middlewares/auth-middleware');
 
-const router = express.Router();
-
-// Zod schema for validation
+// Zod schema for validation (same as before)
 const sectionSchema = z.object({
     type: z.enum(['about', 'jetukuboliniage', 'bookreading', 'music']),
     title: z.string().min(1, 'Title is required'),
     description: z.string().min(1, 'Description is required')
 });
 
-// Create/Update section
+// Create/Update section by type
 router.post(
-    '/',
-    upload.single('image'),
-    convertToWebp,
+    "/",
     authMiddleware,
+    upload.single("image"),
+    convertToWebp,
     validate(sectionSchema),
     upsertSection
 );
-//udate section
+
+// Update section by ID
 router.patch(
-    '/:id',
-    upload.single('image'),
-    convertToWebp,
+    "/:id",
     authMiddleware,
+    upload.single("image"),
+    convertToWebp,
     validate(sectionSchema),
-    upsertSection
+    updateSectionById
 );
 
 // Get all sections
-router.get('/', getSections);
+router.get("/", getSections);
 
 // Get specific section by type
-router.get('/:type', getSectionByType);
+router.get("/:type", getSectionByType);
+
+// Delete section by ID
+router.delete("/:id", authMiddleware, deleteSection);
 
 module.exports = router;

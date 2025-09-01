@@ -8,7 +8,7 @@ const SectionFormModal = ({ show, onHide, onSubmit, section, sectionTypes }) => 
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState("");
     const [loading, setLoading] = useState(false);
-    const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`
+    const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/`
 
     useEffect(() => {
         if (section) {

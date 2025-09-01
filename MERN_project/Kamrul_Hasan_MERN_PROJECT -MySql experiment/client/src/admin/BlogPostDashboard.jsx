@@ -130,6 +130,7 @@ const BlogPostDashboard = () => {
     };
 
     // Add or Edit Blog Post
+    // Add or Edit Blog Post
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (newBlog.title.trim() === "" || newBlog.description.trim() === "") {
@@ -144,10 +145,9 @@ const BlogPostDashboard = () => {
             formData.append("description", newBlog.description);
             formData.append("status", newBlog.status);
 
-            // Add author field - you need to get this from your authentication
-            // If you have user data in localStorage or context
+            // Add author field
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
-            formData.append("author", userData.id || 1); // Fallback to 1 if not available
+            formData.append("author", userData.id || 1);
 
             if (newBlog.publishDate) {
                 formData.append("publishDate", newBlog.publishDate.toISOString());
@@ -157,37 +157,46 @@ const BlogPostDashboard = () => {
             }
 
             let response;
-            // Submit
+
             if (editingId) {
+                // Edit existing blog
                 response = await axios.patch(`${API_URL}/${editingId}`, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 });
-                setBlogs(
-                    blogs
-                        .map(blog => blog.id === editingId ? response.data.blog : blog)
+
+                // Update the blogs list with the edited blog
+                setBlogs(prevBlogs =>
+                    prevBlogs
+                        .map(blog => blog.id === editingId ? response.data : blog) // Use response.data directly
                         .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
                 );
+
             } else {
+                // Add new blog
                 response = await axios.post(API_URL, formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 });
-                setBlogs(
-                    [response.data.blog, ...blogs].sort(
+
+                // Add the new blog to the beginning of the list
+                setBlogs(prevBlogs =>
+                    [response.data, ...prevBlogs].sort(
                         (a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
                     )
                 );
             }
 
+            // Reset form
             setNewBlog({ title: "", description: "", status: false, image: null, publishDate: null });
             setImagePreview(null);
             toast.success(editingId ? "Blog updated!" : "Blog added!");
             setEditingId(null);
+
         } catch (error) {
             console.error("Error details:", error.response?.data);
             toast.error(error.response?.data?.message || "An unexpected error occurred.");
@@ -347,10 +356,10 @@ const BlogPostDashboard = () => {
                 </thead>
                 <tbody>
                     {currentBlogs.map((blog, index) => (
-                        <tr key={blog.id}>
+                        <tr key={blog?.id || index}>
                             <td>{index + 1}</td>
                             <td>
-                                {blog.image ? (
+                                {blog?.image ? (
                                     <img
                                         src={`${IMG_URL}${blog.image.replace(/^\/+/, "")}`}
                                         alt="Blog"
@@ -361,15 +370,15 @@ const BlogPostDashboard = () => {
                                     "No Image"
                                 )}
                             </td>
-                            <td>{blog.title}</td>
-                            <td>{formatDateBangla(blog.publishDate)}</td>
-                            <td>{blog.description.length > 200 ? `${blog.description.slice(0, 200)}...` : blog.description}</td>
+                            <td>{blog?.title || "No Title"}</td>
+                            <td>{blog?.publishDate ? formatDateBangla(blog.publishDate) : "No Date"}</td>
+                            <td>{blog?.description ? (blog.description.length > 200 ? `${blog.description.slice(0, 200)}...` : blog.description) : "No Description"}</td>
                             <td>
                                 <Form.Check
                                     type="switch"
-                                    checked={blog.status}
-                                    onChange={() => handleToggleStatus(blog.id, blog.status)}
-                                    label={blog.status ? "Visible" : "Hidden"}
+                                    checked={blog?.status || false}
+                                    onChange={() => handleToggleStatus(blog?.id, blog?.status)}
+                                    label={blog?.status ? "Visible" : "Hidden"}
                                 />
                             </td>
                             <td>
@@ -377,7 +386,7 @@ const BlogPostDashboard = () => {
                                     variant="info"
                                     size="sm"
                                     className="me-2"
-                                    onClick={() => handleEdit(blog)}
+                                    onClick={() => blog?.id && handleEdit(blog)}
                                 >
                                     ✏️ Edit
                                 </Button>
@@ -385,13 +394,14 @@ const BlogPostDashboard = () => {
                                     variant="danger"
                                     size="sm"
                                     onClick={() => {
-                                        setSelectedBlogId(blog.id);
-                                        setShowModal(true);
+                                        if (blog?.id) {
+                                            setSelectedBlogId(blog.id);
+                                            setShowModal(true);
+                                        }
                                     }}
                                 >
                                     🗑️ Delete
                                 </Button>
-
                             </td>
                         </tr>
                     ))}

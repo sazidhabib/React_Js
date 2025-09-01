@@ -97,7 +97,7 @@ const BookReadingSection = () => {
           <div className="col-lg-6">
             <div className="jetuku-img">
               <img src={bookData?.imageUrl
-                ? `${import.meta.env.VITE_API_BASE_URL}/${bookData.imageUrl.replace(/^\/+/, "")}`
+                ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${bookData.imageUrl.replace(/^\/+/, "")}`
                 : "/images/Book.JPG"} alt="Book" className="img-fluid" />
             </div>
           </div>

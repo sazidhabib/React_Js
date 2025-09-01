@@ -7,7 +7,7 @@ import SectionFormModal from "./SectionFormModal";
 
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/sections`;
-const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/`;
+const IMG_URL = `${import.meta.env.VITE_API_BASE_URL}/uploads/`;
 
 const sectionTypes = [
     { type: "about", name: "About" },

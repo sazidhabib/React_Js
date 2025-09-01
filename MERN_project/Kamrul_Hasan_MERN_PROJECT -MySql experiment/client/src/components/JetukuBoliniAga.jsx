@@ -92,7 +92,7 @@ const JetukuBoliniAga = () => {
             <div className="jetuku-img">
               <img
                 src={jetukuData?.imageUrl
-                  ? `${import.meta.env.VITE_API_BASE_URL}/${jetukuData.imageUrl.replace(/^\/+/, "")}`
+                  ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${jetukuData.imageUrl.replace(/^\/+/, "")}`
                   : "./images/jetukuboinai age.jpg"}
                 alt="kamrulhasan_jetukuboli_age"
                 className="img-fluid"

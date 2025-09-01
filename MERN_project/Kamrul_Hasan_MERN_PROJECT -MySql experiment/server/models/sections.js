@@ -1,32 +1,28 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require("sequelize");
+const sequelize = require('../db/database');
 
-const sectionTypes = ['about', 'jetukuboliniage', 'bookreading', 'music'];
-
-const SectionSchema = new mongoose.Schema({
+const Section = sequelize.define("Section", {
     type: {
-        type: String,
-        enum: sectionTypes,
-        required: true
+        type: DataTypes.ENUM('about', 'jetukuboliniage', 'bookreading', 'music'),
+        allowNull: false,
+        unique: true // Ensures only one section per type
     },
     title: {
-        type: String,
-        required: true
+        type: DataTypes.STRING,
+        allowNull: false,
     },
     description: {
-        type: String,
-        required: true
+        type: DataTypes.TEXT,
+        allowNull: false,
     },
     imageUrl: {
-        type: String
+        type: DataTypes.STRING, // store image path
+        allowNull: true,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    }
+}, {
+    timestamps: true,
+    charset: "utf8mb4",
+    collate: "utf8mb4_unicode_ci"
 });
 
-module.exports = mongoose.model('Section', SectionSchema);
+module.exports = Section;

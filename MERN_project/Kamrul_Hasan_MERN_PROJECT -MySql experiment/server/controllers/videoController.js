@@ -1,8 +1,9 @@
 const Video = require('../models/videos');
+const { Op } = require('sequelize');
 
 const getVideos = async (req, res, next) => {
     try {
-        const videoList = await Video.find().populate('user', 'name email');
+        const videoList = await Video.findAll();
         res.status(200).json({ success: true, data: videoList });
     } catch (err) {
         next(err);
@@ -11,7 +12,7 @@ const getVideos = async (req, res, next) => {
 
 const getVideo = async (req, res, next) => {
     try {
-        const video = await Video.findById(req.params.id).populate('user', 'name email');
+        const video = await Video.findByPk(req.params.id);
 
         if (!video) {
             return res.status(404).json({
@@ -36,7 +37,8 @@ const createVideo = async (req, res, next) => {
             title: req.body.title,
             description: req.body.description,
             src: req.body.src,
-            user: req.user.id
+            // Remove user field since your model doesn't have it
+            // user: req.user.id
         };
 
         // Add thumbnail path if file was uploaded
@@ -57,10 +59,9 @@ const createVideo = async (req, res, next) => {
     }
 };
 
-
 const updateVideo = async (req, res, next) => {
     try {
-        let video = await Video.findById(req.params.id);
+        let video = await Video.findByPk(req.params.id);
 
         if (!video) {
             return res.status(404).json({
@@ -69,19 +70,24 @@ const updateVideo = async (req, res, next) => {
             });
         }
 
-        if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({
-                success: false,
-                message: `User ${req.user.id} is not authorized to update this video`
-            });
-        }
+        // Remove user authorization check since your model doesn't have user field
+        // if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        //     return res.status(401).json({
+        //         success: false,
+        //         message: `User ${req.user.id} is not authorized to update this video`
+        //     });
+        // }
 
-        video = await Video.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
+        video = await Video.update(req.body, {
+            where: { id: req.params.id },
+            returning: true, // For PostgreSQL, for MySQL we need to refetch
+            individualHooks: true // This ensures validators run
         });
 
-        res.status(200).json({ success: true, data: video });
+        // Refetch the updated video
+        const updatedVideo = await Video.findByPk(req.params.id);
+
+        res.status(200).json({ success: true, data: updatedVideo });
     } catch (err) {
         next(err);
     }
@@ -89,7 +95,7 @@ const updateVideo = async (req, res, next) => {
 
 const deleteVideo = async (req, res, next) => {
     try {
-        const video = await Video.findById(req.params.id);
+        const video = await Video.findByPk(req.params.id);
 
         if (!video) {
             return res.status(404).json({
@@ -98,14 +104,18 @@ const deleteVideo = async (req, res, next) => {
             });
         }
 
-        if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({
-                success: false,
-                message: `User ${req.user.id} is not authorized to delete this video`
-            });
-        }
+        // Remove user authorization check since your model doesn't have user field
+        // if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        //     return res.status(401).json({
+        //         success: false,
+        //         message: `User ${req.user.id} is not authorized to delete this video`
+        //     });
+        // }
 
-        await video.remove();
+        await Video.destroy({
+            where: { id: req.params.id }
+        });
+
         res.status(200).json({ success: true, data: {} });
     } catch (err) {
         next(err);

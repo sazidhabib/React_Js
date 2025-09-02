@@ -78,7 +78,7 @@ const BlogPostDashboard = () => {
                 const sortedBlogs = response.data.sort((a, b) =>
                     new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
                 );
-                setBlogs(response.data);
+                setBlogs(sortedBlogs);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -130,7 +130,6 @@ const BlogPostDashboard = () => {
     };
 
     // Add or Edit Blog Post
-    // Add or Edit Blog Post
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (newBlog.title.trim() === "" || newBlog.description.trim() === "") {
@@ -167,10 +166,15 @@ const BlogPostDashboard = () => {
                     },
                 });
 
+                console.log("Edit Response:", response.data);
+
                 // Update the blogs list with the edited blog
+                // Check different possible response structures
+                const updatedBlog = response.data.blog || response.data.data || response.data;
+
                 setBlogs(prevBlogs =>
                     prevBlogs
-                        .map(blog => blog.id === editingId ? response.data : blog) // Use response.data directly
+                        .map(blog => blog.id === editingId ? updatedBlog : blog)
                         .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
                 );
 
@@ -183,12 +187,28 @@ const BlogPostDashboard = () => {
                     },
                 });
 
-                // Add the new blog to the beginning of the list
-                setBlogs(prevBlogs =>
-                    [response.data, ...prevBlogs].sort(
-                        (a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
-                    )
-                );
+                console.log("Create Response:", response.data);
+
+                // Check different possible response structures
+                // Common patterns: response.data, response.data.blog, response.data.data
+                const newBlogData = response.data.blog || response.data.data || response.data;
+
+                // Verify the structure has the required fields
+                console.log("New blog data structure:", newBlogData);
+
+                if (newBlogData && typeof newBlogData === 'object') {
+                    setBlogs(prevBlogs =>
+                        [newBlogData, ...prevBlogs].sort(
+                            (a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
+                        )
+                    );
+                } else {
+                    // If response structure is unexpected, refetch all blogs
+                    const refreshResponse = await axios.get(API_URL);
+                    setBlogs(refreshResponse.data.sort((a, b) =>
+                        new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt)
+                    ));
+                }
             }
 
             // Reset form
@@ -355,56 +375,66 @@ const BlogPostDashboard = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {currentBlogs.map((blog, index) => (
-                        <tr key={blog?.id || index}>
-                            <td>{index + 1}</td>
-                            <td>
-                                {blog?.image ? (
-                                    <img
-                                        src={`${IMG_URL}${blog.image.replace(/^\/+/, "")}`}
-                                        alt="Blog"
-                                        className="img-thumbnail"
-                                        style={{ width: "80px", height: "50px" }}
+                    {currentBlogs.map((blog, index) => {
+                        // Ensure blog is not undefined
+                        if (!blog) return null;
+
+                        return (
+                            <tr key={blog.id || index}>
+                                <td>{index + 1}</td>
+                                <td>
+                                    {blog.image ? (
+                                        <img
+                                            src={`${IMG_URL}${blog.image.replace(/^\/+/, "")}`}
+                                            alt="Blog"
+                                            className="img-thumbnail"
+                                            style={{ width: "80px", height: "50px" }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                // Fixed: Use traditional null check instead of optional chaining assignment
+                                                if (e.target.nextSibling) {
+                                                    e.target.nextSibling.style.display = 'inline';
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        "No Image"
+                                    )}
+                                </td>
+                                <td>{blog.title || "No Title"}</td>
+                                <td>{blog.publishDate ? formatDateBangla(blog.publishDate) : "No Date"}</td>
+                                <td>{blog.description ? (blog.description.length > 200 ? `${blog.description.slice(0, 200)}...` : blog.description) : "No Description"}</td>
+                                <td>
+                                    <Form.Check
+                                        type="switch"
+                                        checked={blog.status || false}
+                                        onChange={() => handleToggleStatus(blog.id, blog.status)}
+                                        label={blog.status ? "Visible" : "Hidden"}
                                     />
-                                ) : (
-                                    "No Image"
-                                )}
-                            </td>
-                            <td>{blog?.title || "No Title"}</td>
-                            <td>{blog?.publishDate ? formatDateBangla(blog.publishDate) : "No Date"}</td>
-                            <td>{blog?.description ? (blog.description.length > 200 ? `${blog.description.slice(0, 200)}...` : blog.description) : "No Description"}</td>
-                            <td>
-                                <Form.Check
-                                    type="switch"
-                                    checked={blog?.status || false}
-                                    onChange={() => handleToggleStatus(blog?.id, blog?.status)}
-                                    label={blog?.status ? "Visible" : "Hidden"}
-                                />
-                            </td>
-                            <td>
-                                <Button
-                                    variant="info"
-                                    size="sm"
-                                    className="me-2"
-                                    onClick={() => blog?.id && handleEdit(blog)}
-                                >
-                                    ✏️ Edit
-                                </Button>
-                                <Button
-                                    variant="danger"
-                                    size="sm"
-                                    onClick={() => {
-                                        if (blog?.id) {
+                                </td>
+                                <td>
+                                    <Button
+                                        variant="info"
+                                        size="sm"
+                                        className="me-2"
+                                        onClick={() => handleEdit(blog)}
+                                    >
+                                        ✏️ Edit
+                                    </Button>
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() => {
                                             setSelectedBlogId(blog.id);
                                             setShowModal(true);
-                                        }
-                                    }}
-                                >
-                                    🗑️ Delete
-                                </Button>
-                            </td>
-                        </tr>
-                    ))}
+                                        }}
+                                    >
+                                        🗑️ Delete
+                                    </Button>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </Table>
             {/* Pagination */}

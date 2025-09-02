@@ -1,37 +1,47 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../db/database");
 
-const VideoSchema = new mongoose.Schema({
+const Videos = sequelize.define("Videos", {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     title: {
-        type: String,
-        required: [true, 'Please add a title'],
-        trim: true,
-        maxlength: [100, 'Title cannot be more than 100 characters']
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            notEmpty: true
+        }
     },
     description: {
-        type: String,
-        required: [true, 'Please add a description'],
-        maxlength: [500, 'Description cannot be more than 500 characters']
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
     },
     src: {
-        type: String,
-        required: [true, 'Please add a video URL'],
-        match: [
-            /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/,
-            'Please use a valid YouTube URL'
-        ]
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+            isUrl: true
+        }
     },
     thumbnail: {
-        type: String
+        type: DataTypes.STRING,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    user: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'users', // This should match your users table name
+            key: 'id'
+        }
     }
+}, {
+    timestamps: true,
+    tableName: 'videos' // explicit table name
 });
 
-module.exports = mongoose.model('videos', VideoSchema);
+module.exports = Videos;

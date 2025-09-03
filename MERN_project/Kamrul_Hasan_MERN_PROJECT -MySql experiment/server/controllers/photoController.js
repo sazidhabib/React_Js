@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const Photo = require('../models/photo');
+const Album = require('../models/album');
 
 exports.uploadMultiplePhotos = async (req, res, next) => {
     try {
-        const { albumId, caption } = req.body; // Global caption (optional)
+        const { albumId, caption } = req.body;
         const files = req.files;
 
         if (!files || files.length === 0) {
@@ -17,13 +18,18 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
             const filePath = file.path.replace(/\\/g, '/');
 
             // Optional: Prevent duplicates per album
-            const existing = await Photo.findOne({ imageUrl: filePath, album: albumId });
+            const existing = await Photo.findOne({
+                where: {
+                    imageUrl: filePath,
+                    albumId: albumId
+                }
+            });
             if (existing) continue;
 
             const photo = await Photo.create({
                 imageUrl: filePath,
-                album: albumId,
-                caption: caption?.trim() || '', // Optional global caption
+                albumId: albumId,
+                caption: caption?.trim() || '',
             });
 
             createdPhotos.push(photo);
@@ -35,10 +41,11 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
     }
 };
 
-
 exports.getAllPhotos = async (req, res, next) => {
     try {
-        const photos = await Photo.find().populate('album');
+        const photos = await Photo.findAll({
+            include: [{ model: Album }]
+        });
         res.status(200).json(photos);
     } catch (error) {
         next(error);
@@ -48,7 +55,10 @@ exports.getAllPhotos = async (req, res, next) => {
 exports.getPhotosByAlbum = async (req, res, next) => {
     try {
         const { albumId } = req.params;
-        const photos = await Photo.find({ album: albumId }).populate('album');
+        const photos = await Photo.findAll({
+            where: { albumId: albumId },
+            include: [{ model: Album }]
+        });
         res.status(200).json(photos);
     } catch (error) {
         next(error);
@@ -58,18 +68,23 @@ exports.getPhotosByAlbum = async (req, res, next) => {
 exports.updatePhoto = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const photo = await Photo.findById(id);
+        const photo = await Photo.findByPk(id);
+
         if (!photo) return res.status(404).json({ message: 'Photo not found' });
 
         // If a new image is uploaded, delete old image
         if (req.file) {
-            fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+            try {
+                fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+            } catch (err) {
+                console.warn('Could not delete old image:', err.message);
+            }
             photo.imageUrl = req.file.path.replace(/\\/g, '/');
         }
 
         // Update album if sent
         if (req.body.albumId) {
-            photo.album = req.body.albumId;
+            photo.albumId = req.body.albumId;
         }
 
         // Update caption if sent
@@ -87,11 +102,21 @@ exports.updatePhoto = async (req, res, next) => {
 exports.deletePhoto = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const photo = await Photo.findByIdAndDelete(id);
+        const photo = await Photo.findByPk(id);
+
         if (!photo) return res.status(404).json({ message: 'Photo not found' });
 
         // Delete image file
-        fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+        try {
+            fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+        } catch (err) {
+            console.warn('Could not delete image file:', err.message);
+        }
+
+        await Photo.destroy({
+            where: { id: id }
+        });
+
         res.status(204).send();
     } catch (error) {
         next(error);

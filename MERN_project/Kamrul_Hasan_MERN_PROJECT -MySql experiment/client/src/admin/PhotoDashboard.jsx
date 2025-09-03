@@ -83,7 +83,7 @@ const PhotoDashboard = () => {
                         albumId: photoData.get('albumId'),
                         caption: photoData.get('caption')
                     };
-                    await axios.patch(`${API_URL}/${editPhoto._id}`, jsonData, {
+                    await axios.patch(`${API_URL}/${editPhoto.id}`, jsonData, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -91,7 +91,7 @@ const PhotoDashboard = () => {
                     });
                 } else {
                     // If image is being updated, use the existing formData approach
-                    await axios.patch(`${API_URL}/${editPhoto._id}`, photoData, config);
+                    await axios.patch(`${API_URL}/${editPhoto.id}`, photoData, config);
                 }
                 toast.success("Photo updated successfully");
             } else {
@@ -131,7 +131,7 @@ const PhotoDashboard = () => {
                     </thead>
                     <tbody>
                         {photos && photos.map((photo, index) => (
-                            <tr key={photo._id}>
+                            <tr key={photo.id}>
                                 <td>{index + 1}</td>
                                 <td>{photo.album?.name || 'N/A'}</td>
                                 <td>
@@ -156,7 +156,7 @@ const PhotoDashboard = () => {
                                     <Button
                                         variant="danger"
                                         size="sm"
-                                        onClick={() => { setPhotoToDelete(photo._id); setConfirmModalShow(true); }}
+                                        onClick={() => { setPhotoToDelete(photo.id); setConfirmModalShow(true); }}
                                     >
                                         Delete
                                     </Button>

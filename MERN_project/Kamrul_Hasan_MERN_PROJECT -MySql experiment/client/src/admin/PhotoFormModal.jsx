@@ -30,7 +30,7 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
         if (show) {
             fetchAlbums();
             if (editPhoto) {
-                setValue("albumId", editPhoto.album?._id || "");
+                setValue("albumId", editPhoto.album?.id || "");
                 setValue("status", editPhoto.status || "active");
                 setValue("caption", editPhoto.caption || "");
                 if (editPhoto.imageUrl) {
@@ -101,7 +101,7 @@ const PhotoFormModal = ({ show, onHide, onSubmit, editPhoto }) => {
                         <Form.Select {...register("albumId", { required: true })}>
                             <option value="">Select Album</option>
                             {albums.map((album) => (
-                                <option key={album._id} value={album._id}>{album.name}</option>
+                                <option key={album.id} value={album.id}>{album.name}</option>
                             ))}
                         </Form.Select>
                         {errors.albumId && <div className="text-danger">Album is required</div>}

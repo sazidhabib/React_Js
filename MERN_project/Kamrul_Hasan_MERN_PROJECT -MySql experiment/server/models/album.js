@@ -1,8 +1,22 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../db/database");
 
-const albumSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
-    createdAt: { type: Date, default: Date.now },
+const Album = sequelize.define("Album", {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true
+        }
+    }
+}, {
+    timestamps: true,
+    tableName: 'albums'
 });
 
-module.exports = mongoose.model('Album', albumSchema);
+module.exports = Album;

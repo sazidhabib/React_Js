@@ -38,7 +38,7 @@ const createVideo = async (req, res, next) => {
             description: req.body.description,
             src: req.body.src,
             // Remove user field since your model doesn't have it
-            // user: req.user.id
+            user: req.user.id
         };
 
         // Add thumbnail path if file was uploaded
@@ -71,12 +71,12 @@ const updateVideo = async (req, res, next) => {
         }
 
         // Remove user authorization check since your model doesn't have user field
-        // if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
-        //     return res.status(401).json({
-        //         success: false,
-        //         message: `User ${req.user.id} is not authorized to update this video`
-        //     });
-        // }
+        if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({
+                success: false,
+                message: `User ${req.user.id} is not authorized to update this video`
+            });
+        }
 
         video = await Video.update(req.body, {
             where: { id: req.params.id },
@@ -105,12 +105,12 @@ const deleteVideo = async (req, res, next) => {
         }
 
         // Remove user authorization check since your model doesn't have user field
-        // if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
-        //     return res.status(401).json({
-        //         success: false,
-        //         message: `User ${req.user.id} is not authorized to delete this video`
-        //     });
-        // }
+        if (video.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({
+                success: false,
+                message: `User ${req.user.id} is not authorized to delete this video`
+            });
+        }
 
         await Video.destroy({
             where: { id: req.params.id }

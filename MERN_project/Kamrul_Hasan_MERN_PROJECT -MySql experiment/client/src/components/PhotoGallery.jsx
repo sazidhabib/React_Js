@@ -74,20 +74,20 @@ const PhotoGallery = () => {
                 const counts = {};
                 for (const album of albumData) {
                     try {
-                        const photosRes = await axios.get(`${PHOTO_API}/${album._id}?limit=1`);
-                        counts[album._id] = photosRes.data.length;
+                        const photosRes = await axios.get(`${PHOTO_API}/${album.id}?limit=1`);
+                        counts[album.id] = photosRes.data.length;
 
                         if (albumData.length > 0 && !selectedAlbumId) {
-                            setSelectedAlbumId(albumData[0]._id);
+                            setSelectedAlbumId(albumData[0].id);
                             // Prefetch first album's photos
-                            axios.get(`${PHOTO_API}/${albumData[0]._id}`)
+                            axios.get(`${PHOTO_API}/${albumData[0].id}`)
                                 .then(res => {
-                                    sessionStorage.setItem(`album_${albumData[0]._id}`, JSON.stringify(res.data));
+                                    sessionStorage.setItem(`album_${albumData[0].id}`, JSON.stringify(res.data));
                                 });
                         }
                     } catch (err) {
-                        counts[album._id] = 0;
-                        console.error(`Error fetching photos for album ${album._id}:`, err);
+                        counts[album.id] = 0;
+                        console.error(`Error fetching photos for album ${album.id}:`, err);
                     }
                 }
                 setAlbumPhotoCounts(counts);
@@ -138,7 +138,7 @@ const PhotoGallery = () => {
     };
 
     const getSelectedAlbumTitle = () => {
-        const album = albums.find(a => a._id === selectedAlbumId);
+        const album = albums.find(a => a.id === selectedAlbumId);
         return album ? album.name : 'Selected Album';
     };
 
@@ -163,15 +163,15 @@ const PhotoGallery = () => {
                                 <ListGroup >
                                     {currentAlbums.map((album) => (
                                         <ListGroup.Item
-                                            key={album._id}
+                                            key={album.id}
                                             action
-                                            active={selectedAlbumId === album._id}
-                                            onClick={() => setSelectedAlbumId(album._id)}
+                                            active={selectedAlbumId === album.id}
+                                            onClick={() => setSelectedAlbumId(album.id)}
                                             className="d-flex justify-content-between align-items-center "
                                         >
                                             {album.name}
                                             <span className="badge bg-green rounded-pill">
-                                                {albumPhotoCounts[album._id] || 0}
+                                                {albumPhotoCounts[album.id] || 0}
                                             </span>
                                         </ListGroup.Item>
                                     ))}
@@ -205,7 +205,7 @@ const PhotoGallery = () => {
                                         <Row>
                                             {currentPhotos.map((photo, index) => (
                                                 <Col
-                                                    key={photo._id}
+                                                    key={photo.id}
                                                     xs={6}
                                                     sm={6}
                                                     md={4}

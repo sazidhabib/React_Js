@@ -5,6 +5,10 @@ const Album = require('../models/album');
 
 exports.uploadMultiplePhotos = async (req, res, next) => {
     try {
+        console.log('🔥 Request received - uploadMultiplePhotos');
+        console.log('Request body:', req.body);
+        console.log('Request files:', req.files);
+
         const { albumId, caption } = req.body;
         const files = req.files;
 
@@ -12,9 +16,21 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
             return res.status(400).json({ message: 'At least one image is required.' });
         }
 
+        // Check if album exists
+        const album = await Album.findByPk(albumId);
+        if (!album) {
+            return res.status(404).json({ message: 'Album not found' });
+        }
+
         const createdPhotos = [];
 
         for (const file of files) {
+            // Now file.path should be set by convertToWebp middleware
+            if (!file || !file.path) {
+                console.error('File or file.path is undefined after conversion:', file);
+                continue;
+            }
+
             const filePath = file.path.replace(/\\/g, '/');
 
             // Optional: Prevent duplicates per album
@@ -35,8 +51,13 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
             createdPhotos.push(photo);
         }
 
+        if (createdPhotos.length === 0) {
+            return res.status(400).json({ message: 'No valid files were processed' });
+        }
+
         res.status(201).json(createdPhotos);
     } catch (error) {
+        console.error('❌ Error in uploadMultiplePhotos:', error);
         next(error);
     }
 };
@@ -73,9 +94,12 @@ exports.updatePhoto = async (req, res, next) => {
         if (!photo) return res.status(404).json({ message: 'Photo not found' });
 
         // If a new image is uploaded, delete old image
-        if (req.file) {
+        if (req.file && req.file.path) {
             try {
-                fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+                // Only delete if old image exists
+                if (photo.imageUrl && fs.existsSync(path.join(__dirname, '..', photo.imageUrl))) {
+                    fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+                }
             } catch (err) {
                 console.warn('Could not delete old image:', err.message);
             }

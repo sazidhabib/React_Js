@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import PhotoFormModal from "./PhotoFormModal";
 import ConfirmationModal from "./ConfirmationModal";
-import { useAuth } from "../store/auth"; // Adjust path as needed
+import { useAuth } from "../store/auth";
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/photos`;
 
@@ -23,20 +23,17 @@ const PhotoDashboard = () => {
         setLoading(true);
         try {
             const res = await axios.get(API_URL);
-            console.log("API Response:", res.data); // Debugging
+            console.log("API Response:", res.data);
 
-            // Handle both paginated and non-paginated responses
-            if (Array.isArray(res.data)) {
-                // Client-side pagination if API doesn't support it
-                const startIndex = (page - 1) * 10;
-                const paginatedPhotos = res.data.slice(startIndex, startIndex + 10);
-                setPhotos(paginatedPhotos);
-                setTotalPages(Math.ceil(res.data.length / 10) || 1);
-            } else {
-                // Paginated API response
-                setPhotos(res.data.photos || res.data.items || res.data.data || []);
-                setTotalPages(res.data.totalPages || res.data.total_pages || 1);
-            }
+            // Handle both array and object responses
+            const photosData = Array.isArray(res.data) ? res.data : (res.data.data || res.data.photos || []);
+
+            // Client-side pagination
+            const startIndex = (page - 1) * 10;
+            const paginatedPhotos = photosData.slice(startIndex, startIndex + 10);
+
+            setPhotos(paginatedPhotos);
+            setTotalPages(Math.ceil(photosData.length / 10) || 1);
         } catch (err) {
             toast.error("Failed to fetch photos");
             console.error("Fetch error:", err);
@@ -65,7 +62,6 @@ const PhotoDashboard = () => {
         }
     };
 
-    // Handle create/update through modal
     const handlePhotoSubmit = async (photoData) => {
         try {
             const config = {
@@ -76,23 +72,7 @@ const PhotoDashboard = () => {
             };
 
             if (editPhoto) {
-                // For updates, we need to handle caption separately if no image is being updated
-                if (!photoData.get('image')) {
-                    // If no image is being updated, send caption via PATCH with JSON content-type
-                    const jsonData = {
-                        albumId: photoData.get('albumId'),
-                        caption: photoData.get('caption')
-                    };
-                    await axios.patch(`${API_URL}/${editPhoto.id}`, jsonData, {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                } else {
-                    // If image is being updated, use the existing formData approach
-                    await axios.patch(`${API_URL}/${editPhoto.id}`, photoData, config);
-                }
+                await axios.patch(`${API_URL}/${editPhoto.id}`, photoData, config);
                 toast.success("Photo updated successfully");
             } else {
                 await axios.post(API_URL, photoData, config);
@@ -101,9 +81,17 @@ const PhotoDashboard = () => {
             setModalShow(false);
             fetchPhotos();
         } catch (err) {
+            console.error("Submit error details:", err.response?.data);
             toast.error(err.response?.data?.message || "Operation failed");
-            console.error("Submit error:", err);
         }
+    };
+
+    // Safe image URL construction
+    const getImageUrl = (imageUrl) => {
+        if (!imageUrl) return '';
+        // Remove leading slash if present to avoid double slashes
+        const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+        return `${import.meta.env.VITE_API_BASE_URL}/${cleanUrl}`;
     };
 
     return (
@@ -125,110 +113,86 @@ const PhotoDashboard = () => {
                             <th>Album</th>
                             <th>Preview</th>
                             <th>Caption</th>
-                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {photos && photos.map((photo, index) => (
-                            <tr key={photo.id}>
-                                <td>{index + 1}</td>
-                                <td>{photo.album?.name || 'N/A'}</td>
-                                <td>
-                                    <Image
-                                        src={`${import.meta.env.VITE_API_BASE_URL}/${photo.imageUrl}`}
-                                        thumbnail
-                                        width={80}
-                                        height={60}
-                                    />
-                                </td>
-                                <td>{photo.caption || '-'}</td>
-                                <td>{photo.status || 'active'}</td>
-                                <td>
-                                    <Button
-                                        variant="warning"
-                                        size="sm"
-                                        onClick={() => { setEditPhoto(photo); setModalShow(true); }}
-                                        className="me-2"
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() => { setPhotoToDelete(photo.id); setConfirmModalShow(true); }}
-                                    >
-                                        Delete
-                                    </Button>
+                        {photos && photos.length > 0 ? (
+                            photos.map((photo, index) => (
+                                <tr key={photo.id || index}>
+                                    <td>{index + 1}</td>
+                                    <td>{photo.Album?.name || 'N/A'}</td>
+                                    <td>
+                                        {photo.imageUrl ? (
+                                            <Image
+                                                src={getImageUrl(photo.imageUrl)}
+                                                thumbnail
+                                                width={80}
+                                                height={60}
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    // Optionally show a placeholder
+                                                    if (e.target.nextSibling) {
+                                                        e.target.nextSibling.style.display = 'inline';
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <span>No Image</span>
+                                        )}
+                                    </td>
+                                    <td>{photo.caption || '-'}</td>
+                                    <td>
+                                        <Button
+                                            variant="warning"
+                                            size="sm"
+                                            onClick={() => { setEditPhoto(photo); setModalShow(true); }}
+                                            className="me-2"
+                                        >
+                                            Edit
+                                        </Button>
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => { setPhotoToDelete(photo.id); setConfirmModalShow(true); }}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5" className="text-center">
+                                    No photos found
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </Table>
             )}
 
-            {/* Pagination */}
-
-            <div className="d-flex justify-content-center">
-                {totalPages > 1 && (
-                    <div className="pagination">
-                        {/* Always show first page */}
-                        <Button
-                            variant={1 === page ? "primary" : "light"}
-                            onClick={() => setPage(1)}
-                            className="me-1"
-                        >
-                            1
-                        </Button>
-
-                        {/* Show dots if current page is far from start */}
-                        {page > 3 && <span className="mx-2">...</span>}
-
-                        {/* Show one page before current */}
-                        {page > 2 && (
-                            <Button
-                                variant="light"
-                                onClick={() => setPage(page - 1)}
-                                className="me-1"
-                            >
-                                {page - 1}
-                            </Button>
-                        )}
-
-                        {/* Show current page if it's not first or last */}
-                        {page !== 1 && page !== totalPages && (
-                            <Button variant="primary" className="me-1">
-                                {page}
-                            </Button>
-                        )}
-
-                        {/* Show one page after current */}
-                        {page < totalPages - 1 && (
-                            <Button
-                                variant="light"
-                                onClick={() => setPage(page + 1)}
-                                className="me-1"
-                            >
-                                {page + 1}
-                            </Button>
-                        )}
-
-                        {/* Show dots if current page is far from end */}
-                        {page < totalPages - 2 && <span className="mx-2">...</span>}
-
-                        {/* Always show last page */}
-                        {totalPages > 1 && (
-                            <Button
-                                variant={totalPages === page ? "primary" : "light"}
-                                onClick={() => setPage(totalPages)}
-                                className="me-1"
-                            >
-                                {totalPages}
-                            </Button>
-                        )}
-                    </div>
-                )}
-            </div>
+            {/* Pagination - Simplified */}
+            {totalPages > 1 && (
+                <div className="d-flex justify-content-center mt-3">
+                    <Button
+                        variant="outline-primary"
+                        disabled={page === 1}
+                        onClick={() => setPage(page - 1)}
+                        className="me-2"
+                    >
+                        Previous
+                    </Button>
+                    <span className="mx-2">Page {page} of {totalPages}</span>
+                    <Button
+                        variant="outline-primary"
+                        disabled={page === totalPages}
+                        onClick={() => setPage(page + 1)}
+                    >
+                        Next
+                    </Button>
+                </div>
+            )}
 
             {/* Modals */}
             <PhotoFormModal

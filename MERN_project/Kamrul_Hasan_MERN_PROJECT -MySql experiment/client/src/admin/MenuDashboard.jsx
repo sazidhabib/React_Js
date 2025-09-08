@@ -50,7 +50,7 @@ const MenuDashboard = () => {
             };
 
             if (editMenu) {
-                await axios.patch(`${API_URL}/${editMenu._id}`, menuData, config);
+                await axios.patch(`${API_URL}/${editMenu.id}`, menuData, config);
                 toast.success("Menu updated successfully");
             } else {
                 await axios.post(API_URL, menuData, config);
@@ -104,7 +104,7 @@ const MenuDashboard = () => {
                     </thead>
                     <tbody>
                         {menus.map((menu, index) => (
-                            <tr key={menu._id}>
+                            <tr key={menu.id}>
                                 <td>{index + 1}</td>
                                 <td>{menu.name}</td>
                                 <td>{menu.path}</td>
@@ -121,7 +121,7 @@ const MenuDashboard = () => {
                                     <Button
                                         variant="danger"
                                         size="sm"
-                                        onClick={() => { setMenuToDelete(menu._id); setConfirmModalShow(true); }}
+                                        onClick={() => { setMenuToDelete(menu.id); setConfirmModalShow(true); }}
                                     >
                                         Delete
                                     </Button>

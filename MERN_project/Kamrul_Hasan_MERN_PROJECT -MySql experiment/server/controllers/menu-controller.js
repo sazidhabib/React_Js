@@ -1,8 +1,7 @@
-import Menu from '../models/menu-model.js';
-
+const Menu = require('../models/menu-model');
 
 // Protected Admin Routes
-export const createMenu = async (req, res) => {
+const createMenu = async (req, res) => {
     try {
         const { name, path, order } = req.body;
 
@@ -14,20 +13,28 @@ export const createMenu = async (req, res) => {
             });
         }
 
-        const menu = new Menu({ name, path, order });
-        await menu.save();
+        const menu = await Menu.create({ name, path, order });
 
         res.status(201).json({
             success: true,
             data: menu
         });
     } catch (err) {
-        if (err.code === 11000) {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+            const field = err.errors[0].path;
             return res.status(400).json({
                 success: false,
-                message: 'Menu with this name, path, or order already exists'
+                message: `Menu with this ${field} already exists`
             });
         }
+
+        if (err.name === 'SequelizeValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: err.errors[0].message
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Server error',
@@ -37,9 +44,12 @@ export const createMenu = async (req, res) => {
 };
 
 // Public Route
-export const getMenus = async (req, res) => {
+const getMenus = async (req, res) => {
     try {
-        const menus = await Menu.find().sort({ order: 1 });
+        const menus = await Menu.findAll({
+            order: [['order', 'ASC']]
+        });
+
         res.status(200).json({
             success: true,
             data: menus
@@ -54,14 +64,12 @@ export const getMenus = async (req, res) => {
 };
 
 // Protected Admin Routes
-export const updateMenu = async (req, res) => {
+const updateMenu = async (req, res) => {
     try {
         const { name, path, order } = req.body;
-        const menu = await Menu.findByIdAndUpdate(
-            req.params.id,
-            { name, path, order },
-            { new: true, runValidators: true }
-        );
+        const { id } = req.params;
+
+        const menu = await Menu.findByPk(id);
 
         if (!menu) {
             return res.status(404).json({
@@ -70,17 +78,29 @@ export const updateMenu = async (req, res) => {
             });
         }
 
+        // Update menu
+        await menu.update({ name, path, order });
+
         res.status(200).json({
             success: true,
             data: menu
         });
     } catch (err) {
-        if (err.code === 11000) {
+        if (err.name === 'SequelizeUniqueConstraintError') {
+            const field = err.errors[0].path;
             return res.status(400).json({
                 success: false,
-                message: 'Menu with this name, path, or order already exists'
+                message: `Menu with this ${field} already exists`
             });
         }
+
+        if (err.name === 'SequelizeValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: err.errors[0].message
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Server error',
@@ -89,15 +109,20 @@ export const updateMenu = async (req, res) => {
     }
 };
 
-export const deleteMenu = async (req, res) => {
+const deleteMenu = async (req, res) => {
     try {
-        const menu = await Menu.findByIdAndDelete(req.params.id);
+        const { id } = req.params;
+        const menu = await Menu.findByPk(id);
+
         if (!menu) {
             return res.status(404).json({
                 success: false,
                 message: 'Menu not found'
             });
         }
+
+        await menu.destroy();
+
         res.status(200).json({
             success: true,
             message: 'Menu deleted successfully'
@@ -109,4 +134,11 @@ export const deleteMenu = async (req, res) => {
             error: err.message
         });
     }
+};
+
+module.exports = {
+    createMenu,
+    getMenus,
+    updateMenu,
+    deleteMenu
 };

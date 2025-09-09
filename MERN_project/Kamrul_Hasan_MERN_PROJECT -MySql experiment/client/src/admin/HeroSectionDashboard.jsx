@@ -58,7 +58,7 @@ const HeroSectionDashboard = () => {
             }
 
             if (editHeroSection) {
-                await axios.patch(`${API_URL}/${editHeroSection._id}`, formData, config);
+                await axios.patch(`${API_URL}/${editHeroSection.id}`, formData, config);
                 toast.success("Hero section updated successfully");
             } else {
                 await axios.post(API_URL, formData, config);
@@ -120,7 +120,7 @@ const HeroSectionDashboard = () => {
                     </thead>
                     <tbody>
                         {heroSections.map((section, index) => (
-                            <tr key={section._id}>
+                            <tr key={section.id}>
                                 <td>{index + 1}</td>
                                 <td>{section.title}</td>
                                 <td>
@@ -158,7 +158,7 @@ const HeroSectionDashboard = () => {
                                             variant="danger"
                                             size="sm"
                                             onClick={() => {
-                                                setSectionToDelete(section._id);
+                                                setSectionToDelete(section.id);
                                                 setConfirmModalShow(true);
                                             }}
                                         >

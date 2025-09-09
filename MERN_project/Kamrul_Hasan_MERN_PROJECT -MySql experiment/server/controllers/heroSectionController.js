@@ -1,4 +1,4 @@
-const heroSections = require('../models/heroSections');
+const HeroSection = require('../models/heroSections');
 
 // Create hero section
 const createHeroSection = async (req, res, next) => {
@@ -10,15 +10,24 @@ const createHeroSection = async (req, res, next) => {
             return res.status(400).json({ error: 'Exactly 3 lines of text are required' });
         }
 
-        const heroSection = new heroSections({
+        // Check if each line is not empty
+        lines.forEach((line, index) => {
+            if (typeof line !== 'string' || line.trim() === '') {
+                return res.status(400).json({ error: `Line ${index + 1} cannot be empty` });
+            }
+        });
+
+        const heroSection = await HeroSection.create({
             title,
-            lines,
+            lines: lines, // Will be converted to JSON string by hook
             imageUrl: req.file?.path || null
         });
 
-        await heroSection.save();
         res.status(201).json(heroSection);
     } catch (error) {
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({ error: error.errors[0].message });
+        }
         next(error);
     }
 };
@@ -26,10 +35,14 @@ const createHeroSection = async (req, res, next) => {
 // Get hero section
 const getHeroSection = async (req, res, next) => {
     try {
-        const heroSection = await heroSections.findOne().sort({ createdAt: -1 });
+        const heroSection = await HeroSection.findOne({
+            order: [['createdAt', 'DESC']]
+        });
+
         if (!heroSection) {
             return res.status(404).json({ error: 'Hero section not found' });
         }
+
         res.json(heroSection);
     } catch (error) {
         next(error);
@@ -42,14 +55,29 @@ const updateHeroSection = async (req, res, next) => {
         const { id } = req.params;
         const { title, lines } = req.body;
 
-        // Check if lines is an array with 3 items
+        // Check if lines is provided and is an array with 3 items
         if (lines && (!Array.isArray(lines) || lines.length !== 3)) {
             return res.status(400).json({ error: 'Exactly 3 lines of text are required' });
         }
 
+        // Check if each line is not empty
+        if (lines) {
+            lines.forEach((line, index) => {
+                if (typeof line !== 'string' || line.trim() === '') {
+                    return res.status(400).json({ error: `Line ${index + 1} cannot be empty` });
+                }
+            });
+        }
+
+        const heroSection = await HeroSection.findByPk(id);
+
+        if (!heroSection) {
+            return res.status(404).json({ error: 'Hero section not found' });
+        }
+
         const updateData = {
-            title,
-            lines,
+            title: title || heroSection.title,
+            lines: lines ? lines : heroSection.lines,
             updatedAt: new Date()
         };
 
@@ -57,23 +85,17 @@ const updateHeroSection = async (req, res, next) => {
             updateData.imageUrl = req.file.path;
         }
 
-        const heroSection = await heroSections.findByIdAndUpdate(
-            id,
-            updateData,
-            { new: true, runValidators: true }
-        );
-
-        if (!heroSection) {
-            return res.status(404).json({ error: 'Hero section not found' });
-        }
+        await heroSection.update(updateData);
 
         res.json(heroSection);
     } catch (error) {
+        if (error.name === 'SequelizeValidationError') {
+            return res.status(400).json({ error: error.errors[0].message });
+        }
         next(error);
     }
 };
 
-// Export as CommonJS
 module.exports = {
     createHeroSection,
     getHeroSection,

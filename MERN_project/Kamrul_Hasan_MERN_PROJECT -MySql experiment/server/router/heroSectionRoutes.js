@@ -19,7 +19,8 @@ const heroSectionSchema = z.object({
 
 router.post(
     '/',
-    upload.single('image'), authMiddleware,
+    authMiddleware,
+    upload.single('image'),
     convertToWebp,
     validate(heroSectionSchema),
     createHeroSection
@@ -28,7 +29,17 @@ router.post(
 router.get('/', getHeroSection);
 
 router.patch(
-    '/:id', authMiddleware,
+    '/:id',
+    authMiddleware,
+    upload.single('image'),
+    convertToWebp,
+    validate(heroSectionSchema.partial()), // Allow partial updates
+    updateHeroSection
+);
+
+router.put(
+    '/:id',
+    authMiddleware,
     upload.single('image'),
     convertToWebp,
     validate(heroSectionSchema),

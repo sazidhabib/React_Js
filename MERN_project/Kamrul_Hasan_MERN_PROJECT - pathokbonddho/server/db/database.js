@@ -1,4 +1,3 @@
-// db/database.js
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
@@ -12,12 +11,13 @@ const sequelize = new Sequelize(
         dialect: "mysql",
         dialectOptions: {
             charset: "utf8mb4",
-            // uncomment this if your host requires SSL
-            // ssl: { require: true, rejectUnauthorized: false }
         },
         define: {
             charset: "utf8mb4",
             collate: "utf8mb4_unicode_ci",
+            timestamps: true, // Add this
+            underscored: false,
+            freezeTableName: true, // Prevent pluralization issues
         },
         pool: {
             max: 5,
@@ -25,7 +25,12 @@ const sequelize = new Sequelize(
             acquire: 30000,
             idle: 10000,
         },
-        logging: false,
+        logging: process.env.NODE_ENV === 'development' ? console.log : false,
+        // Prevent automatic sync operations
+        sync: {
+            force: false,
+            alter: false
+        },
     }
 );
 

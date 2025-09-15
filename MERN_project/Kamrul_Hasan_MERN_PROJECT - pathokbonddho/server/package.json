@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "migrate:up": "npx dotenv sequelize-cli db:migrate",
+    "migrate:down": "npx dotenv sequelize-cli db:migrate:undo",
+    "migrate:create": "npx dotenv sequelize-cli migration:generate --name",
+    "migrate:reset": "npx dotenv sequelize-cli db:migrate:undo:all && npx dotenv sequelize-cli db:migrate",
+    "db:clean": "npx sequelize-cli db:migrate:undo:all",
+    "db:setup": "npm run migrate:reset"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +31,9 @@
     "sequelize": "^6.37.7",
     "sharp": "^0.34.2",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^10.0.0",
+    "sequelize-cli": "^6.6.3"
   }
 }

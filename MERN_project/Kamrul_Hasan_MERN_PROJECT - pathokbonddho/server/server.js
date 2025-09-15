@@ -5,13 +5,9 @@ const fs = require("fs");
 require("dotenv").config();
 
 const sequelize = require("./db/database");
-const Song = require('./models/song');
+const { getSyncOptions } = require("./config/database");
+const safeSync = require("./utils/databaseSync");
 const errorMiddleware = require("./middlewares/error-middleware");
-
-// Sync all models
-sequelize.sync({ force: false }) // set force: true to drop and recreate tables
-  .then(() => console.log('Database & tables created!'))
-  .catch(err => console.error('Error syncing database:', err));
 
 const app = express();
 
@@ -54,11 +50,19 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log("✅ MySQL connection established successfully.");
 
-    require("./models/user-model"); // load models
+    // Load models
+    require("./models/user-model");
+    require("./models/blog-model"); // Make sure to load your blog model
 
-
-    await sequelize.sync({ alter: true });
-    console.log("✅ Database synchronized");
+    // Use safe sync instead of direct sync
+    if (process.env.NODE_ENV !== 'production') {
+      const syncOptions = getSyncOptions();
+      await safeSync(sequelize, syncOptions);
+    } else {
+      console.log("✅ Production environment: Using migrations only");
+      // In production, run migrations manually:
+      // npx sequelize-cli db:migrate
+    }
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

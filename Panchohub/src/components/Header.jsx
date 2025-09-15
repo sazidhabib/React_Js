@@ -9,7 +9,7 @@ const Header = () => {
   const scrollToSection = (sectionId) => {
     const section = document.getElementById(sectionId.toLowerCase());
     if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
+      section.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -78,7 +78,7 @@ const Header = () => {
       {/* Navigation Links */}
       <div className="border-t">
         <div className="container mx-auto flex space-x-6 px-6 py-4 items-center justify-center">
-          {["Home", "About", "Features", "Pricing"].map((link, index) => (
+          {["Home", "About", "Features"].map((link, index) => (
             <button
               key={index}
               onClick={() => scrollToSection(link.toLowerCase())}

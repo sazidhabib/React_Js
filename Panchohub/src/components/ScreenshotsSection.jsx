@@ -30,17 +30,24 @@ const ScreenshotsSection = () => {
   }, []);
 
   return (
-    <section id="screens" className="relative z-20 pt-[110px]">
+    <section
+      id="screens"
+      className="relative z-20 pt-[110px] bg-gray-900 text-white"
+    >
       <div className="container mx-auto">
         <div
           className="wow fadeInUp mx-auto mb-10 max-w-[900px] text-center"
           data-wow-delay=".2s"
         >
-          <h2 className="mb-4 text-3xl font-bold text-black dark:text-white sm:text-4xl md:text-[44px] md:leading-tight">
+          <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl md:text-[44px] md:leading-tight">
             App Screenshots
           </h2>
           <p className="text-base text-body">
-            এখানে আমরা আমাদের অ্যাপের লাইভ স্ক্রিনশট শেয়ার করেছি, যাতে আপনি সহজেই এর ডিজাইন, ফিচার এবং ব্যবহার পদ্ধতি সম্পর্কে ধারণা নিতে পারেন। স্ক্রিনশটগুলো দেখে আপনি অ্যাপের ভেতরের ইন্টারফেস ও কার্যপ্রণালী আগে থেকেই বুঝতে পারবেন, যা আপনাকে ডাউনলোড করার আগে একটি পরিষ্কার অভিজ্ঞতা দিবে।.
+            এখানে আমরা আমাদের অ্যাপের লাইভ স্ক্রিনশট শেয়ার করেছি, যাতে আপনি
+            সহজেই এর ডিজাইন, ফিচার এবং ব্যবহার পদ্ধতি সম্পর্কে ধারণা নিতে পারেন।
+            স্ক্রিনশটগুলো দেখে আপনি অ্যাপের ভেতরের ইন্টারফেস ও কার্যপ্রণালী আগে
+            থেকেই বুঝতে পারবেন, যা আপনাকে ডাউনলোড করার আগে একটি পরিষ্কার
+            অভিজ্ঞতা দিবে।.
           </p>
         </div>
       </div>
@@ -128,6 +135,7 @@ const ScreenshotsSection = () => {
       </div>
 
       {/* Graphics */}
+      <hr className="mt-6" />
     </section>
   );
 };

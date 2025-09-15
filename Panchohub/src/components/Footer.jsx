@@ -74,7 +74,7 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4">Contact Us</h3>
             <ul className="text-gray-400 space-y-2">
               <li>support@panchohub.com</li>
-              <li>+8801830996044</li>
+              <li>+88018XXXXXXX</li>
               <li>Dhaka, Bangladesh</li>
             </ul>
           </div>
@@ -85,7 +85,10 @@ const Footer = () => {
 
             {/* Social Media Icons */}
             <div className="flex space-x-4 justify-center mb-6">
-              <a href="www.facebook.com/PanchoHubOfficial/" className="text-gray-400 hover:text-white transition">
+              <a
+                href="www.facebook.com/PanchoHubOfficial/"
+                className="text-gray-400 hover:text-white transition"
+              >
                 <FaFacebook className="w-6 h-6" />
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition">
@@ -127,7 +130,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="border-t border-gray-800 mt-8 pt-6 text-center text-gray-400">
-          <p>© {new Date().getFullYear()} Your Company. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} PanchoHub. All rights reserved.</p>
         </div>
       </div>
     </footer>

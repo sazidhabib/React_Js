@@ -36,11 +36,12 @@ function App() {
                 <Route path="/feature/:slug" element={<FeatureDetails />} />
                 <Route path="/doctors" element={<DoctorCategories />} />
               </Routes>
-              <AboutUs />
-              <ScreenshotsSection />
+              {/* <AboutUs /> */}
+
               <Testimonials />
               <FaqSection />
-              <PricingSection />
+              {/* <PricingSection /> */}
+              <ScreenshotsSection />
               <Footer />
             </>
           }

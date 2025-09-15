@@ -4,7 +4,7 @@ const NewsScrolling = () => {
   return (
     <div className=" sm:w-[90%] md:w-[80%] lg:w-[76%] mx-auto w-full  flex items-center">
       <div
-        className="text-lg font-bold text-white bg-indigo-700 whitespace-nowrap px-6"
+        className="text-lg font-bold text-white bg-indigo-700 whitespace-nowrap px-6 my-3"
         style={{ borderRadius: "0 0 20px 0" }}
       >
         Latest News:

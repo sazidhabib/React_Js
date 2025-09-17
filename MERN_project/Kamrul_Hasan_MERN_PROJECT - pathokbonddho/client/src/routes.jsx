@@ -16,6 +16,8 @@ import MenuDashboard from "./admin/MenuDashboard";
 import HeroSectionDashboard from "./admin/HeroSectionDashboard";
 import SectionDashboard from "./admin/SectionDashboard";
 import VideoDashboard from "./admin/VideoDashboard";
+import PageLayoutDashboard from "./admin/PageLayoutDashboard";
+
 
 
 const AppRoutes = () => {
@@ -40,6 +42,7 @@ const AppRoutes = () => {
           <Route path="/admin/menu" element={<MenuDashboard />} />
           <Route path="/admin/songs" element={<SongDashboard />} />
           <Route path="/admin/videos" element={<VideoDashboard />} />
+          <Route path="/admin/page-layout" element={<PageLayoutDashboard />} />
           <Route path="/admin/hero-section" element={<HeroSectionDashboard />} />
           <Route path="/admin/sections" element={<SectionDashboard />} />
         </Route>

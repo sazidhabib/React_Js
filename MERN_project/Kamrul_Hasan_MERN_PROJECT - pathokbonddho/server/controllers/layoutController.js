@@ -79,3 +79,16 @@ exports.deletePage = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+// Add this new function to get all pages
+exports.getAllPages = async (req, res) => {
+    try {
+        const pages = await Page.findAll({
+            attributes: ['id', 'name'], // Only get id and name
+            order: [['name', 'ASC']] // Order by name alphabetically
+        });
+        res.json(pages);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

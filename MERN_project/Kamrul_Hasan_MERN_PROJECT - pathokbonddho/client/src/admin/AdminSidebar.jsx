@@ -73,6 +73,11 @@ function AdminSidebar({ isSidebarOpen }) {
             Videos
           </NavLink>
         </li>
+        <li className={`nav-item ${isActiveRoute("/admin/page-layout") ? "active-item" : ""}`}>
+          <NavLink to="/admin/page-layout" className="nav-link text-white">
+            PageLayout
+          </NavLink>
+        </li>
 
       </ul>
     </div>

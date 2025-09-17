@@ -5,6 +5,7 @@ const Page = require('./page');
 const PageSection = require('./pageSection');
 const Row = require('./row');
 const Column = require('./column');
+const User = require('./user-model');
 
 // Associations for Photo Gallery
 Album.hasMany(Photo, {
@@ -49,4 +50,5 @@ module.exports = {
     PageSection,
     Row,
     Column,
+    User,
 };

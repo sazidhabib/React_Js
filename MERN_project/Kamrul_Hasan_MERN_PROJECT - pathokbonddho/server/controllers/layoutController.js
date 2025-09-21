@@ -4,6 +4,8 @@ exports.createPage = async (req, res) => {
     try {
         const { name, sections } = req.body;
 
+        console.log("📝 Creating page with data:", JSON.stringify({ name, sections }, null, 2));
+
         const page = await Page.create(
             {
                 name,
@@ -27,7 +29,13 @@ exports.createPage = async (req, res) => {
 
         res.status(201).json(page);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("❌ Create page error:", err);
+        console.error("❌ Error details:", err.message);
+        console.error("❌ Stack trace:", err.stack);
+        res.status(500).json({
+            error: err.message,
+            details: err.errors ? err.errors.map(e => e.message) : null
+        });
     }
 };
 

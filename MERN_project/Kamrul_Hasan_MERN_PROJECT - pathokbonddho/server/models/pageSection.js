@@ -8,7 +8,7 @@ const PageSection = sequelize.define("PageSection", {
     },
 }, {
     tableName: "page_sections", // renamed because 'sections' already exists
-    timestamps: false,
+    //timestamps: false,
 });
 
 module.exports = PageSection;

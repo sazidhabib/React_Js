@@ -45,24 +45,49 @@ app.get("/register", (req, res) => res.send("Hello World this is register page")
 
 app.use(errorMiddleware);
 
+
 // Start server
 const startServer = async () => {
   try {
     await sequelize.authenticate();
     console.log("✅ MySQL connection established successfully.");
 
-    // Load models
-    require("./models/user-model");
-    require("./models/blog-model"); // Make sure to load your blog model
+    // Load ALL models
+    const { Page, PageSection, Row, Column } = require("./models");
+
+    console.log("✅ All models loaded successfully:");
+    console.log("   - Page:", !!Page);
+    console.log("   - PageSection:", !!PageSection);
+    console.log("   - Row:", !!Row);
+    console.log("   - Column:", !!Column);
 
     // Use safe sync instead of direct sync
     if (process.env.NODE_ENV !== 'production') {
-      const syncOptions = getSyncOptions();
-      await safeSync(sequelize, syncOptions);
+      console.log("🔄 Syncing database to add missing columns...");
+
+      // This will ADD missing columns without dropping tables
+      await sequelize.sync({ alter: true });
+
+      console.log("✅ Database sync completed! Missing columns added.");
     } else {
       console.log("✅ Production environment: Using migrations only");
-      // In production, run migrations manually:
-      // npx sequelize-cli db:migrate
+    }
+
+    // Verify tables were created
+    const [tables] = await sequelize.query("SHOW TABLES");
+    const tableNames = tables.map(t => Object.values(t)[0]);
+    console.log("✅ Database tables:", tableNames);
+
+    // Check if our layout tables exist
+    const layoutTables = ['pages', 'page_sections', 'rows', 'columns'];
+    const missingTables = layoutTables.filter(table => !tableNames.includes(table));
+
+    if (missingTables.length > 0) {
+      console.log("❌ Missing tables:", missingTables);
+      console.log("🔄 Force creating missing tables...");
+      await sequelize.sync({ force: true }); // This will drop and recreate ALL tables
+    } else {
+      console.log("✅ All layout tables exist!");
     }
 
     const PORT = process.env.PORT || 5000;

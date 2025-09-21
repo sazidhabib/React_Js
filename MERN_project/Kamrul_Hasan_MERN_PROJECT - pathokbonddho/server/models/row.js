@@ -8,7 +8,7 @@ const Row = sequelize.define("Row", {
     },
 }, {
     tableName: "rows",
-    timestamps: false,
+    //timestamps: false,
 });
 
 module.exports = Row;

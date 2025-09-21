@@ -22,7 +22,7 @@ const Column = sequelize.define("Column", {
     },
 }, {
     tableName: "columns",
-    timestamps: false,
+    //timestamps: false,
 });
 
 module.exports = Column;

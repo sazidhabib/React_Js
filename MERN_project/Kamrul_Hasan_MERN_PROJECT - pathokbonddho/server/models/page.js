@@ -8,7 +8,7 @@ const Page = sequelize.define("Page", {
     },
 }, {
     tableName: "pages",
-    timestamps: false,
+    // timestamps: false,
 });
 
 module.exports = Page;

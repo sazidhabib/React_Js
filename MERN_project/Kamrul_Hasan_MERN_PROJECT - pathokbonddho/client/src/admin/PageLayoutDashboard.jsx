@@ -210,7 +210,7 @@ const PageLayoutDashboard = () => {
     }
 
     return (
-        <Container fluid className="py-4">
+        <Container fluid className="py-4 custom-font-initial">
             {alert.show && (
                 <Alert variant={alert.type} className="mb-3">
                     {alert.message}
@@ -327,7 +327,7 @@ const PageLayoutDashboard = () => {
             </Row>
 
             {/* Create Page Modal */}
-            <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg">
+            <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)} size="lg" className='custom-font-initial'>
                 <Modal.Header closeButton>
                     <Modal.Title>Create New Page</Modal.Title>
                 </Modal.Header>

@@ -66,7 +66,7 @@ const startServer = async () => {
       console.log("🔄 Syncing database to add missing columns...");
 
       // This will ADD missing columns without dropping tables
-      await sequelize.sync({ alter: true });
+      await sequelize.sync({ alter: false });
 
       console.log("✅ Database sync completed! Missing columns added.");
     } else {

@@ -63,16 +63,104 @@ exports.getPageLayout = async (req, res) => {
 exports.updatePageLayout = async (req, res) => {
     try {
         const { pageId } = req.params;
-        const updates = req.body; // you can pass updated sections/rows/columns
+        const { name, PageSections } = req.body;
 
+        console.log("🔄 Update request received:", {
+            pageId,
+            name,
+            PageSectionsCount: PageSections?.length,
+            PageSections: PageSections // Log the actual sections data
+        });
+
+        // Find the page
         const page = await Page.findByPk(pageId);
-        if (!page) return res.status(404).json({ message: "Page not found" });
+        if (!page) {
+            return res.status(404).json({ message: "Page not found" });
+        }
 
-        await page.update(updates);
+        // Update page name
+        if (name !== undefined) {
+            await page.update({ name });
+        }
 
-        res.json({ message: "Page updated successfully" });
+        // If PageSections are provided, update them
+        if (PageSections && Array.isArray(PageSections)) {
+            console.log(`🗑️ Removing existing sections for page ${pageId}`);
+
+            // First, remove existing sections and their children (cascade delete)
+            await PageSection.destroy({ where: { pageId } });
+
+            console.log(`✅ Existing sections removed. Creating ${PageSections.length} new sections`);
+
+            // Create new sections with proper structure
+            for (const [index, sectionData] of PageSections.entries()) {
+                console.log(`📦 Creating section ${index + 1}:`, {
+                    layoutType: sectionData.layoutType,
+                    rowsCount: sectionData.rows?.length,
+                    columnsCount: sectionData.rows?.[0]?.columns?.length
+                });
+
+                // Ensure we have at least one row with columns
+                const rows = sectionData.rows && sectionData.rows.length > 0
+                    ? sectionData.rows
+                    : [{
+                        rowOrder: 1,
+                        columns: [{
+                            colOrder: 1,
+                            width: 12,
+                            contentType: 'text',
+                            tag: 'default'
+                        }]
+                    }];
+
+                await PageSection.create({
+                    layoutType: sectionData.layoutType || 'grid',
+                    pageId: page.id,
+                    Rows: rows.map((row, rowIndex) => ({
+                        rowOrder: row.rowOrder || index + 1,
+                        Columns: (row.columns || []).map((column, colIndex) => ({
+                            colOrder: column.colOrder || colIndex + 1,
+                            width: column.width || 12,
+                            contentType: column.contentType || 'text',
+                            tag: column.tag || `col-${colIndex + 1}`
+                        }))
+                    }))
+                }, {
+                    include: [{
+                        model: Row,
+                        include: [Column]
+                    }]
+                });
+            }
+        }
+
+        // Return the updated page with all associations
+        const updatedPage = await Page.findByPk(pageId, {
+            include: [{
+                model: PageSection,
+                include: [{
+                    model: Row,
+                    include: [Column]
+                }]
+            }]
+        });
+
+        console.log(`✅ Update completed. Returning page with ${updatedPage.PageSections?.length} sections`);
+        if (updatedPage.PageSections) {
+            updatedPage.PageSections.forEach((section, idx) => {
+                console.log(`Section ${idx + 1}: ${section.Rows?.[0]?.Columns?.length || 0} columns`);
+            });
+        }
+
+        res.json(updatedPage);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("❌ Update page error:", err);
+        console.error("❌ Error details:", err.message);
+        console.error("❌ Stack trace:", err.stack);
+        res.status(500).json({
+            error: err.message,
+            details: err.errors ? err.errors.map(e => e.message) : null
+        });
     }
 };
 
@@ -88,12 +176,11 @@ exports.deletePage = async (req, res) => {
     }
 };
 
-// Add this new function to get all pages
 exports.getAllPages = async (req, res) => {
     try {
         const pages = await Page.findAll({
-            attributes: ['id', 'name'], // Only get id and name
-            order: [['name', 'ASC']] // Order by name alphabetically
+            attributes: ['id', 'name'],
+            order: [['name', 'ASC']]
         });
         res.json(pages);
     } catch (err) {

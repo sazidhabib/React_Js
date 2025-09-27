@@ -23,9 +23,21 @@ const GridCell = ({
 }) => {
     const [isEditing, setIsEditing] = useState(false);
 
-    const handleClick = () => {
+    const handleClick = (e) => {
         if (onCellSelect) {
-            onCellSelect(rowIndex, colIndex);
+            onCellSelect(rowIndex, colIndex, e);
+        }
+    };
+
+    const handleMouseDown = (e) => {
+        if (onMouseDown) {
+            onMouseDown(rowIndex, colIndex);
+        }
+    };
+
+    const handleMouseEnter = (e) => {
+        if (onMouseEnter) {
+            onMouseEnter(rowIndex, colIndex);
         }
     };
 
@@ -57,6 +69,8 @@ const GridCell = ({
             colSpan={colSpan || 1}
             style={cellStyle}
             onClick={handleClick}
+            onMouseDown={handleMouseDown}
+            onMouseEnter={handleMouseEnter}
         >
             {/* Cell Coordinates */}
             <Badge bg="secondary" className="position-absolute top-0 start-0 small">
@@ -176,12 +190,11 @@ const GridCell = ({
 };
 
 // Merge Controls Component
-const MergeControls = ({ selectedRange, onMerge, onClearSelection }) => {
-    if (!selectedRange || selectedRange.cells.length < 2) return null;
+// Enhanced MergeControls component
+const MergeControls = ({ selectedCells, selectedRange, onMerge, onClearSelection }) => {
+    if (selectedCells.size === 0) return null;
 
-    const { startRow, startCol, endRow, endCol, cells } = selectedRange;
-    const rows = endRow - startRow + 1;
-    const cols = endCol - startCol + 1;
+    const cellCount = selectedCells.size;
 
     return (
         <Card className="mb-3">
@@ -189,20 +202,34 @@ const MergeControls = ({ selectedRange, onMerge, onClearSelection }) => {
                 <div className="d-flex justify-content-between align-items-center">
                     <div>
                         <Badge bg="primary" className="me-2">
-                            Selected: {rows}×{cols} ({cells.length} cells)
+                            {cellCount} {cellCount === 1 ? 'Cell' : 'Cells'} Selected
                         </Badge>
-                        <small className="text-muted">
-                            {String.fromCharCode(65 + startCol)}{startRow + 1} to {String.fromCharCode(65 + endCol)}{endRow + 1}
-                        </small>
+                        {selectedRange && (
+                            <small className="text-muted">
+                                Range: {String.fromCharCode(65 + selectedRange.startCol)}
+                                {selectedRange.startRow + 1} to {String.fromCharCode(65 + selectedRange.endCol)}
+                                {selectedRange.endRow + 1}
+                            </small>
+                        )}
                     </div>
                     <div>
+                        {cellCount > 1 && (
+                            <Button
+                                variant="success"
+                                size="sm"
+                                className="me-2"
+                                onClick={() => onMerge('merge')}
+                            >
+                                🔗 Merge {cellCount} Cells
+                            </Button>
+                        )}
                         <Button
-                            variant="success"
+                            variant="warning"
                             size="sm"
                             className="me-2"
-                            onClick={() => onMerge('merge')}
+                            onClick={() => onMerge('split')}
                         >
-                            🔗 Merge {cells.length} Cells
+                            🔓 Split Merged Cells
                         </Button>
                         <Button
                             variant="outline-secondary"
@@ -236,6 +263,27 @@ const ExcelGridSection = ({
 
     const rows = section.rows || [];
     const columns = rows[0]?.columns || [];
+
+    // Add this helper function to ExcelGridSection
+    const getSelectedRange = () => {
+        if (selectedCells.size === 0) return null;
+
+        const cellsArray = Array.from(selectedCells).map(key => {
+            const [row, col] = key.split('-').map(Number);
+            return { row, col };
+        });
+
+        const rows = cellsArray.map(cell => cell.row);
+        const cols = cellsArray.map(cell => cell.col);
+
+        return {
+            startRow: Math.min(...rows),
+            startCol: Math.min(...cols),
+            endRow: Math.max(...rows),
+            endCol: Math.max(...cols),
+            cells: cellsArray
+        };
+    };
 
     // Handle cell selection with Shift key for multi-selection
     const handleCellSelect = (rowIndex, colIndex, event) => {

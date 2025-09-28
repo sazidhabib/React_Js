@@ -6,6 +6,24 @@ import {
 import axios from 'axios';
 import { useAuth } from '../store/auth'; // Make sure this path is correct
 
+// Import DnD Kit components
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+    useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 // Enhanced Grid Cell Component with Merge Support
 const GridCell = ({
     cell,

@@ -8,8 +8,7 @@ function AdminSidebar({ isSidebarOpen }) {
 
   return (
     <div className={`sidebar custom-font-initial bg-dark ${isSidebarOpen ? "open" : "closed"}`}>
-      <ul className="nav flex-column">
-
+      <ul className="nav flex-column p-3">
         <li className={`nav-item ${isActiveRoute("/admin") ? "active-item" : ""}`}>
           <NavLink to="/admin" className="nav-link text-white">
             Dashboard
@@ -21,6 +20,7 @@ function AdminSidebar({ isSidebarOpen }) {
             Menu
           </NavLink>
         </li>
+
         <li className={`nav-item ${isActiveRoute("/admin/hero-section") ? "active-item" : ""}`}>
           <NavLink to="/admin/hero-section" className="nav-link text-white">
             Hero Section
@@ -38,7 +38,6 @@ function AdminSidebar({ isSidebarOpen }) {
             Article
           </NavLink>
         </li>
-
 
         <li className={`nav-item ${isActiveRoute("/admin/blog") ? "active-item" : ""}`}>
           <NavLink to="/admin/blog" className="nav-link text-white">
@@ -68,17 +67,18 @@ function AdminSidebar({ isSidebarOpen }) {
             Songs
           </NavLink>
         </li>
+
         <li className={`nav-item ${isActiveRoute("/admin/videos") ? "active-item" : ""}`}>
           <NavLink to="/admin/videos" className="nav-link text-white">
             Videos
           </NavLink>
         </li>
+
         <li className={`nav-item ${isActiveRoute("/admin/page-layout") ? "active-item" : ""}`}>
           <NavLink to="/admin/page-layout" className="nav-link text-white">
             PageLayout
           </NavLink>
         </li>
-
       </ul>
     </div>
   );

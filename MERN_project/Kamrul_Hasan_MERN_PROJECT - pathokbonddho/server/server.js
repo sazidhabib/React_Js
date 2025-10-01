@@ -28,6 +28,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Import Routers
+const tagRoutes = require("./router/tag-router");
+
 // Routes
 app.use("/api/auth", require("./router/auth-router"));
 app.use("/api/articles", require("./router/article-router"));
@@ -39,6 +42,7 @@ app.use("/api/hero-section", require("./router/heroSectionRoutes"));
 app.use("/api/sections", require("./router/sectionRoutes"));
 app.use("/api/v1/videos", require("./router/videoRoutes"));
 app.use("/api/layout", require("./router/layoutRouters"));
+app.use('/api/tags', tagRoutes);
 
 app.get("/", (req, res) => res.send("Database is connected successfully"));
 app.get("/register", (req, res) => res.send("Hello World this is register page"));

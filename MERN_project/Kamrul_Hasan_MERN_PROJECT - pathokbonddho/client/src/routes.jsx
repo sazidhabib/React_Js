@@ -17,6 +17,7 @@ import HeroSectionDashboard from "./admin/HeroSectionDashboard";
 import SectionDashboard from "./admin/SectionDashboard";
 import VideoDashboard from "./admin/VideoDashboard";
 import PageLayoutDashboardRND from "./admin/PageLayoutDashboardRND";
+import TagDashboard from "./admin/TagDashboard";
 
 
 
@@ -36,6 +37,7 @@ const AppRoutes = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="/admin/table" element={<AdminTable />} />
           <Route path="/admin/article" element={<ArticleDashboard />} />
+          <Route path="/admin/tags" element={<TagDashboard />} />
           <Route path="/admin/blog" element={<BlogPostDashboard />} />
           <Route path="/admin/album" element={<AlbumDashboard />} />
           <Route path="/admin/photos" element={<PhotoDashboard />} />

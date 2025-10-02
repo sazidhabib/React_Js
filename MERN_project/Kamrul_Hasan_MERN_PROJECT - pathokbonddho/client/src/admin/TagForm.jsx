@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const TagForm = ({ tag, onSubmit, onCancel }) => {
+const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
     const [formData, setFormData] = useState({
         name: '',
         slug: '',

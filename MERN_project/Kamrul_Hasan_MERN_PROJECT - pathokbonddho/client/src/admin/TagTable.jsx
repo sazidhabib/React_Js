@@ -2,6 +2,9 @@
 import React from 'react';
 
 const TagsTable = ({ tags, onEdit, onDelete, loading, canEdit }) => {
+    // Ensure tags is always an array and handle different response formats
+    const tagsArray = Array.isArray(tags) ? tags : (tags?.tags || tags?.data || []);
+
     if (loading) {
         return (
             <div className="card">
@@ -14,7 +17,7 @@ const TagsTable = ({ tags, onEdit, onDelete, loading, canEdit }) => {
         );
     }
 
-    if (tags.length === 0) {
+    if (!tagsArray || tagsArray.length === 0) {
         return (
             <div className="card">
                 <div className="card-body text-center">
@@ -27,13 +30,14 @@ const TagsTable = ({ tags, onEdit, onDelete, loading, canEdit }) => {
     return (
         <div className="card">
             <div className="card-header">
-                <h5 className="card-title mb-0">All Tags ({tags.length})</h5>
+                <h5 className="card-title mb-0">All Tags ({tagsArray.length})</h5>
             </div>
             <div className="card-body p-0">
                 <div className="table-responsive">
                     <table className="table table-hover mb-0">
                         <thead className="table-light">
                             <tr>
+                                <th>#</th>
                                 <th>Name</th>
                                 <th>Slug</th>
                                 <th>Tag Title</th>
@@ -43,9 +47,9 @@ const TagsTable = ({ tags, onEdit, onDelete, loading, canEdit }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {tags.map((tag, index) => (
-                                <tr key={tag.id}>
-                                    <td>{indexOfFirstArticle + index + 1}</td>
+                            {tagsArray.map((tag, index) => (
+                                <tr key={tag.id || index}>
+                                    <td>{index + 1}</td>
                                     <td>
                                         <div className="d-flex align-items-center">
                                             {tag.image && (

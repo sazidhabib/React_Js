@@ -12,9 +12,8 @@ const TagsDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const { token, isLoggedIn } = useAuth(); // Get token from auth context
+    const { token, isLoggedIn } = useAuth();
 
-    // Initialize auth token getter for tagService
     useEffect(() => {
         setAuthTokenGetter(() => token);
     }, [token]);
@@ -27,11 +26,23 @@ const TagsDashboard = () => {
         setLoading(true);
         setError('');
         try {
-            const tagsData = await getTags();
-            setTags(tagsData);
+            const response = await getTags();
+
+            // Handle different response formats
+            if (Array.isArray(response)) {
+                setTags(response);
+            } else if (response && Array.isArray(response.tags)) {
+                setTags(response.tags);
+            } else if (response && Array.isArray(response.data)) {
+                setTags(response.data);
+            } else {
+                console.warn('Unexpected response format:', response);
+                setTags([]);
+            }
         } catch (error) {
             console.error('Error loading tags:', error);
             setError('Failed to load tags. Please try again.');
+            setTags([]); // Ensure tags is always an array
         } finally {
             setLoading(false);
         }
@@ -40,7 +51,6 @@ const TagsDashboard = () => {
     const handleCreateTag = async (tagData) => {
         setError('');
         try {
-            // Check if user is authenticated
             if (!isLoggedIn) {
                 setError('You must be logged in to create tags');
                 return;
@@ -119,7 +129,6 @@ const TagsDashboard = () => {
                         </button>
                     </div>
 
-                    {/* Error Message */}
                     {error && (
                         <div className="alert alert-danger alert-dismissible fade show" role="alert">
                             {error}
@@ -131,7 +140,6 @@ const TagsDashboard = () => {
                         </div>
                     )}
 
-                    {/* Login Warning */}
                     {!isLoggedIn && (
                         <div className="alert alert-warning">
                             <i className="bi bi-exclamation-triangle me-2"></i>

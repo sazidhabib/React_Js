@@ -8,89 +8,127 @@ export const setAuthTokenGetter = (getter) => {
     getAuthToken = getter;
 };
 
-const getHeaders = (isFormData = false) => {
-    const headers = {};
-    const token = getAuthToken();
+export const getTags = async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
 
-    if (!isFormData) {
-        headers['Content-Type'] = 'application/json';
-    }
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    return headers;
-};
-
-export const getTags = async (params = {}) => {
-    const queryString = new URLSearchParams(params).toString();
     const response = await fetch(`${API_BASE}?${queryString}`, {
-        headers: getHeaders()
+        headers: headers
     });
     if (!response.ok) throw new Error('Failed to fetch tags');
     return response.json();
 };
 
 export const getTag = async (id) => {
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE}/${id}`, {
-        headers: getHeaders()
+        headers: headers
     });
     if (!response.ok) throw new Error('Failed to fetch tag');
     return response.json();
 };
 
-export const createTag = async (tagData) => {
-    const formData = new FormData();
+export const createTag = async (formData) => {
+    console.log('Sending create tag request with FormData');
 
-    // Append all fields to formData
-    Object.keys(tagData).forEach(key => {
-        if (tagData[key] !== null && tagData[key] !== undefined) {
-            formData.append(key, tagData[key]);
-        }
-    });
+    const token = getAuthToken();
+    const headers = {};
 
-    const response = await fetch(API_BASE, {
-        method: 'POST',
-        headers: getHeaders(true),
-        body: formData,
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Create tag error response:', errorText);
-        throw new Error(`Failed to create tag: ${response.status}`);
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
-    return response.json();
+
+    // Don't set Content-Type for FormData - browser will set it automatically with boundary
+    // IMPORTANT: Do NOT create a new FormData here - use the one passed from component
+
+    try {
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: headers,
+            body: formData, // Use the FormData directly from component
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Create tag error response:', errorText);
+            throw new Error(`Failed to create tag: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('Create tag success:', result);
+        return result;
+    } catch (error) {
+        console.error('Create tag fetch error:', error);
+        throw error;
+    }
 };
 
-export const updateTag = async (id, tagData) => {
-    const formData = new FormData();
+export const updateTag = async (id, formData) => {
+    console.log('Sending update tag request with FormData for ID:', id);
 
-    Object.keys(tagData).forEach(key => {
-        if (tagData[key] !== null && tagData[key] !== undefined) {
-            formData.append(key, tagData[key]);
-        }
-    });
+    const token = getAuthToken();
+    const headers = {};
 
-    const response = await fetch(`${API_BASE}/${id}`, {
-        method: 'PATCH',
-        headers: getHeaders(true),
-        body: formData,
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Update tag error response:', errorText);
-        throw new Error('Failed to update tag');
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
-    return response.json();
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, {
+            method: 'PATCH',
+            headers: headers,
+            body: formData, // Use the FormData directly from component
+        });
+
+        console.log('Update response status:', response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Update tag error response:', errorText);
+            throw new Error('Failed to update tag');
+        }
+
+        const result = await response.json();
+        console.log('Update tag success:', result);
+        return result;
+    } catch (error) {
+        console.error('Update tag fetch error:', error);
+        throw error;
+    }
 };
 
 export const deleteTag = async (id) => {
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE}/${id}`, {
         method: 'DELETE',
-        headers: getHeaders(),
+        headers: headers,
     });
 
     if (!response.ok) throw new Error('Failed to delete tag');
@@ -98,9 +136,18 @@ export const deleteTag = async (id) => {
 };
 
 export const bulkDeleteTags = async (tagIds) => {
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE}/bulk-delete`, {
         method: 'POST',
-        headers: getHeaders(),
+        headers: headers,
         body: JSON.stringify({ tagIds }),
     });
 

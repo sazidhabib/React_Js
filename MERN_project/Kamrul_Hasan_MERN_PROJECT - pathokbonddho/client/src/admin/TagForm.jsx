@@ -1,3 +1,4 @@
+// TagForm.jsx
 import React, { useState, useEffect } from 'react';
 
 const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
@@ -6,35 +7,138 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
         slug: '',
         tagTitle: '',
         tagDescription: '',
-        image: '',
+        image: null,
+        imageUrl: '',
         metaTitle: '',
         metaDescription: '',
         metaKeywords: ''
     });
 
     const [errors, setErrors] = useState({});
+    const [imagePreview, setImagePreview] = useState('');
+
+    // Function to get full image URL from backend filename
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return '';
+
+        // If it's already a full URL, return it
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+
+        // If it's a filename from backend, construct the full URL
+        // Adjust this based on your server setup
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        return `${baseUrl}/uploads/${imagePath}`;
+    };
 
     useEffect(() => {
         if (tag) {
+            console.log('Editing tag:', tag);
+            const imageUrl = tag.image ? getImageUrl(tag.image) : '';
+
             setFormData({
                 name: tag.name || '',
                 slug: tag.slug || '',
                 tagTitle: tag.tagTitle || '',
                 tagDescription: tag.tagDescription || '',
-                image: tag.image || '',
+                image: null,
+                imageUrl: tag.image || '', // Store the raw value for form submission
                 metaTitle: tag.metaTitle || '',
                 metaDescription: tag.metaDescription || '',
                 metaKeywords: tag.metaKeywords || ''
             });
+
+            // Set image preview for existing image
+            if (imageUrl) {
+                console.log('Setting image preview from existing tag:', imageUrl);
+                setImagePreview(imageUrl);
+
+                // Test if image loads
+                const img = new Image();
+                img.onload = () => {
+                    console.log('Image preview loaded successfully');
+                };
+                img.onerror = () => {
+                    console.error('Image preview failed to load:', imageUrl);
+                    // If backend image fails to load, show a placeholder or hide preview
+                    setImagePreview('');
+                };
+                img.src = imageUrl;
+            }
+        } else {
+            // Reset form for new tag
+            setFormData({
+                name: '',
+                slug: '',
+                tagTitle: '',
+                tagDescription: '',
+                image: null,
+                imageUrl: '',
+                metaTitle: '',
+                metaDescription: '',
+                metaKeywords: ''
+            });
+            setImagePreview('');
         }
     }, [tag]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        const { name, value, type, files } = e.target;
+
+        console.log('Input changed:', { name, value, type, files: files ? files[0] : 'no files' });
+
+        if (type === 'file') {
+            const file = files[0];
+            console.log('File selected:', file);
+
+            setFormData(prev => ({
+                ...prev,
+                [name]: file,
+                imageUrl: '' // Clear URL when file is selected
+            }));
+
+            // Create preview for uploaded file
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    console.log('File preview created');
+                    setImagePreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                setImagePreview('');
+            }
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+
+            // If image URL changes, update preview immediately
+            if (name === 'imageUrl') {
+                if (value) {
+                    const previewUrl = getImageUrl(value);
+                    console.log('Setting preview from URL:', previewUrl);
+                    setImagePreview(previewUrl);
+
+                    // Test if the URL image loads
+                    if (value.startsWith('http')) {
+                        const img = new Image();
+                        img.onload = () => {
+                            console.log('URL image loaded successfully');
+                        };
+                        img.onerror = () => {
+                            console.error('URL image failed to load:', previewUrl);
+                            setImagePreview(''); // Clear preview if URL image fails
+                        };
+                        img.src = previewUrl;
+                    }
+                } else {
+                    setImagePreview('');
+                }
+            }
+        }
 
         // Clear error when user starts typing
         if (errors[name]) {
@@ -64,8 +168,38 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log('Form submitted, formData:', formData);
+        console.log('Image preview:', imagePreview);
+
         if (validateForm()) {
-            onSubmit(formData);
+            const submitData = new FormData();
+
+            // Append all form data
+            Object.keys(formData).forEach(key => {
+                if (formData[key] !== null && formData[key] !== undefined && formData[key] !== '') {
+                    if (key === 'image' && formData[key] instanceof File) {
+                        console.log('Appending file:', formData[key]);
+                        submitData.append(key, formData[key]);
+                    } else if (key !== 'imageUrl') {
+                        console.log(`Appending ${key}:`, formData[key]);
+                        submitData.append(key, formData[key]);
+                    }
+                }
+            });
+
+            // Also append imageUrl if no file is selected but URL exists
+            if (!formData.image && formData.imageUrl) {
+                console.log('Appending image URL:', formData.imageUrl);
+                submitData.append('image', formData.imageUrl);
+            }
+
+            // Log FormData contents
+            console.log('FormData contents:');
+            for (let [key, value] of submitData.entries()) {
+                console.log(key, value);
+            }
+
+            onSubmit(submitData);
         }
     };
 
@@ -81,6 +215,15 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
             ...prev,
             slug
         }));
+    };
+
+    const clearImage = () => {
+        setFormData(prev => ({
+            ...prev,
+            image: null,
+            imageUrl: ''
+        }));
+        setImagePreview('');
     };
 
     return (
@@ -170,31 +313,92 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
                         />
                     </div>
 
+                    {/* Image Upload Section */}
                     <div className="mb-3">
-                        <label htmlFor="image" className="form-label">Image URL</label>
+                        <label htmlFor="image" className="form-label">Upload Image</label>
                         <input
-                            type="url"
+                            type="file"
                             className="form-control"
                             id="image"
                             name="image"
-                            value={formData.image}
+                            accept="image/*"
+                            onChange={handleChange}
+                        />
+                        <div className="form-text">
+                            Upload an image file (JPG, PNG, WEBP, etc.)
+                        </div>
+                    </div>
+
+                    <div className="mb-3">
+                        <label htmlFor="imageUrl" className="form-label">Or Enter Image URL</label>
+                        <input
+                            type="url"
+                            className="form-control"
+                            id="imageUrl"
+                            name="imageUrl"
+                            value={formData.imageUrl}
                             onChange={handleChange}
                             placeholder="https://example.com/image.jpg"
                         />
-                        {formData.image && (
-                            <div className="mt-2">
+                        <div className="form-text">
+                            Alternatively, provide an image URL
+                        </div>
+                    </div>
+
+                    {/* Image Preview */}
+                    {imagePreview && (
+                        <div className="mb-3">
+                            <label className="form-label">Image Preview</label>
+                            <div className="d-flex align-items-center">
                                 <img
-                                    src={formData.image}
+                                    src={imagePreview}
                                     alt="Preview"
-                                    className="img-thumbnail"
-                                    style={{ maxHeight: '100px' }}
+                                    className="img-thumbnail me-3"
+                                    style={{
+                                        maxHeight: '100px',
+                                        maxWidth: '150px',
+                                        objectFit: 'cover'
+                                    }}
                                     onError={(e) => {
+                                        console.error('Image failed to load:', imagePreview);
                                         e.target.style.display = 'none';
+                                        // Show error message
+                                        const previewContainer = e.target.parentElement;
+                                        const errorMsg = document.createElement('div');
+                                        errorMsg.className = 'text-danger small';
+                                        errorMsg.textContent = 'Image failed to load';
+                                        previewContainer.appendChild(errorMsg);
+                                    }}
+                                    onLoad={(e) => {
+                                        console.log('Image loaded successfully:', imagePreview);
                                     }}
                                 />
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-danger btn-sm"
+                                    onClick={clearImage}
+                                >
+                                    Remove Image
+                                </button>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+
+                    {/* Show current image info when editing */}
+                    {tag && tag.image && !imagePreview && (
+                        <div className="alert alert-info">
+                            <i className="bi bi-info-circle me-2"></i>
+                            Current image: {tag.image}
+                            <br />
+                            <small>
+                                {tag.image.startsWith('http')
+                                    ? 'This is an external URL.'
+                                    : 'This is an uploaded file. The preview may not show if the file path is not accessible.'}
+                            </small>
+                            <br />
+                            <small>If you want to change the image, upload a new file or enter a new URL.</small>
+                        </div>
+                    )}
 
                     <div className="card mt-4">
                         <div className="card-header">

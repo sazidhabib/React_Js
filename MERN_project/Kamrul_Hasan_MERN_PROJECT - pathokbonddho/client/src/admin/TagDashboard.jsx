@@ -48,7 +48,7 @@ const TagsDashboard = () => {
         }
     };
 
-    const handleCreateTag = async (tagData) => {
+    const handleCreateTag = async (formData) => { // Now receives FormData directly
         setError('');
         try {
             if (!isLoggedIn) {
@@ -56,7 +56,8 @@ const TagsDashboard = () => {
                 return;
             }
 
-            await createTag(tagData);
+            console.log('Sending formData to createTag:', formData);
+            await createTag(formData); // Pass FormData directly
             await loadTags();
             setShowForm(false);
         } catch (error) {

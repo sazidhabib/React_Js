@@ -8,6 +8,11 @@ const { Op } = require("sequelize");
 // ✅ Create Tag
 const createTag = async (req, res) => {
     try {
+
+        console.log('=== CREATE TAG CONTROLLER ===');
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
+        console.log('Request files:', req.files);
         const {
             name,
             slug,
@@ -18,6 +23,10 @@ const createTag = async (req, res) => {
             metaKeywords,
             status
         } = req.body;
+
+        console.log('Parsed fields:', {
+            name, slug, tagTitle, tagDescription, metaTitle, metaDescription, metaKeywords, status
+        });
 
         const parsedStatus = status === "true" || status === true;
 
@@ -48,6 +57,8 @@ const createTag = async (req, res) => {
         }
 
         const imagePath = req.file ? req.file.filename : null;
+
+        console.log('Image path to save:', imagePath);
 
         const newTag = await Tag.create({
             name,

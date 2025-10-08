@@ -46,6 +46,11 @@ function AdminSidebar({ isSidebarOpen }) {
             Tags
           </NavLink>
         </li>
+        <li className={`nav-item py-2 ${isActiveRoute("/admin/author") ? "active-item" : ""}`}>
+          <NavLink to="/admin/author" className="text-decoration-none  sm-fs-6 text-white fs-5">
+            Author
+          </NavLink>
+        </li>
 
         <li className={`nav-item py-2 ${isActiveRoute("/admin/blog") ? "active-item" : ""}`}>
           <NavLink to="/admin/blog" className="text-decoration-none  sm-fs-6 text-white fs-5">

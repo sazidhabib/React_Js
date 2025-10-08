@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Spinner } from "react-bootstrap";
+import { Button, Table, Spinner, Badge, Dropdown, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
 import MenuFormModal from "./MenuFormModal";
 import ConfirmationModal from "./ConfirmationModal";
@@ -10,13 +10,14 @@ const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/menus`;
 
 const MenuDashboard = () => {
     const [menus, setMenus] = useState([]);
+    const [parentMenus, setParentMenus] = useState([]);
     const [loading, setLoading] = useState(false);
     const [modalShow, setModalShow] = useState(false);
     const [editMenu, setEditMenu] = useState(null);
     const [confirmModalShow, setConfirmModalShow] = useState(false);
     const [menuToDelete, setMenuToDelete] = useState(null);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [viewFormat, setViewFormat] = useState('flat'); // 'flat' or 'tree'
+    const [activeOnly, setActiveOnly] = useState(false);
 
     const { token } = useAuth();
 
@@ -24,11 +25,13 @@ const MenuDashboard = () => {
     const fetchMenus = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(API_URL, {
-                params: { page }
-            });
-            setMenus(res.data.data); // Adjusted for typical pagination response
-            setTotalPages(res.data.totalPages || 1);
+            const params = {
+                format: viewFormat,
+                activeOnly: activeOnly
+            };
+
+            const res = await axios.get(API_URL, { params });
+            setMenus(res.data.data);
         } catch (err) {
             toast.error("Failed to fetch menus");
             console.error("Fetch error:", err);
@@ -37,9 +40,20 @@ const MenuDashboard = () => {
         }
     };
 
+    // Fetch parent menus for dropdown
+    const fetchParentMenus = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/parents`);
+            setParentMenus(res.data.data);
+        } catch (err) {
+            console.error("Failed to fetch parent menus:", err);
+        }
+    };
+
     useEffect(() => {
         fetchMenus();
-    }, [page]);
+        fetchParentMenus();
+    }, [viewFormat, activeOnly]);
 
     const handleMenuSubmit = async (menuData) => {
         try {
@@ -57,7 +71,9 @@ const MenuDashboard = () => {
                 toast.success("Menu created successfully");
             }
             setModalShow(false);
+            setEditMenu(null);
             fetchMenus();
+            fetchParentMenus();
         } catch (err) {
             toast.error(err.response?.data?.message || "Operation failed");
             console.error("Submit error:", err);
@@ -73,11 +89,78 @@ const MenuDashboard = () => {
             });
             toast.success("Menu deleted successfully");
             setConfirmModalShow(false);
+            setMenuToDelete(null);
             fetchMenus();
+            fetchParentMenus();
         } catch (err) {
-            toast.error("Failed to delete menu");
+            toast.error(err.response?.data?.message || "Failed to delete menu");
             console.error("Delete error:", err);
         }
+    };
+
+    const toggleMenuStatus = async (menuId, currentStatus) => {
+        try {
+            await axios.patch(`${API_URL}/${menuId}`,
+                { isActive: !currentStatus },
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+            toast.success(`Menu ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+            fetchMenus();
+        } catch (err) {
+            toast.error("Failed to update menu status");
+            console.error("Status update error:", err);
+        }
+    };
+
+    const renderMenuTree = (menuList, level = 0) => {
+        return menuList.map((menu) => (
+            <React.Fragment key={menu.id}>
+                <tr>
+                    <td>
+                        <div style={{ paddingLeft: `${level * 30}px` }}>
+                            {level > 0 && '↳ '}{menu.name}
+                        </div>
+                    </td>
+                    <td>{menu.path}</td>
+                    <td>{menu.order}</td>
+                    <td>
+                        <Badge bg={menu.isActive ? "success" : "secondary"}>
+                            {menu.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                    </td>
+                    <td>{menu.level}</td>
+                    <td>{menu.parent?.name || "—"}</td>
+                    <td>
+                        <div className="d-flex gap-1">
+                            <Button
+                                variant="outline-primary"
+                                size="sm"
+                                onClick={() => { setEditMenu(menu); setModalShow(true); }}
+                            >
+                                Edit
+                            </Button>
+                            <Button
+                                variant={menu.isActive ? "outline-warning" : "outline-success"}
+                                size="sm"
+                                onClick={() => toggleMenuStatus(menu.id, menu.isActive)}
+                            >
+                                {menu.isActive ? "Deactivate" : "Activate"}
+                            </Button>
+                            <Button
+                                variant="outline-danger"
+                                size="sm"
+                                onClick={() => { setMenuToDelete(menu.id); setConfirmModalShow(true); }}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </td>
+                </tr>
+                {menu.children && renderMenuTree(menu.children, level + 1)}
+            </React.Fragment>
+        ));
     };
 
     return (
@@ -89,75 +172,132 @@ const MenuDashboard = () => {
                 </Button>
             </div>
 
+            {/* View Controls */}
+            <div className="row mb-3">
+                <div className="col-md-6">
+                    <div className="d-flex gap-2 align-items-center">
+                        <label>View Format:</label>
+                        <Dropdown>
+                            <Dropdown.Toggle variant="outline-secondary" size="sm">
+                                {viewFormat === 'flat' ? 'Flat List' : 'Tree View'}
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item
+                                    onClick={() => setViewFormat('flat')}
+                                    active={viewFormat === 'flat'}
+                                >
+                                    Flat List
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => setViewFormat('tree')}
+                                    active={viewFormat === 'tree'}
+                                >
+                                    Tree View
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+
+                        <Form.Check
+                            type="switch"
+                            id="active-only"
+                            label="Active Only"
+                            checked={activeOnly}
+                            onChange={(e) => setActiveOnly(e.target.checked)}
+                        />
+                    </div>
+                </div>
+            </div>
+
             {loading ? (
                 <div className="text-center"><Spinner animation="border" /></div>
             ) : (
-                <Table striped bordered hover>
+                <Table striped bordered hover responsive>
                     <thead>
                         <tr>
-                            <th>#</th>
                             <th>Name</th>
                             <th>Path</th>
                             <th>Order</th>
+                            <th>Status</th>
+                            <th>Level</th>
+                            <th>Parent</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {menus.map((menu, index) => (
-                            <tr key={menu.id}>
-                                <td>{index + 1}</td>
-                                <td>{menu.name}</td>
-                                <td>{menu.path}</td>
-                                <td>{menu.order}</td>
-                                <td>
-                                    <Button
-                                        variant="warning"
-                                        size="sm"
-                                        onClick={() => { setEditMenu(menu); setModalShow(true); }}
-                                        className="me-2"
-                                    >
-                                        Edit
-                                    </Button>
-                                    <Button
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() => { setMenuToDelete(menu.id); setConfirmModalShow(true); }}
-                                    >
-                                        Delete
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
+                        {viewFormat === 'tree' ? (
+                            renderMenuTree(menus)
+                        ) : (
+                            menus.map((menu) => (
+                                <tr key={menu.id}>
+                                    <td>{menu.name}</td>
+                                    <td>{menu.path}</td>
+                                    <td>{menu.order}</td>
+                                    <td>
+                                        <Badge bg={menu.isActive ? "success" : "secondary"}>
+                                            {menu.isActive ? "Active" : "Inactive"}
+                                        </Badge>
+                                    </td>
+                                    <td>{menu.level}</td>
+                                    <td>{menu.parent?.name || "—"}</td>
+                                    <td>
+                                        <div className="d-flex gap-1">
+                                            <Button
+                                                variant="outline-primary"
+                                                size="sm"
+                                                onClick={() => { setEditMenu(menu); setModalShow(true); }}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Button
+                                                variant={menu.isActive ? "outline-warning" : "outline-success"}
+                                                size="sm"
+                                                onClick={() => toggleMenuStatus(menu.id, menu.isActive)}
+                                            >
+                                                {menu.isActive ? "Deactivate" : "Activate"}
+                                            </Button>
+                                            <Button
+                                                variant="outline-danger"
+                                                size="sm"
+                                                onClick={() => { setMenuToDelete(menu.id); setConfirmModalShow(true); }}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </Table>
             )}
 
-            {/* Pagination */}
-            <div className="d-flex justify-content-center">
-                {Array.from({ length: totalPages }, (_, i) => (
-                    <Button
-                        key={i}
-                        variant={i + 1 === page ? "primary" : "light"}
-                        onClick={() => setPage(i + 1)}
-                        className="me-1"
-                    >
-                        {i + 1}
-                    </Button>
-                ))}
-            </div>
+            {/* Empty State */}
+            {!loading && menus.length === 0 && (
+                <div className="text-center py-4">
+                    <p className="text-muted">No menus found. Create your first menu!</p>
+                </div>
+            )}
 
             {/* Modals */}
             <MenuFormModal
                 show={modalShow}
-                onHide={() => setModalShow(false)}
+                onHide={() => {
+                    setModalShow(false);
+                    setEditMenu(null);
+                }}
                 onSubmit={handleMenuSubmit}
                 editMenu={editMenu}
+                parentMenus={parentMenus}
             />
+
             <ConfirmationModal
                 show={confirmModalShow}
-                onHide={() => setConfirmModalShow(false)}
+                onHide={() => {
+                    setConfirmModalShow(false);
+                    setMenuToDelete(null);
+                }}
                 onConfirm={handleDelete}
-                message="Are you sure you want to delete this menu?"
+                message="Are you sure you want to delete this menu? This action cannot be undone."
             />
         </div>
     );

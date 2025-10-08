@@ -30,6 +30,7 @@ app.use(express.json());
 
 // Import Routers
 const tagRoutes = require("./router/tag-router");
+const authorRoutes = require('./router/author-router');
 
 // Routes
 app.use("/api/auth", require("./router/auth-router"));
@@ -43,6 +44,7 @@ app.use("/api/sections", require("./router/sectionRoutes"));
 app.use("/api/v1/videos", require("./router/videoRoutes"));
 app.use("/api/layout", require("./router/layoutRouters"));
 app.use('/api/tags', tagRoutes);
+app.use('/api/authors', authorRoutes);
 
 app.get("/", (req, res) => res.send("Database is connected successfully"));
 app.get("/register", (req, res) => res.send("Hello World this is register page"));

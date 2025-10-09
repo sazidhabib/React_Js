@@ -131,7 +131,7 @@ const AuthorDashboard = () => {
             websiteLink: author.websiteLink || '',
             isSpecialAuthor: author.isSpecialAuthor || false
         });
-        setImagePreview(author.image ? `${API_BASE_URL}/uploads/authors/${author.image}` : '');
+        setImagePreview(author.image ? `${API_BASE_URL}/uploads/${author.image}` : '');
         setEditingAuthor(author);
         setShowModal(true);
     };
@@ -416,7 +416,7 @@ const AuthorDashboard = () => {
                                                     <td>
                                                         {author.image ? (
                                                             <img
-                                                                src={`${API_BASE_URL}/uploads/authors/${author.image}`}
+                                                                src={`${API_BASE_URL}/uploads/${author.image}`}
                                                                 alt={author.name}
                                                                 className="author-image"
                                                                 style={{ width: '50px', height: '50px', objectFit: 'cover' }}

@@ -87,7 +87,8 @@ const AppDownload = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   variants={item}
-                  href="#"
+                  target="_blank"
+                  href="https://play.google.com/store/apps/details?id=com.nextdigit.pancho_hub"
                   className="hover:opacity-90 transition"
                 >
                   <img
@@ -100,7 +101,8 @@ const AppDownload = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   variants={item}
-                  href="#"
+                  target="_blank"
+                  href="https://play.google.com/store/apps/details?id=com.nextdigit.pancho_hub"
                   className="hover:opacity-90 transition"
                 >
                   <img

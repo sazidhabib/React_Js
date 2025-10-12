@@ -17,6 +17,7 @@ import PricingSection from "./components/PricingSection";
 import Testimonials from "./components/Testimonials";
 import AboutUs from "./components/AboutUs";
 import DeleteAccountPage from "./components/DeleteAccountPage";
+import ContactPage from "./components/ContactPage";
 
 function App() {
   return (
@@ -41,7 +42,9 @@ function App() {
               <Testimonials />
               <FaqSection />
               {/* <PricingSection /> */}
+              <ContactPage />
               <ScreenshotsSection />
+
               <Footer />
             </>
           }

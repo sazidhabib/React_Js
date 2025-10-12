@@ -1,0 +1,469 @@
+// controllers/ad-controller.js
+const Ad = require("../models/ad-model");
+const fs = require("fs");
+const path = require("path");
+const { Sequelize } = require('sequelize');
+const { Op } = require("sequelize");
+
+// ✅ Create Ad
+const createAd = async (req, res) => {
+    try {
+        console.log('=== CREATE AD CONTROLLER ===');
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
+
+        const {
+            name,
+            slug,
+            type,
+            imageUrl,
+            headCode,
+            bodyCode,
+            position,
+            displayPages,
+            startDate,
+            endDate,
+            isActive,
+            maxImpressions
+        } = req.body;
+
+        if (!name || !slug || !type || !position) {
+            return res.status(400).json({ message: "Name, Slug, Type, and Position are required" });
+        }
+
+        // Validate ad type specific fields
+        if (type === 'image' && !req.file) {
+            return res.status(400).json({ message: "Image is required for image ads" });
+        }
+
+        if (type === 'google_adsense' && (!headCode || !bodyCode)) {
+            return res.status(400).json({ message: "Head code and Body code are required for Google Adsense" });
+        }
+
+        // Check if slug already exists
+        const existingSlug = await Ad.findOne({ where: { slug } });
+        if (existingSlug) {
+            return res.status(409).json({ message: "An ad with this slug already exists." });
+        }
+
+        const imagePath = req.file ? req.file.filename : null;
+
+        // Parse displayPages if provided
+        let parsedDisplayPages = null;
+        if (displayPages) {
+            try {
+                parsedDisplayPages = typeof displayPages === 'string' ?
+                    JSON.parse(displayPages) : displayPages;
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid displayPages format" });
+            }
+        }
+
+        const newAd = await Ad.create({
+            name,
+            slug: slug.toLowerCase(),
+            type,
+            image: imagePath,
+            imageUrl: type === 'image' ? imageUrl : null,
+            headCode: type === 'google_adsense' ? headCode : null,
+            bodyCode: type === 'google_adsense' ? bodyCode : null,
+            position,
+            displayPages: parsedDisplayPages ? JSON.stringify(parsedDisplayPages) : null,
+            startDate: startDate || null,
+            endDate: endDate || null,
+            isActive: isActive === "true" || isActive === true,
+            maxImpressions: maxImpressions || null,
+        });
+
+        res.status(201).json({
+            message: "Ad Created Successfully",
+            ad: newAd
+        });
+    } catch (error) {
+        console.error("Create Ad Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Get All Ads
+const getAllAds = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '', type, position, isActive } = req.query;
+        const offset = (page - 1) * limit;
+
+        let whereClause = {};
+
+        // Search functionality
+        if (search) {
+            whereClause = {
+                [Op.or]: [
+                    { name: { [Op.like]: `%${search}%` } },
+                    { slug: { [Op.like]: `%${search}%` } }
+                ]
+            };
+        }
+
+        // Filter by type
+        if (type) {
+            whereClause.type = type;
+        }
+
+        // Filter by position
+        if (position) {
+            whereClause.position = position;
+        }
+
+        // Filter by active status
+        if (isActive !== undefined) {
+            whereClause.isActive = isActive === 'true';
+        }
+
+        const { count, rows } = await Ad.findAndCountAll({
+            where: whereClause,
+            order: [["createdAt", "DESC"]],
+            limit: parseInt(limit),
+            offset: parseInt(offset)
+        });
+
+        // Parse displayPages for each ad
+        const adsWithParsedPages = rows.map(ad => {
+            const adData = ad.toJSON();
+            if (adData.displayPages) {
+                try {
+                    adData.displayPages = JSON.parse(adData.displayPages);
+                } catch (error) {
+                    adData.displayPages = [];
+                }
+            }
+            return adData;
+        });
+
+        res.status(200).json({
+            ads: adsWithParsedPages,
+            totalCount: count,
+            currentPage: parseInt(page),
+            totalPages: Math.ceil(count / limit),
+            hasNext: page * limit < count,
+            hasPrev: page > 1
+        });
+    } catch (error) {
+        console.error("Get All Ads Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Get Single Ad
+const getAd = async (req, res) => {
+    try {
+        const ad = await Ad.findByPk(req.params.id);
+
+        if (!ad) {
+            return res.status(404).json({ message: "Ad Not Found" });
+        }
+
+        const adData = ad.toJSON();
+        if (adData.displayPages) {
+            try {
+                adData.displayPages = JSON.parse(adData.displayPages);
+            } catch (error) {
+                adData.displayPages = [];
+            }
+        }
+
+        res.status(200).json(adData);
+    } catch (error) {
+        console.error("Get Ad Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Get Active Ads by Position
+const getAdsByPosition = async (req, res) => {
+    try {
+        const { position, page } = req.query;
+
+        if (!position) {
+            return res.status(400).json({ message: "Position is required" });
+        }
+
+        const whereClause = {
+            position,
+            isActive: true,
+            [Op.and]: [
+                {
+                    [Op.or]: [
+                        { startDate: null },
+                        { startDate: { [Op.lte]: new Date() } }
+                    ]
+                },
+                {
+                    [Op.or]: [
+                        { endDate: null },
+                        { endDate: { [Op.gte]: new Date() } }
+                    ]
+                },
+                {
+                    [Op.or]: [
+                        { maxImpressions: null },
+                        { currentImpressions: { [Op.lt]: Sequelize.col('maxImpressions') } }
+                    ]
+                }
+            ]
+        };
+
+        // If page is specified, check displayPages
+        if (page) {
+            whereClause[Op.or] = [
+                { displayPages: null },
+                { displayPages: { [Op.like]: `%${page}%` } }
+            ];
+        }
+
+        const ads = await Ad.findAll({
+            where: whereClause,
+            order: [["createdAt", "DESC"]]
+        });
+
+        const adsWithParsedPages = ads.map(ad => {
+            const adData = ad.toJSON();
+            if (adData.displayPages) {
+                try {
+                    adData.displayPages = JSON.parse(adData.displayPages);
+                } catch (error) {
+                    adData.displayPages = [];
+                }
+            }
+            return adData;
+        });
+
+        res.status(200).json(adsWithParsedPages);
+    } catch (error) {
+        console.error("Get Ads By Position Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Update Ad
+const updateAd = async (req, res) => {
+    try {
+        const {
+            name,
+            slug,
+            type,
+            imageUrl,
+            headCode,
+            bodyCode,
+            position,
+            displayPages,
+            startDate,
+            endDate,
+            isActive,
+            maxImpressions
+        } = req.body;
+
+        const existingAd = await Ad.findByPk(req.params.id);
+        if (!existingAd) {
+            return res.status(404).json({ message: "Ad Not Found" });
+        }
+
+        // Check if slug already exists (excluding current ad)
+        if (slug && slug !== existingAd.slug) {
+            const duplicateSlug = await Ad.findOne({
+                where: {
+                    slug: slug.toLowerCase(),
+                    id: { [Op.ne]: req.params.id }
+                }
+            });
+
+            if (duplicateSlug) {
+                return res.status(409).json({ message: "Another ad with this slug already exists." });
+            }
+        }
+
+        // Delete old image if new one is uploaded
+        if (req.file && existingAd.image) {
+            const oldImagePath = path.join(__dirname, "..", "uploads", "ads", existingAd.image);
+            if (fs.existsSync(oldImagePath)) {
+                fs.unlinkSync(oldImagePath);
+            }
+        }
+
+        // Parse displayPages if provided
+        let parsedDisplayPages = null;
+        if (displayPages) {
+            try {
+                parsedDisplayPages = typeof displayPages === 'string' ?
+                    JSON.parse(displayPages) : displayPages;
+            } catch (error) {
+                return res.status(400).json({ message: "Invalid displayPages format" });
+            }
+        }
+
+        const updateData = {
+            name: name || existingAd.name,
+            slug: slug ? slug.toLowerCase() : existingAd.slug,
+            type: type || existingAd.type,
+            position: position || existingAd.position,
+            imageUrl: imageUrl !== undefined ? imageUrl : existingAd.imageUrl,
+            headCode: headCode !== undefined ? headCode : existingAd.headCode,
+            bodyCode: bodyCode !== undefined ? bodyCode : existingAd.bodyCode,
+            displayPages: parsedDisplayPages ? JSON.stringify(parsedDisplayPages) : existingAd.displayPages,
+            startDate: startDate !== undefined ? startDate : existingAd.startDate,
+            endDate: endDate !== undefined ? endDate : existingAd.endDate,
+            isActive: isActive !== undefined ? (isActive === "true" || isActive === true) : existingAd.isActive,
+            maxImpressions: maxImpressions !== undefined ? maxImpressions : existingAd.maxImpressions,
+        };
+
+        // Only update image if a new one is uploaded
+        if (req.file) {
+            updateData.image = req.file.filename;
+        }
+
+        const updatedAd = await existingAd.update(updateData);
+
+        res.status(200).json({
+            message: "Ad Updated Successfully",
+            ad: updatedAd
+        });
+    } catch (error) {
+        console.error("Update Ad Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Record Impression
+const recordImpression = async (req, res) => {
+    try {
+        const ad = await Ad.findByPk(req.params.id);
+
+        if (!ad) {
+            return res.status(404).json({ message: "Ad Not Found" });
+        }
+
+        // Increment impression count
+        await ad.increment('currentImpressions');
+
+        res.status(200).json({ message: "Impression recorded" });
+    } catch (error) {
+        console.error("Record Impression Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Record Click
+const recordClick = async (req, res) => {
+    try {
+        const ad = await Ad.findByPk(req.params.id);
+
+        if (!ad) {
+            return res.status(404).json({ message: "Ad Not Found" });
+        }
+
+        // Increment click count
+        await ad.increment('clickCount');
+
+        res.status(200).json({ message: "Click recorded" });
+    } catch (error) {
+        console.error("Record Click Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Delete Ad
+const deleteAd = async (req, res) => {
+    try {
+        const ad = await Ad.findByPk(req.params.id);
+        if (!ad) {
+            return res.status(404).json({ message: "Ad Not Found" });
+        }
+
+        // Delete associated image
+        if (ad.image) {
+            const imagePath = path.join(__dirname, "..", "uploads", "ads", ad.image);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        await ad.destroy();
+        res.status(200).json({ message: "Ad Deleted Successfully" });
+    } catch (error) {
+        console.error("Delete Ad Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+// ✅ Bulk Delete Ads
+const bulkDeleteAds = async (req, res) => {
+    try {
+        const { adIds } = req.body;
+
+        if (!adIds || !Array.isArray(adIds) || adIds.length === 0) {
+            return res.status(400).json({ message: "Ad IDs are required" });
+        }
+
+        const ads = await Ad.findAll({
+            where: { id: adIds }
+        });
+
+        // Delete images for all ads
+        for (const ad of ads) {
+            if (ad.image) {
+                const imagePath = path.join(__dirname, "..", "uploads", "ads", ad.image);
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            }
+        }
+
+        await Ad.destroy({
+            where: { id: adIds }
+        });
+
+        res.status(200).json({
+            message: `${adIds.length} ad(s) deleted successfully`
+        });
+    } catch (error) {
+        console.error("Bulk Delete Ads Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+module.exports = {
+    createAd,
+    getAllAds,
+    getAd,
+    getAdsByPosition,
+    updateAd,
+    deleteAd,
+    bulkDeleteAds,
+    recordImpression,
+    recordClick
+};

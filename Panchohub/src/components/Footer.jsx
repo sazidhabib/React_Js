@@ -86,7 +86,8 @@ const Footer = () => {
             {/* Social Media Icons */}
             <div className="flex space-x-4 justify-center mb-6">
               <a
-                href="www.facebook.com/PanchoHubOfficial/"
+                href="https://www.facebook.com/PanchoHubOfficial/"
+                target="_blank"
                 className="text-gray-400 hover:text-white transition"
               >
                 <FaFacebook className="w-6 h-6" />
@@ -110,14 +111,14 @@ const Footer = () => {
 
             {/* App Download Buttons as Images */}
             <div className="flex justify-center space-x-3">
-              <a href="#" className="hover:opacity-90 transition">
+              <a target="_blank" href="https://play.google.com/store/apps/details?id=com.nextdigit.pancho_hub" className="hover:opacity-90 transition">
                 <img
                   src="image/download-1.svg"
                   alt="Download on App Store"
                   className="h-10"
                 />
               </a>
-              <a href="#" className="hover:opacity-90 transition">
+              <a target="_blank" href="https://play.google.com/store/apps/details?id=com.nextdigit.pancho_hub" className="hover:opacity-90 transition">
                 <img
                   src="image/download-2.svg"
                   alt="Get it on Google Play"

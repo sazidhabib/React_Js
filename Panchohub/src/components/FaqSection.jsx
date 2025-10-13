@@ -34,7 +34,7 @@ const FaqSection = () => {
     ];
 
     return (
-        <section className="bg-white w-full overflow-hidden py-16 relative">
+        <section id="about" className="bg-white w-full overflow-hidden py-16 relative">
             {/* Decorative elements */}
             <div className="bg-blue-100 absolute top-20 -left-20 h-64 w-64 rounded-full blur-3xl" />
             <div className="bg-pink-100 absolute -right-20 bottom-20 h-64 w-64 rounded-full blur-3xl" />

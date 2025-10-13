@@ -42,7 +42,7 @@ function App() {
               <Testimonials />
               <FaqSection />
               {/* <PricingSection /> */}
-              <ContactPage />
+              {/* <ContactPage /> */}
               <ScreenshotsSection />
 
               <Footer />

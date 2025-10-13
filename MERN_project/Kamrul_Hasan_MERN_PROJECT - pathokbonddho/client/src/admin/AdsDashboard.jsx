@@ -1,12 +1,14 @@
-// components/Ads.js
+// components/Ads.jsx
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../store/auth'; // Adjust path as needed
 import AdList from './AdList';
 import AdForm from './AdForm';
-import { getAds, deleteAd, bulkDeleteAds } from '../services/adService';
+import { getAds, deleteAd, bulkDeleteAds } from './AdService';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AdsDashboard = () => {
+    const { isLoggedIn, isAdmin, LogoutUser } = useAuth();
     const [ads, setAds] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
@@ -25,10 +27,17 @@ const AdsDashboard = () => {
     });
 
     useEffect(() => {
-        fetchAds();
-    }, [pagination.page, pagination.limit, filters]);
+        if (isLoggedIn) {
+            fetchAds();
+        }
+    }, [pagination.page, pagination.limit, filters, isLoggedIn]);
 
     const fetchAds = async () => {
+        if (!isLoggedIn) {
+            toast.error('Please login to access ads');
+            return;
+        }
+
         setLoading(true);
         try {
             const params = {
@@ -37,31 +46,64 @@ const AdsDashboard = () => {
                 ...filters
             };
             const response = await getAds(params);
-            setAds(response.ads);
+
+            // Handle different response structures
+            let adsData = [];
+            let totalCount = 0;
+
+            if (response && typeof response === 'object') {
+                adsData = response.ads || response.data || [];
+                totalCount = response.totalCount || response.total || 0;
+            }
+
+            const totalPages = Math.ceil(totalCount / pagination.limit) || 0;
+
+            setAds(Array.isArray(adsData) ? adsData : []);
             setPagination(prev => ({
                 ...prev,
-                totalCount: response.totalCount,
-                totalPages: response.totalPages
+                totalCount,
+                totalPages
             }));
         } catch (error) {
-            toast.error('Failed to fetch ads');
             console.error('Error fetching ads:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to fetch ads';
+            toast.error(errorMessage);
+
+            if (error.response?.status === 401) {
+                LogoutUser();
+                toast.error('Session expired. Please login again.');
+            }
+
+            setAds([]);
         } finally {
             setLoading(false);
         }
     };
 
     const handleCreate = () => {
+        if (!isAdmin) {
+            toast.error('Admin access required to create ads');
+            return;
+        }
         setEditingAd(null);
         setShowForm(true);
     };
 
     const handleEdit = (ad) => {
+        if (!isAdmin) {
+            toast.error('Admin access required to edit ads');
+            return;
+        }
         setEditingAd(ad);
         setShowForm(true);
     };
 
     const handleDelete = async (id) => {
+        if (!isAdmin) {
+            toast.error('Admin access required to delete ads');
+            return;
+        }
+
         if (!window.confirm('Are you sure you want to delete this ad?')) {
             return;
         }
@@ -71,12 +113,22 @@ const AdsDashboard = () => {
             toast.success('Ad deleted successfully');
             fetchAds();
         } catch (error) {
-            toast.error('Failed to delete ad');
-            console.error('Error deleting ad:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to delete ad';
+            toast.error(errorMessage);
+
+            if (error.response?.status === 401) {
+                LogoutUser();
+                toast.error('Session expired. Please login again.');
+            }
         }
     };
 
     const handleBulkDelete = async (adIds) => {
+        if (!isAdmin) {
+            toast.error('Admin access required to delete ads');
+            return;
+        }
+
         if (!window.confirm(`Are you sure you want to delete ${adIds.length} ads?`)) {
             return;
         }
@@ -86,8 +138,13 @@ const AdsDashboard = () => {
             toast.success(`${adIds.length} ads deleted successfully`);
             fetchAds();
         } catch (error) {
-            toast.error('Failed to delete ads');
-            console.error('Error bulk deleting ads:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to delete ads';
+            toast.error(errorMessage);
+
+            if (error.response?.status === 401) {
+                LogoutUser();
+                toast.error('Session expired. Please login again.');
+            }
         }
     };
 
@@ -112,19 +169,43 @@ const AdsDashboard = () => {
         setPagination(prev => ({ ...prev, page: newPage }));
     };
 
+    // Show login prompt if not authenticated
+    if (!isLoggedIn) {
+        return (
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-12">
+                        <div className="alert alert-warning text-center">
+                            <h4>Authentication Required</h4>
+                            <p>Please log in to access the ads management system.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="container-fluid">
+        <div className="container-fluid custom-font-initial">
             <div className="row">
                 <div className="col-12">
                     <div className="d-flex justify-content-between align-items-center mb-4">
-                        <h1>Ads Management</h1>
-                        <button
-                            className="btn btn-primary"
-                            onClick={handleCreate}
-                        >
-                            <i className="fas fa-plus me-2"></i>
-                            Create New Ad
-                        </button>
+                        <div>
+                            <h1>Ads Management</h1>
+                            {!isAdmin && (
+                                <small className="text-muted">View-only mode (Admin required for modifications)</small>
+                            )}
+                        </div>
+                        {isAdmin && (
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleCreate}
+                                disabled={loading}
+                            >
+                                <i className="fas fa-plus me-2"></i>
+                                Create New Ad
+                            </button>
+                        )}
                     </div>
 
                     {/* Ads List */}
@@ -140,12 +221,14 @@ const AdsDashboard = () => {
                             onFilterChange={handleFilterChange}
                             onPageChange={handlePageChange}
                             onRefresh={fetchAds}
+                            isAdmin={isAdmin}
                         />
                     ) : (
                         <AdForm
                             ad={editingAd}
                             onClose={handleFormClose}
                             onSuccess={handleFormSuccess}
+                            isAdmin={isAdmin}
                         />
                     )}
                 </div>

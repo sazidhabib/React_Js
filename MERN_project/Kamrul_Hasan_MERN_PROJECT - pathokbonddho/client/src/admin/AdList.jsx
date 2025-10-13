@@ -1,24 +1,27 @@
-// components/AdList.js
+// components/AdList.jsx
 import React, { useState } from 'react';
 import AdFilters from './AdFilters';
 import AdTable from './AdTable';
 import Pagination from './Pagination';
 
 const AdList = ({
-    ads,
-    loading,
-    filters,
-    pagination,
+    ads = [],
+    loading = false,
+    filters = {},
+    pagination = {},
     onEdit,
     onDelete,
     onBulkDelete,
     onFilterChange,
     onPageChange,
-    onRefresh
+    onRefresh,
+    isAdmin = false
 }) => {
     const [selectedAds, setSelectedAds] = useState([]);
 
     const handleSelectAd = (adId, isSelected) => {
+        if (!isAdmin) return;
+
         if (isSelected) {
             setSelectedAds(prev => [...prev, adId]);
         } else {
@@ -27,6 +30,8 @@ const AdList = ({
     };
 
     const handleSelectAll = (isSelected) => {
+        if (!isAdmin) return;
+
         if (isSelected) {
             setSelectedAds(ads.map(ad => ad.id));
         } else {
@@ -35,7 +40,7 @@ const AdList = ({
     };
 
     const handleBulkDelete = () => {
-        if (selectedAds.length === 0) return;
+        if (!isAdmin || selectedAds.length === 0) return;
         onBulkDelete(selectedAds);
         setSelectedAds([]);
     };
@@ -54,7 +59,7 @@ const AdList = ({
                             <i className="fas fa-sync-alt me-1"></i>
                             Refresh
                         </button>
-                        {selectedAds.length > 0 && (
+                        {isAdmin && selectedAds.length > 0 && (
                             <button
                                 className="btn btn-sm btn-danger"
                                 onClick={handleBulkDelete}
@@ -74,6 +79,14 @@ const AdList = ({
                     loading={loading}
                 />
 
+                {/* Admin notice for non-admin users */}
+                {!isAdmin && (
+                    <div className="alert alert-info mb-3">
+                        <i className="fas fa-info-circle me-2"></i>
+                        You are in view-only mode. Admin privileges are required to create, edit, or delete ads.
+                    </div>
+                )}
+
                 {/* Ads Table */}
                 <AdTable
                     ads={ads}
@@ -83,6 +96,7 @@ const AdList = ({
                     onDelete={onDelete}
                     onSelectAd={handleSelectAd}
                     onSelectAll={handleSelectAll}
+                    isAdmin={isAdmin}
                 />
 
                 {/* Pagination */}

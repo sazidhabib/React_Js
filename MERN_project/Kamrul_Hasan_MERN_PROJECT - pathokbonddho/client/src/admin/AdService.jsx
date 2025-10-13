@@ -13,41 +13,44 @@ const getAuthToken = () => {
     return localStorage.getItem("token");
 };
 
-// Function to make authenticated requests
-const makeAuthenticatedRequest = async (config) => {
-    const token = getAuthToken();
-
-    if (token) {
-        config.headers = {
-            ...config.headers,
-            'Authorization': `Bearer ${token}`
-        };
+// Add request interceptor to add auth token
+api.interceptors.request.use(
+    (config) => {
+        const token = getAuthToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
     }
+);
 
-    try {
-        const response = await api(config);
+// Add response interceptor to handle errors
+api.interceptors.response.use(
+    (response) => {
         return response;
-    } catch (error) {
+    },
+    (error) => {
         console.error('API Error:', error.response?.data || error.message);
 
         // Auto-logout if token is invalid
         if (error.response?.status === 401) {
             localStorage.removeItem("token");
             localStorage.removeItem("isAdmin");
-            window.location.href = '/login'; // Redirect to login
+            window.location.href = '/login';
         }
 
-        throw error;
+        return Promise.reject(error);
     }
-};
+);
 
 export const getAds = async (params = {}) => {
     try {
-        const response = await makeAuthenticatedRequest({
-            method: 'GET',
-            url: '/',
-            params
-        });
+        console.log('Making GET request to:', API_BASE_URL, 'with params:', params);
+        const response = await api.get('/', { params });
+        console.log('GET Ads Response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching ads:', error);
@@ -57,10 +60,7 @@ export const getAds = async (params = {}) => {
 
 export const getAd = async (id) => {
     try {
-        const response = await makeAuthenticatedRequest({
-            method: 'GET',
-            url: `/${id}`
-        });
+        const response = await api.get(`/${id}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching ad:', error);
@@ -70,52 +70,37 @@ export const getAd = async (id) => {
 
 export const createAd = async (formData) => {
     try {
-        const token = getAuthToken();
+        console.log('Creating ad with data:', formData);
         const response = await api.post('/', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
-                ...(token && { 'Authorization': `Bearer ${token}` })
             },
         });
+        console.log('Create Ad Response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error creating ad:', error);
-        if (error.response?.status === 401) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("isAdmin");
-            window.location.href = '/login';
-        }
         throw error;
     }
 };
 
 export const updateAd = async (id, formData) => {
     try {
-        const token = getAuthToken();
         const response = await api.patch(`/${id}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
-                ...(token && { 'Authorization': `Bearer ${token}` })
             },
         });
         return response.data;
     } catch (error) {
         console.error('Error updating ad:', error);
-        if (error.response?.status === 401) {
-            localStorage.removeItem("token");
-            localStorage.removeItem("isAdmin");
-            window.location.href = '/login';
-        }
         throw error;
     }
 };
 
 export const deleteAd = async (id) => {
     try {
-        const response = await makeAuthenticatedRequest({
-            method: 'DELETE',
-            url: `/${id}`
-        });
+        const response = await api.delete(`/${id}`);
         return response.data;
     } catch (error) {
         console.error('Error deleting ad:', error);
@@ -125,18 +110,13 @@ export const deleteAd = async (id) => {
 
 export const bulkDeleteAds = async (adIds) => {
     try {
-        const response = await makeAuthenticatedRequest({
-            method: 'POST',
-            url: '/bulk-delete',
-            data: { adIds }
-        });
+        const response = await api.post('/bulk-delete', { adIds });
         return response.data;
     } catch (error) {
         console.error('Error bulk deleting ads:', error);
         throw error;
     }
 };
-
 export const recordImpression = async (id) => {
     try {
         const response = await makeAuthenticatedRequest({

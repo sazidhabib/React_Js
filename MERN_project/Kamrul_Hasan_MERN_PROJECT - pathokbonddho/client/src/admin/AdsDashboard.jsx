@@ -51,39 +51,22 @@ const AdsDashboard = () => {
             console.log('API Response:', response); // Debug log
 
             // Handle different response structures
-            let adsData = [];
-            let totalCount = 0;
+            let adsData = response.ads || [];
+            let totalCount = response.totalCount || 0;
 
-            if (response && typeof response === 'object') {
-                // Try different possible response structures
-                adsData = response.ads || response.data || response.rows || response;
-                totalCount = response.totalCount || response.total || response.count || 0;
+            adsData = adsData.map(ad => ({
+                ...ad,
+                isActive: Boolean(ad.isActive)
+            }));
 
-                // If adsData is still not an array, try to extract from the response
-                if (!Array.isArray(adsData)) {
-                    // Check if response itself is an array
-                    if (Array.isArray(response)) {
-                        adsData = response;
-                    } else {
-                        // Try to find any array in the response
-                        const arrayKeys = Object.keys(response).filter(key => Array.isArray(response[key]));
-                        if (arrayKeys.length > 0) {
-                            adsData = response[arrayKeys[0]];
-                        }
-                    }
-                }
-            }
-
-            console.log('Processed ads data:', adsData); // Debug log
-            console.log('Total count:', totalCount); // Debug log
-
-            const totalPages = Math.ceil(totalCount / pagination.limit) || 0;
+            console.log('Processed ads data:', adsData);
+            console.log('Total count:', totalCount);
 
             setAds(Array.isArray(adsData) ? adsData : []);
             setPagination(prev => ({
                 ...prev,
                 totalCount,
-                totalPages
+                totalPages: Math.ceil(totalCount / pagination.limit) || 0
             }));
         } catch (error) {
             console.error('Error fetching ads:', error);

@@ -21,6 +21,7 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
     const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
+    const baseUrl = import.meta.env.VITE_API_BASE_URL
 
     useEffect(() => {
         if (ad) {
@@ -39,7 +40,7 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                 maxImpressions: ad.maxImpressions || ''
             });
             if (ad.image) {
-                setImagePreview(`/uploads/ads/${ad.image}`);
+                setImagePreview(`${baseUrl}/uploads/${ad.image}`);
             }
         }
     }, [ad]);
@@ -139,11 +140,22 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                 submitData.append('image', imageFile);
             }
 
+            console.log('Submitting ad data:', {
+                name: formData.name,
+                slug: formData.slug,
+                type: formData.type,
+                position: formData.position,
+                isActive: formData.isActive
+            });
+
+            let response;
+
             if (ad) {
-                await updateAd(ad.id, submitData);
+                response = await updateAd(ad.id, submitData);
             } else {
-                await createAd(submitData);
+                response = await createAd(submitData);
             }
+            console.log('Ad creation/update response:', response);
 
             onSuccess();
         } catch (error) {

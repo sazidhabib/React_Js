@@ -89,37 +89,47 @@ const createAd = async (req, res) => {
 };
 
 // ✅ Get All Ads
+// controllers/ad-controller.js - Fixed getAllAds function
 const getAllAds = async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '', type, position, isActive } = req.query;
         const offset = (page - 1) * limit;
 
-        let whereClause = {};
+        console.log('=== GET ALL ADS ===');
+        console.log('Query params:', req.query);
 
-        // Search functionality
-        if (search) {
-            whereClause = {
-                [Op.or]: [
-                    { name: { [Op.like]: `%${search}%` } },
-                    { slug: { [Op.like]: `%${search}%` } }
-                ]
-            };
+        // Build where clause properly
+        const whereClause = {};
+
+        // Search functionality - FIXED
+        if (search && search.trim() !== '') {
+            whereClause[Op.or] = [
+                { name: { [Op.like]: `%${search}%` } },
+                { slug: { [Op.like]: `%${search}%` } }
+            ];
         }
 
         // Filter by type
-        if (type) {
+        if (type && type.trim() !== '') {
             whereClause.type = type;
         }
 
         // Filter by position
-        if (position) {
+        if (position && position.trim() !== '') {
             whereClause.position = position;
         }
 
-        // Filter by active status
-        if (isActive !== undefined) {
-            whereClause.isActive = isActive === 'true';
+        // Filter by active status - FIXED: Handle MySQL boolean (1/0)
+        if (isActive !== undefined && isActive !== '') {
+            // Convert string to boolean - MySQL stores true as 1, false as 0
+            if (isActive === 'true' || isActive === true || isActive === '1') {
+                whereClause.isActive = 1;
+            } else if (isActive === 'false' || isActive === false || isActive === '0') {
+                whereClause.isActive = 0;
+            }
         }
+
+        console.log('Final where clause:', whereClause);
 
         const { count, rows } = await Ad.findAndCountAll({
             where: whereClause,
@@ -128,9 +138,17 @@ const getAllAds = async (req, res) => {
             offset: parseInt(offset)
         });
 
+        console.log('Query result - count:', count, 'rows:', rows.length);
+
         // Parse displayPages for each ad
         const adsWithParsedPages = rows.map(ad => {
             const adData = ad.toJSON();
+
+            // Convert MySQL boolean (1/0) to JavaScript boolean
+            if (adData.isActive !== undefined) {
+                adData.isActive = Boolean(adData.isActive);
+            }
+
             if (adData.displayPages) {
                 try {
                     adData.displayPages = JSON.parse(adData.displayPages);
@@ -140,6 +158,8 @@ const getAllAds = async (req, res) => {
             }
             return adData;
         });
+
+        console.log('Sending', adsWithParsedPages.length, 'ads to frontend');
 
         res.status(200).json({
             ads: adsWithParsedPages,

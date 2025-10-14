@@ -78,7 +78,7 @@ const AdTable = ({
                                 <div className="d-flex align-items-center">
                                     {ad.type === 'image' && ad.image && (
                                         <img
-                                            src={`http://localhost:5000/uploads/ads/${ad.image}`}
+                                            src={`http://localhost:5000/uploads/${ad.image}`}
                                             alt={ad.name}
                                             className="rounded me-3"
                                             style={{ width: '60px', height: '40px', objectFit: 'cover' }}

@@ -478,7 +478,7 @@ const AuthorDashboard = () => {
                                                                 title="Edit"
                                                                 disabled={!isLoggedIn}
                                                             >
-                                                                <i className="bi bi-pencil"></i>
+                                                                <i className="fas fa-edit"></i>
                                                             </button>
                                                             <button
                                                                 className="btn btn-outline-danger"
@@ -486,7 +486,7 @@ const AuthorDashboard = () => {
                                                                 title="Delete"
                                                                 disabled={!isLoggedIn}
                                                             >
-                                                                <i className="bi bi-trash"></i>
+                                                                <i className="fas fa-trash"></i>
                                                             </button>
                                                         </div>
                                                     </td>

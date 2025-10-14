@@ -86,7 +86,7 @@ const TagsTable = ({ tags, onEdit, onDelete, loading, canEdit }) => {
                                                 title={canEdit ? "Edit tag" : "Please log in to edit tags"}
                                                 disabled={!canEdit}
                                             >
-                                                <i className="bi bi-pencil"></i>
+                                                <i className="fas fa-edit"></i>
                                             </button>
                                             <button
                                                 className="btn btn-outline-danger"
@@ -94,7 +94,7 @@ const TagsTable = ({ tags, onEdit, onDelete, loading, canEdit }) => {
                                                 title={canEdit ? "Delete tag" : "Please log in to delete tags"}
                                                 disabled={!canEdit}
                                             >
-                                                <i className="bi bi-trash"></i>
+                                                <i className="fas fa-trash"></i>
                                             </button>
                                         </div>
                                     </td>

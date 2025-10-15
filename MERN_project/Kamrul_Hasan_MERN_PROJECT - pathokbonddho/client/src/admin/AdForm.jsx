@@ -113,6 +113,7 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
         return Object.keys(newErrors).length === 0;
     };
 
+    // In AdForm.jsx - Update handleSubmit function
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -124,14 +125,29 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
         try {
             const submitData = new FormData();
 
-            // Append all form data
+            // Append all form data with proper null handling
             Object.keys(formData).forEach(key => {
-                if (key === 'displayPages' && formData[key]) {
+                let value = formData[key];
+
+                // Handle empty values
+                if (value === '') {
+                    value = null;
+                }
+
+                // Handle specific fields
+                if (key === 'displayPages' && value) {
                     // Convert comma-separated pages to array
-                    const pages = formData[key].split(',').map(page => page.trim()).filter(page => page);
+                    const pages = value.split(',').map(page => page.trim()).filter(page => page);
                     submitData.append(key, JSON.stringify(pages));
-                } else if (formData[key] !== null && formData[key] !== undefined) {
-                    submitData.append(key, formData[key]);
+                } else if (key === 'maxImpressions') {
+                    // Convert empty string to null for maxImpressions
+                    if (value === '' || value === null) {
+                        submitData.append(key, 'null');
+                    } else {
+                        submitData.append(key, value);
+                    }
+                } else if (value !== null && value !== undefined) {
+                    submitData.append(key, value);
                 }
             });
 
@@ -140,36 +156,34 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                 submitData.append('image', imageFile);
             }
 
-            console.log('Submitting ad data:', {
-                name: formData.name,
-                slug: formData.slug,
-                type: formData.type,
-                position: formData.position,
-                isActive: formData.isActive
-            });
+            console.log('Submitting update for ad ID:', ad?.id);
 
             let response;
-
             if (ad) {
                 response = await updateAd(ad.id, submitData);
             } else {
                 response = await createAd(submitData);
             }
-            console.log('Ad creation/update response:', response);
 
+            console.log('Ad creation/update response:', response);
             onSuccess();
         } catch (error) {
             console.error('Error saving ad:', error);
+            console.error('Error response:', error.response?.data);
+
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
             } else {
-                setErrors({ submit: error.response?.data?.message || 'Failed to save ad' });
+                setErrors({
+                    submit: error.response?.data?.message ||
+                        error.response?.data?.error ||
+                        'Failed to save ad'
+                });
             }
         } finally {
             setLoading(false);
         }
     };
-
     return (
         <div className="card">
             <div className="card-header">

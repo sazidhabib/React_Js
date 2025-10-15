@@ -59,6 +59,14 @@ const createAd = async (req, res) => {
             }
         }
 
+        let parsedMaxImpressions = null;
+        if (maxImpressions !== undefined && maxImpressions !== '') {
+            parsedMaxImpressions = parseInt(maxImpressions);
+            if (isNaN(parsedMaxImpressions)) {
+                parsedMaxImpressions = null;
+            }
+        }
+
         const newAd = await Ad.create({
             name,
             slug: slug.toLowerCase(),
@@ -72,7 +80,7 @@ const createAd = async (req, res) => {
             startDate: startDate || null,
             endDate: endDate || null,
             isActive: isActive === "true" || isActive === true,
-            maxImpressions: maxImpressions || null,
+            maxImpressions: parsedMaxImpressions || null,
         });
 
         res.status(201).json({
@@ -278,6 +286,14 @@ const getAdsByPosition = async (req, res) => {
 // ✅ Update Ad
 const updateAd = async (req, res) => {
     try {
+        console.log('=== UPDATE AD CONTROLLER ===');
+        console.log('Request params:', req.params);
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file ? {
+            filename: req.file.filename,
+            size: req.file.size
+        } : 'No file');
+
         const {
             name,
             slug,
@@ -293,10 +309,35 @@ const updateAd = async (req, res) => {
             maxImpressions
         } = req.body;
 
+        // Find the existing ad
         const existingAd = await Ad.findByPk(req.params.id);
         if (!existingAd) {
+            console.log('Ad not found with ID:', req.params.id);
             return res.status(404).json({ message: "Ad Not Found" });
         }
+
+        console.log('Found existing ad:', existingAd.toJSON());
+
+        // Handle boolean conversion for isActive
+        let parsedIsActive = existingAd.isActive; // Default to current value
+        if (isActive !== undefined) {
+            parsedIsActive = isActive === "true" || isActive === true || isActive === "1";
+        }
+
+        let parsedMaxImpressions = existingAd.maxImpressions;
+        if (maxImpressions !== undefined) {
+            if (maxImpressions === '' || maxImpressions === null) {
+                parsedMaxImpressions = null;
+            } else {
+                // Convert to integer
+                parsedMaxImpressions = parseInt(maxImpressions);
+                if (isNaN(parsedMaxImpressions)) {
+                    parsedMaxImpressions = null;
+                }
+            }
+        }
+
+        console.log('Parsed isActive:', parsedIsActive);
 
         // Check if slug already exists (excluding current ad)
         if (slug && slug !== existingAd.slug) {
@@ -327,10 +368,13 @@ const updateAd = async (req, res) => {
                 parsedDisplayPages = typeof displayPages === 'string' ?
                     JSON.parse(displayPages) : displayPages;
             } catch (error) {
-                return res.status(400).json({ message: "Invalid displayPages format" });
+                console.log('Error parsing displayPages, using as string:', error.message);
+                parsedDisplayPages = displayPages;
             }
         }
 
+        // Prepare update data
+        // Prepare update data
         const updateData = {
             name: name || existingAd.name,
             slug: slug ? slug.toLowerCase() : existingAd.slug,
@@ -342,8 +386,8 @@ const updateAd = async (req, res) => {
             displayPages: parsedDisplayPages ? JSON.stringify(parsedDisplayPages) : existingAd.displayPages,
             startDate: startDate !== undefined ? startDate : existingAd.startDate,
             endDate: endDate !== undefined ? endDate : existingAd.endDate,
-            isActive: isActive !== undefined ? (isActive === "true" || isActive === true) : existingAd.isActive,
-            maxImpressions: maxImpressions !== undefined ? maxImpressions : existingAd.maxImpressions,
+            isActive: parsedIsActive,
+            maxImpressions: parsedMaxImpressions, // Use the parsed value
         };
 
         // Only update image if a new one is uploaded
@@ -351,7 +395,11 @@ const updateAd = async (req, res) => {
             updateData.image = req.file.filename;
         }
 
+        console.log('Update data:', updateData);
+
+        // Perform the update
         const updatedAd = await existingAd.update(updateData);
+        console.log('✅ Ad updated successfully:', updatedAd.toJSON());
 
         res.status(200).json({
             message: "Ad Updated Successfully",
@@ -359,9 +407,11 @@ const updateAd = async (req, res) => {
         });
     } catch (error) {
         console.error("Update Ad Error:", error);
+        console.error("Error stack:", error.stack);
+
         res.status(500).json({
             message: "Internal Server Error",
-            error: error.message
+            error: error.message,
         });
     }
 };

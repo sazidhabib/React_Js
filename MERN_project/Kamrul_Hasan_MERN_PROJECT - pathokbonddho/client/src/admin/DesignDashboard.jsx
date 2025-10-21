@@ -393,7 +393,7 @@ const DesignDashboard = () => {
                 <Col md={3}>
                     {selectedDesigns.length > 0 && (
                         <Button variant="danger" onClick={handleBulkDelete}>
-                            <i className="bi bi-trash me-2"></i>
+                            <i className="fas fa-trash me-2"></i>
                             Delete Selected ({selectedDesigns.length})
                         </Button>
                     )}

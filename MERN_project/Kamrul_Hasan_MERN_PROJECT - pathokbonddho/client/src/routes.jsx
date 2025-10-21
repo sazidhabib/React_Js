@@ -21,6 +21,9 @@ import TagDashboard from "./admin/TagDashboard";
 import AuthorDashboard from "./admin/AuthorDashboard";
 import AdsDashboard from "./admin/AdsDashboard";
 import DesignDashboard from "./admin/DesignDashboard";
+import NewsCreate from "./admin/NewsCreate";
+import NewsList from "./admin/NewsList";
+import NewsEdit from "./admin/NewsEdit";
 
 
 
@@ -53,7 +56,9 @@ const AppRoutes = () => {
           <Route path="/admin/sections" element={<SectionDashboard />} />
           <Route path="/admin/ads" element={<AdsDashboard />} />
           <Route path="/admin/design" element={<DesignDashboard />} />
-
+          <Route path="/admin/news/create" element={<NewsCreate />} />
+          <Route path="/admin/news" element={<NewsList />} />
+          <Route path="/admin/news/edit/:id" element={<NewsEdit />} />
         </Route>
       </Routes>
 

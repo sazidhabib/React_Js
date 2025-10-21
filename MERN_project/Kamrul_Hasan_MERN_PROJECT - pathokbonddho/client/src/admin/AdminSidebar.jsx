@@ -6,6 +6,7 @@ function AdminSidebar({ isSidebarOpen }) {
   const location = useLocation();
 
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [isNewsOpen, setIsNewsOpen] = useState(false);
 
   const isActiveRoute = (path) => location.pathname === path;
 
@@ -67,6 +68,36 @@ function AdminSidebar({ isSidebarOpen }) {
           <NavLink to="/admin/blog" className="text-decoration-none  sm-fs-6 text-white fs-5">
             Blog
           </NavLink>
+        </li>
+        {/* News Sections */}
+        <li className="nav-item py-2">
+          <div
+            className="nav-link text-warning d-flex justify-content-between align-items-center pe-3 fs-5"
+            style={{ cursor: 'pointer' }}
+            onClick={() => setIsNewsOpen(!isNewsOpen)}
+          >
+            <span>News Sections</span>
+            <i className={`fas fa-chevron-${isNewsOpen ? 'down' : 'right'} transition-all`}></i>
+          </div>
+          <div className={`collapse ${isNewsOpen ? 'show' : ''}`}>
+            <ul className="nav flex-column ms-3 ">
+              <li className={`text-decoration-none py-2 sm-fs-6 ${isActiveRoute("/admin/news/create") ? "active-item" : ""}`}>
+                <NavLink to="/admin/news/create" className="text-decoration-none  sm-fs-6 text-white fs-5">
+                  News Create
+                </NavLink>
+              </li>
+              <li className={`nav-item py-2 ${isActiveRoute("/admin/news") ? "active-item" : ""}`}>
+                <NavLink to="/admin/news" className="text-decoration-none  sm-fs-6 text-white fs-5">
+                  News
+                </NavLink>
+              </li>
+              <li className={`nav-item py-2 ${isActiveRoute("/admin/news/edit/:id") ? "active-item" : ""}`}>
+                <NavLink to="/admin/news/edit/:id" className="text-decoration-none  sm-fs-6 text-white fs-5">
+                  News Edit
+                </NavLink>
+              </li>
+            </ul>
+          </div>
         </li>
 
         {/* Photo Gallery */}

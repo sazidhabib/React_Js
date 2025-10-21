@@ -63,7 +63,7 @@ const startServer = async () => {
     console.log("✅ MySQL connection established successfully.");
 
     // Load ALL models
-    const { Page, PageSection, Row, Column } = require("./models");
+    const { Page, PageSection, Row, Column, News, Tag, Category, Author, NewsTag, NewsCategory } = require("./models");
 
     console.log("✅ All models loaded successfully:");
     console.log("   - Page:", !!Page);

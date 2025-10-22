@@ -11,12 +11,31 @@ const NewsCreate = () => {
     const [authors, setAuthors] = useState([]);
     const [tags, setTags] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [albums, setAlbums] = useState([]);
+    const [photos, setPhotos] = useState([]);
+    const [filteredPhotos, setFilteredPhotos] = useState([]);
+    const [selectedAlbum, setSelectedAlbum] = useState('all');
+
+    // State for searchable dropdowns
+    const [authorSearch, setAuthorSearch] = useState('');
+    const [tagSearch, setTagSearch] = useState('');
+    const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
+    const [showTagDropdown, setShowTagDropdown] = useState(false);
+
+    // State for image selection modals
+    const [showImageModal, setShowImageModal] = useState({
+        leadImage: false,
+        thumbImage: false,
+        metaImage: false
+    });
+    const [selectedImageType, setSelectedImageType] = useState('');
 
     const [formData, setFormData] = useState({
         newsHeadline: '',
         highlight: '',
         alternativeHeadline: '',
         authorId: '',
+        authorName: '',
         shortDescription: '',
         content: '',
         imageCaption: '',
@@ -27,6 +46,7 @@ const NewsCreate = () => {
         metaDescription: '',
         status: 'draft',
         tagIds: [],
+        tagNames: [],
         categoryIds: []
     });
 
@@ -36,9 +56,21 @@ const NewsCreate = () => {
         metaImage: null
     });
 
+    const [selectedImages, setSelectedImages] = useState({
+        leadImage: null,
+        thumbImage: null,
+        metaImage: null
+    });
+
     useEffect(() => {
         fetchDropdownData();
+        fetchAlbums();
+        fetchAllPhotos();
     }, []);
+
+    useEffect(() => {
+        filterPhotosByAlbum();
+    }, [selectedAlbum, photos]);
 
     const fetchDropdownData = async () => {
         try {
@@ -50,58 +82,121 @@ const NewsCreate = () => {
                 axios.get(`${API_URL}/api/menus`)
             ]);
 
-            // Debug: Log the actual API responses
-            console.log('Authors response:', authorsRes.data);
-            console.log('Tags response:', tagsRes.data);
-            console.log('Categories (menus) response:', categoriesRes.data);
-
-            // Helper function to extract array from response
+            // Extract data with helper function
             const extractArray = (data, possibleKeys) => {
-                if (Array.isArray(data)) {
-                    return data;
-                }
-
+                if (Array.isArray(data)) return data;
                 for (let key of possibleKeys) {
-                    if (data && Array.isArray(data[key])) {
-                        return data[key];
-                    }
+                    if (data && Array.isArray(data[key])) return data[key];
                 }
-
-                // If no array found, try to find any array in the response
                 if (data && typeof data === 'object') {
                     for (let key in data) {
-                        if (Array.isArray(data[key])) {
-                            console.log(`Found array in key: ${key}`, data[key]);
-                            return data[key];
-                        }
+                        if (Array.isArray(data[key])) return data[key];
                     }
                 }
-
-                console.warn('No array found in response:', data);
                 return [];
             };
 
-            // Extract data with multiple possible keys
             setAuthors(extractArray(authorsRes.data, ['authors', 'data', 'rows']));
             setTags(extractArray(tagsRes.data, ['tags', 'data', 'rows']));
-            setCategories(extractArray(categoriesRes.data, ['menus', 'categories', 'data', 'rows']));
 
-            // Log the extracted data
-            console.log('Extracted authors:', extractArray(authorsRes.data, ['authors', 'data', 'rows']));
-            console.log('Extracted tags:', extractArray(tagsRes.data, ['tags', 'data', 'rows']));
-            console.log('Extracted categories:', extractArray(categoriesRes.data, ['menus', 'categories', 'data', 'rows']));
+            // Process categories to handle hierarchy
+            const rawCategories = extractArray(categoriesRes.data, ['menus', 'categories', 'data', 'rows']);
+            setCategories(processCategories(rawCategories));
 
         } catch (error) {
             console.error('Error fetching dropdown data:', error);
-            console.error('Error details:', error.response?.data);
             toast.error('Failed to load dropdown data');
-
-            // Set empty arrays on error to prevent map errors
             setAuthors([]);
             setTags([]);
             setCategories([]);
         }
     };
+
+    const fetchAlbums = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/api/albums`);
+            console.log('Albums response:', response.data);
+            const albumsData = response.data.albums || response.data || [];
+            setAlbums(albumsData);
+        } catch (error) {
+            console.error('Error fetching albums:', error);
+            toast.error('Failed to load albums');
+        }
+    };
+
+    const fetchAllPhotos = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/api/photos`);
+            console.log('Photos response:', response.data);
+            const photosData = response.data.photos || response.data || [];
+            setPhotos(photosData);
+            setFilteredPhotos(photosData); // Initially show all photos
+        } catch (error) {
+            console.error('Error fetching photos:', error);
+            toast.error('Failed to load photos');
+        }
+    };
+
+    const filterPhotosByAlbum = () => {
+        if (selectedAlbum === 'all') {
+            setFilteredPhotos(photos);
+        } else {
+            const albumId = parseInt(selectedAlbum);
+            const filtered = photos.filter(photo => photo.albumId === albumId);
+            setFilteredPhotos(filtered);
+        }
+    };
+
+    // Process categories to handle parent-child relationships
+    const processCategories = (categories) => {
+        if (!Array.isArray(categories)) return [];
+
+        const categoryMap = {};
+        const rootCategories = [];
+
+        // First pass: create a map of all categories
+        categories.forEach(category => {
+            categoryMap[category.id] = {
+                ...category,
+                children: []
+            };
+        });
+
+        // Second pass: build hierarchy
+        categories.forEach(category => {
+            if (category.parentId && categoryMap[category.parentId]) {
+                categoryMap[category.parentId].children.push(categoryMap[category.id]);
+            } else {
+                rootCategories.push(categoryMap[category.id]);
+            }
+        });
+
+        return rootCategories;
+    };
+
+    // Render categories with hierarchy
+    const renderCategoryOptions = (categories, level = 0) => {
+        return categories.map(category => (
+            <React.Fragment key={category.id}>
+                <option value={category.id}>
+                    {'-'.repeat(level * 2)} {category.name || category.title}
+                </option>
+                {category.children && category.children.length > 0 &&
+                    renderCategoryOptions(category.children, level + 1)
+                }
+            </React.Fragment>
+        ));
+    };
+
+    // Filtered authors based on search
+    const filteredAuthors = authors.filter(author =>
+        author.name?.toLowerCase().includes(authorSearch.toLowerCase())
+    );
+
+    // Filtered tags based on search
+    const filteredTags = tags.filter(tag =>
+        tag.name?.toLowerCase().includes(tagSearch.toLowerCase())
+    );
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -117,6 +212,11 @@ const NewsCreate = () => {
             ...prev,
             [name]: files[0]
         }));
+        // Clear selected image when new file is uploaded
+        setSelectedImages(prev => ({
+            ...prev,
+            [name]: null
+        }));
     };
 
     const handleMultiSelect = (e, field) => {
@@ -125,6 +225,72 @@ const NewsCreate = () => {
             ...prev,
             [field]: selectedOptions
         }));
+    };
+
+    // Author selection handlers
+    const handleAuthorSelect = (author) => {
+        setFormData(prev => ({
+            ...prev,
+            authorId: author.id,
+            authorName: author.name
+        }));
+        setAuthorSearch(author.name);
+        setShowAuthorDropdown(false);
+    };
+
+    // Tag selection handlers
+    const handleTagSelect = (tag) => {
+        if (!formData.tagIds.includes(tag.id.toString())) {
+            setFormData(prev => ({
+                ...prev,
+                tagIds: [...prev.tagIds, tag.id.toString()],
+                tagNames: [...prev.tagNames, tag.name]
+            }));
+        }
+        setTagSearch('');
+        setShowTagDropdown(false);
+    };
+
+    const removeTag = (tagId) => {
+        setFormData(prev => ({
+            ...prev,
+            tagIds: prev.tagIds.filter(id => id !== tagId.toString()),
+            tagNames: prev.tagNames.filter((_, index) => prev.tagIds[index] !== tagId.toString())
+        }));
+    };
+
+    // Image selection handlers
+    const openImageModal = (imageType) => {
+        setSelectedImageType(imageType);
+        setShowImageModal(prev => ({
+            ...prev,
+            [imageType]: true
+        }));
+    };
+
+    const closeImageModal = () => {
+        setShowImageModal({
+            leadImage: false,
+            thumbImage: false,
+            metaImage: false
+        });
+    };
+
+    const handleImageSelect = (photo) => {
+        setSelectedImages(prev => ({
+            ...prev,
+            [selectedImageType]: photo
+        }));
+        // Clear file input when selecting from gallery
+        setFiles(prev => ({
+            ...prev,
+            [selectedImageType]: null
+        }));
+        closeImageModal();
+    };
+
+    const handleAlbumChange = (e) => {
+        setSelectedAlbum(e.target.value);
     };
 
     const handleSubmit = async (e) => {
@@ -138,15 +304,20 @@ const NewsCreate = () => {
             Object.keys(formData).forEach(key => {
                 if (key === 'tagIds' || key === 'categoryIds') {
                     submitData.append(key, JSON.stringify(formData[key]));
-                } else {
+                } else if (key !== 'authorName' && key !== 'tagNames') {
                     submitData.append(key, formData[key]);
                 }
             });
 
-            // Append files
-            if (files.leadImage) submitData.append('leadImage', files.leadImage);
-            if (files.thumbImage) submitData.append('thumbImage', files.thumbImage);
-            if (files.metaImage) submitData.append('metaImage', files.metaImage);
+            // Append files or selected image paths
+            Object.keys(files).forEach(key => {
+                if (files[key]) {
+                    submitData.append(key, files[key]);
+                } else if (selectedImages[key]) {
+                    // If image selected from gallery, send the image path
+                    submitData.append(key, selectedImages[key].imageUrl || selectedImages[key].image);
+                }
+            });
 
             const response = await axios.post(`${API_URL}/api/news`, submitData, {
                 headers: {
@@ -163,6 +334,7 @@ const NewsCreate = () => {
                 highlight: '',
                 alternativeHeadline: '',
                 authorId: '',
+                authorName: '',
                 shortDescription: '',
                 content: '',
                 imageCaption: '',
@@ -173,6 +345,7 @@ const NewsCreate = () => {
                 metaDescription: '',
                 status: 'draft',
                 tagIds: [],
+                tagNames: [],
                 categoryIds: []
             });
             setFiles({
@@ -180,6 +353,13 @@ const NewsCreate = () => {
                 thumbImage: null,
                 metaImage: null
             });
+            setSelectedImages({
+                leadImage: null,
+                thumbImage: null,
+                metaImage: null
+            });
+            setAuthorSearch('');
+            setTagSearch('');
 
         } catch (error) {
             console.error('Error creating news:', error);
@@ -189,17 +369,43 @@ const NewsCreate = () => {
         }
     };
 
-    // Safe render function for dropdown options
-    const renderDropdownOptions = (items, placeholder = "No options available") => {
-        if (!Array.isArray(items) || items.length === 0) {
-            return <option value="">{placeholder}</option>;
+    // Image preview component
+    const ImagePreview = ({ imageType }) => {
+        const file = files[imageType];
+        const selectedImage = selectedImages[imageType];
+
+        if (file) {
+            return (
+                <div className="mt-2">
+                    <img
+                        src={URL.createObjectURL(file)}
+                        alt="Preview"
+                        className="img-thumbnail"
+                        style={{ maxHeight: '100px' }}
+                    />
+                    <div className="text-muted small">New upload</div>
+                </div>
+            );
         }
 
-        return items.map(item => (
-            <option key={item.id} value={item.id}>
-                {item.name || item.title || item.label || `Item ${item.id}`}
-            </option>
-        ));
+        if (selectedImage) {
+            return (
+                <div className="mt-2">
+                    <img
+                        src={`${API_URL}/${selectedImage.imageUrl || selectedImage.image}`}
+                        alt="Selected"
+                        className="img-thumbnail"
+                        style={{ maxHeight: '100px' }}
+                        onError={(e) => {
+                            e.target.src = '/placeholder-image.jpg';
+                        }}
+                    />
+                    <div className="text-muted small">From gallery</div>
+                </div>
+            );
+        }
+
+        return null;
     };
 
     return (
@@ -259,19 +465,45 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
+                                    {/* Searchable Author Dropdown */}
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Author *</label>
-                                            <select
-                                                className="form-control"
-                                                name="authorId"
-                                                value={formData.authorId}
-                                                onChange={handleInputChange}
-                                                required
-                                            >
-                                                <option value="">Select Author</option>
-                                                {renderDropdownOptions(authors, "No authors available")}
-                                            </select>
+                                            <div className="position-relative">
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Search author..."
+                                                    value={authorSearch}
+                                                    onChange={(e) => {
+                                                        setAuthorSearch(e.target.value);
+                                                        setShowAuthorDropdown(true);
+                                                    }}
+                                                    onFocus={() => setShowAuthorDropdown(true)}
+                                                    required
+                                                />
+                                                {showAuthorDropdown && filteredAuthors.length > 0 && (
+                                                    <div className="dropdown-menu show w-100">
+                                                        {filteredAuthors.map(author => (
+                                                            <button
+                                                                key={author.id}
+                                                                type="button"
+                                                                className="dropdown-item"
+                                                                onClick={() => handleAuthorSelect(author)}
+                                                            >
+                                                                {author.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {formData.authorName && (
+                                                <div className="mt-1">
+                                                    <small className="text-success">
+                                                        Selected: {formData.authorName}
+                                                    </small>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -342,36 +574,58 @@ const NewsCreate = () => {
                                     </div>
                                 </div>
 
-                                {/* Media */}
+                                {/* Media with Image Selection */}
                                 <div className="row mb-4">
                                     <div className="col-12">
                                         <h5>Media</h5>
                                         <hr />
                                     </div>
 
+                                    {/* Lead Image */}
                                     <div className="col-md-4">
                                         <div className="mb-3">
                                             <label className="form-label">Lead Image</label>
-                                            <input
-                                                type="file"
-                                                className="form-control"
-                                                name="leadImage"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                            />
+                                            <div className="d-flex gap-2 mb-2">
+                                                <input
+                                                    type="file"
+                                                    className="form-control"
+                                                    name="leadImage"
+                                                    accept="image/*"
+                                                    onChange={handleFileChange}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => openImageModal('leadImage')}
+                                                >
+                                                    Choose
+                                                </button>
+                                            </div>
+                                            <ImagePreview imageType="leadImage" />
                                         </div>
                                     </div>
 
+                                    {/* Thumbnail Image */}
                                     <div className="col-md-4">
                                         <div className="mb-3">
                                             <label className="form-label">Thumbnail Image</label>
-                                            <input
-                                                type="file"
-                                                className="form-control"
-                                                name="thumbImage"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                            />
+                                            <div className="d-flex gap-2 mb-2">
+                                                <input
+                                                    type="file"
+                                                    className="form-control"
+                                                    name="thumbImage"
+                                                    accept="image/*"
+                                                    onChange={handleFileChange}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => openImageModal('thumbImage')}
+                                                >
+                                                    Choose
+                                                </button>
+                                            </div>
+                                            <ImagePreview imageType="thumbImage" />
                                         </div>
                                     </div>
 
@@ -410,6 +664,7 @@ const NewsCreate = () => {
                                         <hr />
                                     </div>
 
+                                    {/* Hierarchical Categories */}
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Categories</label>
@@ -418,46 +673,98 @@ const NewsCreate = () => {
                                                 multiple
                                                 value={formData.categoryIds}
                                                 onChange={(e) => handleMultiSelect(e, 'categoryIds')}
+                                                size="6"
                                             >
-                                                {renderDropdownOptions(categories, "No categories available")}
+                                                {categories.length > 0 ? (
+                                                    renderCategoryOptions(categories)
+                                                ) : (
+                                                    <option value="">No categories available</option>
+                                                )}
                                             </select>
                                             <small className="text-muted">Hold Ctrl to select multiple categories</small>
                                         </div>
                                     </div>
 
+                                    {/* Searchable Tags */}
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Tags</label>
-                                            <select
-                                                className="form-control"
-                                                multiple
-                                                value={formData.tagIds}
-                                                onChange={(e) => handleMultiSelect(e, 'tagIds')}
-                                            >
-                                                {renderDropdownOptions(tags, "No tags available")}
-                                            </select>
-                                            <small className="text-muted">Hold Ctrl to select multiple tags</small>
+                                            <div className="position-relative">
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Search tags..."
+                                                    value={tagSearch}
+                                                    onChange={(e) => {
+                                                        setTagSearch(e.target.value);
+                                                        setShowTagDropdown(true);
+                                                    }}
+                                                    onFocus={() => setShowTagDropdown(true)}
+                                                />
+                                                {showTagDropdown && filteredTags.length > 0 && (
+                                                    <div className="dropdown-menu show w-100">
+                                                        {filteredTags.map(tag => (
+                                                            <button
+                                                                key={tag.id}
+                                                                type="button"
+                                                                className="dropdown-item"
+                                                                onClick={() => handleTagSelect(tag)}
+                                                            >
+                                                                {tag.name}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Selected Tags Display */}
+                                            {formData.tagNames.length > 0 && (
+                                                <div className="mt-2">
+                                                    {formData.tagNames.map((tagName, index) => (
+                                                        <span key={formData.tagIds[index]} className="badge bg-primary me-1 mb-1">
+                                                            {tagName}
+                                                            <button
+                                                                type="button"
+                                                                className="btn-close btn-close-white ms-1"
+                                                                style={{ fontSize: '0.7rem' }}
+                                                                onClick={() => removeTag(formData.tagIds[index])}
+                                                            ></button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* SEO */}
+                                {/* SEO Section */}
                                 <div className="row mb-4">
                                     <div className="col-12">
                                         <h5>SEO Settings</h5>
                                         <hr />
                                     </div>
 
+                                    {/* Meta Image */}
                                     <div className="col-md-4">
                                         <div className="mb-3">
                                             <label className="form-label">Meta Image</label>
-                                            <input
-                                                type="file"
-                                                className="form-control"
-                                                name="metaImage"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                            />
+                                            <div className="d-flex gap-2 mb-2">
+                                                <input
+                                                    type="file"
+                                                    className="form-control"
+                                                    name="metaImage"
+                                                    accept="image/*"
+                                                    onChange={handleFileChange}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary"
+                                                    onClick={() => openImageModal('metaImage')}
+                                                >
+                                                    Choose
+                                                </button>
+                                            </div>
+                                            <ImagePreview imageType="metaImage" />
                                         </div>
                                     </div>
 
@@ -518,6 +825,88 @@ const NewsCreate = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Image Selection Modal */}
+            {Object.values(showImageModal).some(val => val) && (
+                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-xl">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Select Image from Gallery</h5>
+                                <button type="button" className="btn-close" onClick={closeImageModal}></button>
+                            </div>
+                            <div className="modal-body">
+                                {/* Album Selection */}
+                                <div className="mb-3">
+                                    <label className="form-label">Filter by Album</label>
+                                    <select
+                                        className="form-control"
+                                        value={selectedAlbum}
+                                        onChange={handleAlbumChange}
+                                    >
+                                        <option value="all">All Albums</option>
+                                        {albums.map(album => (
+                                            <option key={album.id} value={album.id}>
+                                                {album.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Photos Count */}
+                                <div className="mb-3">
+                                    <small className="text-muted">
+                                        Showing {filteredPhotos.length} photos
+                                        {selectedAlbum !== 'all' && ` from selected album`}
+                                    </small>
+                                </div>
+
+                                {/* Photos Grid */}
+                                <div className="row">
+                                    {filteredPhotos.map(photo => (
+                                        <div key={photo.id} className="col-md-3 mb-3">
+                                            <div
+                                                className="card cursor-pointer"
+                                                onClick={() => handleImageSelect(photo)}
+                                                style={{ cursor: 'pointer' }}
+                                            >
+                                                <img
+                                                    src={`${API_URL}/${photo.imageUrl}`}
+                                                    className="card-img-top"
+                                                    alt={photo.caption || 'Photo'}
+                                                    style={{ height: '150px', objectFit: 'cover' }}
+                                                    onError={(e) => {
+                                                        e.target.src = '/placeholder-image.jpg';
+                                                    }}
+                                                />
+                                                <div className="card-body p-2">
+                                                    <small className="card-text text-truncate d-block">
+                                                        {photo.caption || 'No caption'}
+                                                    </small>
+                                                    <small className="text-muted">
+                                                        Album: {albums.find(a => a.id === photo.albumId)?.name || 'Unknown'}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {filteredPhotos.length === 0 && (
+                                    <div className="text-center text-muted py-4">
+                                        No photos found
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeImageModal}>
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -62,7 +62,7 @@ User.prototype.generateToken = function () {
             isAdmin: this.isAdmin
         },
         process.env.JWT_SECRET_KEY,
-        { expiresIn: "1h" }
+        { expiresIn: "4h" }
     );
 };
 

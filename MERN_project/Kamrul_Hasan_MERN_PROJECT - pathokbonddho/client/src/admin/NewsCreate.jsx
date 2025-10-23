@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../store/auth';
 import { toast } from 'react-toastify';
+import JoditEditor from 'jodit-react';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
@@ -61,6 +62,90 @@ const NewsCreate = () => {
         thumbImage: null,
         metaImage: null
     });
+
+    // Jodit editor configuration
+    const editorConfig = {
+        height: 400,
+        placeholder: 'Start typing your content here...',
+        buttons: [
+            'source',
+            '|',
+            'bold',
+            'italic',
+            'underline',
+            'strikethrough',
+            '|',
+            'ul',
+            'ol',
+            '|',
+            'font',
+            'fontsize',
+            'brush',
+            '|',
+            'paragraph',
+            'lineHeight',
+            '|',
+            'outdent',
+            'indent',
+            '|',
+            'align',
+            '|',
+            'link',
+            'image',
+            '|',
+            'hr',
+            'table',
+            '|',
+            'undo',
+            'redo',
+            '|',
+            'preview',
+            'print',
+            'fullsize'
+        ],
+        uploader: {
+            insertImageAsBase64URI: true
+        },
+        style: {
+            fontFamily: 'Arial, sans-serif'
+        }
+    };
+
+    const simpleEditorConfig = {
+        height: 200,
+        placeholder: 'Enter your text here...',
+        buttons: [
+            'bold',
+            'italic',
+            'underline',
+            '|',
+            'ul',
+            'ol',
+            '|',
+            'link',
+            '|',
+            'undo',
+            'redo'
+        ],
+        toolbarAdaptive: false
+    };
+
+    const highlightEditorConfig = {
+        height: 150,
+        placeholder: 'Enter highlight text...',
+        buttons: [
+            'bold',
+            'italic',
+            'underline',
+            '|',
+            'ul',
+            'ol',
+            '|',
+            'undo',
+            'redo'
+        ],
+        toolbarAdaptive: false
+    };
 
     useEffect(() => {
         fetchDropdownData();
@@ -130,7 +215,7 @@ const NewsCreate = () => {
             console.log('Photos response:', response.data);
             const photosData = response.data.photos || response.data || [];
             setPhotos(photosData);
-            setFilteredPhotos(photosData); // Initially show all photos
+            setFilteredPhotos(photosData);
         } catch (error) {
             console.error('Error fetching photos:', error);
             toast.error('Failed to load photos');
@@ -154,7 +239,6 @@ const NewsCreate = () => {
         const categoryMap = {};
         const rootCategories = [];
 
-        // First pass: create a map of all categories
         categories.forEach(category => {
             categoryMap[category.id] = {
                 ...category,
@@ -162,7 +246,6 @@ const NewsCreate = () => {
             };
         });
 
-        // Second pass: build hierarchy
         categories.forEach(category => {
             if (category.parentId && categoryMap[category.parentId]) {
                 categoryMap[category.parentId].children.push(categoryMap[category.id]);
@@ -206,13 +289,34 @@ const NewsCreate = () => {
         }));
     };
 
+    // Rich text editor handlers
+    const handleHighlightChange = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            highlight: value
+        }));
+    };
+
+    const handleShortDescriptionChange = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            shortDescription: value
+        }));
+    };
+
+    const handleContentChange = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            content: value
+        }));
+    };
+
     const handleFileChange = (e) => {
         const { name, files } = e.target;
         setFiles(prev => ({
             ...prev,
             [name]: files[0]
         }));
-        // Clear selected image when new file is uploaded
         setSelectedImages(prev => ({
             ...prev,
             [name]: null
@@ -281,7 +385,6 @@ const NewsCreate = () => {
             ...prev,
             [selectedImageType]: photo
         }));
-        // Clear file input when selecting from gallery
         setFiles(prev => ({
             ...prev,
             [selectedImageType]: null
@@ -314,7 +417,6 @@ const NewsCreate = () => {
                 if (files[key]) {
                     submitData.append(key, files[key]);
                 } else if (selectedImages[key]) {
-                    // If image selected from gallery, send the image path
                     submitData.append(key, selectedImages[key].imageUrl || selectedImages[key].image);
                 }
             });
@@ -392,7 +494,7 @@ const NewsCreate = () => {
             return (
                 <div className="mt-2">
                     <img
-                        src={`${API_URL}/${selectedImage.imageUrl || selectedImage.image}`}
+                        src={`${API_URL}/${selectedImage.imageUrl}`}
                         alt="Selected"
                         className="img-thumbnail"
                         style={{ maxHeight: '100px' }}
@@ -452,15 +554,14 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
+                                    {/* Highlight with Jodit Editor */}
                                     <div className="col-12">
                                         <div className="mb-3">
                                             <label className="form-label">Highlight</label>
-                                            <textarea
-                                                className="form-control"
-                                                name="highlight"
-                                                rows="3"
+                                            <JoditEditor
                                                 value={formData.highlight}
-                                                onChange={handleInputChange}
+                                                config={highlightEditorConfig}
+                                                onBlur={handleHighlightChange}
                                             />
                                         </div>
                                     </div>
@@ -546,29 +647,26 @@ const NewsCreate = () => {
                                         <hr />
                                     </div>
 
+                                    {/* Short Description with Jodit Editor */}
                                     <div className="col-12">
                                         <div className="mb-3">
                                             <label className="form-label">Short Description</label>
-                                            <textarea
-                                                className="form-control"
-                                                name="shortDescription"
-                                                rows="4"
+                                            <JoditEditor
                                                 value={formData.shortDescription}
-                                                onChange={handleInputChange}
+                                                config={simpleEditorConfig}
+                                                onBlur={handleShortDescriptionChange}
                                             />
                                         </div>
                                     </div>
 
+                                    {/* Main Content with Full Jodit Editor */}
                                     <div className="col-12">
                                         <div className="mb-3">
                                             <label className="form-label">Content *</label>
-                                            <textarea
-                                                className="form-control"
-                                                name="content"
-                                                rows="10"
+                                            <JoditEditor
                                                 value={formData.content}
-                                                onChange={handleInputChange}
-                                                required
+                                                config={editorConfig}
+                                                onBlur={handleContentChange}
                                             />
                                         </div>
                                     </div>

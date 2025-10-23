@@ -199,7 +199,7 @@ const NewsEdit = () => {
     }
 
     return (
-        <div className="container-fluid">
+        <div className="container-fluid custom-font-initial">
             <div className="row">
                 <div className="col-12">
                     <div className="card">

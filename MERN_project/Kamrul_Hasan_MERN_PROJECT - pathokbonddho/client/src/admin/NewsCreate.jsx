@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../store/auth';
 import { toast } from 'react-toastify';
-import JoditEditor from 'jodit-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import Placeholder from '@tiptap/extension-placeholder';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
@@ -23,13 +29,15 @@ const NewsCreate = () => {
     const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
     const [showTagDropdown, setShowTagDropdown] = useState(false);
 
-    // State for image selection modals
+    // State for image selection
     const [showImageModal, setShowImageModal] = useState({
         leadImage: false,
         thumbImage: false,
-        metaImage: false
+        metaImage: false,
+        editor: false
     });
     const [selectedImageType, setSelectedImageType] = useState('');
+    const [currentEditor, setCurrentEditor] = useState(null);
 
     const [formData, setFormData] = useState({
         newsHeadline: '',
@@ -63,90 +71,419 @@ const NewsCreate = () => {
         metaImage: null
     });
 
-    // Jodit editor configuration
-    const editorConfig = {
-        height: 400,
-        placeholder: 'Start typing your content here...',
-        buttons: [
-            'source',
-            '|',
-            'bold',
-            'italic',
-            'underline',
-            'strikethrough',
-            '|',
-            'ul',
-            'ol',
-            '|',
-            'font',
-            'fontsize',
-            'brush',
-            '|',
-            'paragraph',
-            'lineHeight',
-            '|',
-            'outdent',
-            'indent',
-            '|',
-            'align',
-            '|',
-            'link',
-            'image',
-            '|',
-            'hr',
-            'table',
-            '|',
-            'undo',
-            'redo',
-            '|',
-            'preview',
-            'print',
-            'fullsize'
+    // TipTap Editors
+    const highlightEditor = useEditor({
+        extensions: [
+            StarterKit.configure({
+                heading: {
+                    levels: [2, 3, 4],
+                },
+                bulletList: {
+                    keepMarks: true,
+                    keepAttributes: false,
+                },
+                orderedList: {
+                    keepMarks: true,
+                    keepAttributes: false,
+                },
+            }),
+            Underline,
+            Link.configure({
+                openOnClick: false,
+            }),
+            Image.configure({
+                HTMLAttributes: {
+                    class: 'img-fluid rounded',
+                },
+            }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            Placeholder.configure({
+                placeholder: 'Enter highlight text...',
+            }),
         ],
-        uploader: {
-            insertImageAsBase64URI: true
+        content: formData.highlight,
+        onUpdate: ({ editor }) => {
+            setFormData(prev => ({
+                ...prev,
+                highlight: editor.getHTML()
+            }));
         },
-        style: {
-            fontFamily: 'Arial, sans-serif'
+    });
+
+    const shortDescriptionEditor = useEditor({
+        extensions: [
+            StarterKit.configure({
+                heading: {
+                    levels: [2, 3, 4],
+                },
+                bulletList: {
+                    keepMarks: true,
+                    keepAttributes: false,
+                },
+                orderedList: {
+                    keepMarks: true,
+                    keepAttributes: false,
+                },
+            }),
+            Underline,
+            Link.configure({
+                openOnClick: false,
+            }),
+            Image.configure({
+                HTMLAttributes: {
+                    class: 'img-fluid rounded',
+                },
+            }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            Placeholder.configure({
+                placeholder: 'Enter short description...',
+            }),
+        ],
+        content: formData.shortDescription,
+        onUpdate: ({ editor }) => {
+            setFormData(prev => ({
+                ...prev,
+                shortDescription: editor.getHTML()
+            }));
+        },
+    });
+
+    const contentEditor = useEditor({
+        extensions: [
+            StarterKit.configure({
+                heading: {
+                    levels: [2, 3, 4],
+                },
+                bulletList: {
+                    keepMarks: true,
+                    keepAttributes: false,
+                },
+                orderedList: {
+                    keepMarks: true,
+                    keepAttributes: false,
+                },
+            }),
+            Underline,
+            Link.configure({
+                openOnClick: false,
+            }),
+            Image.configure({
+                HTMLAttributes: {
+                    class: 'img-fluid rounded',
+                },
+            }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            Placeholder.configure({
+                placeholder: 'Start writing your news content...',
+            }),
+        ],
+        content: formData.content,
+        onUpdate: ({ editor }) => {
+            setFormData(prev => ({
+                ...prev,
+                content: editor.getHTML()
+            }));
+        },
+    });
+
+    // Toolbar Components with Bootstrap classes
+    const EditorToolbar = ({ editor, onImageClick }) => {
+        if (!editor) {
+            return null;
         }
+
+        const setLink = () => {
+            const previousUrl = editor.getAttributes('link').href;
+            const url = window.prompt('URL', previousUrl);
+
+            if (url === null) {
+                return;
+            }
+
+            if (url === '') {
+                editor.chain().focus().extendMarkRange('link').unsetLink().run();
+                return;
+            }
+
+            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+        };
+
+        return (
+            <div className="d-flex flex-wrap gap-2 p-2 bg-light border-bottom">
+                {/* Text Formatting */}
+                <div className="btn-group">
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive('bold') ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        title="Bold"
+                    >
+                        <strong>B</strong>
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive('italic') ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        title="Italic"
+                    >
+                        <em>I</em>
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive('underline') ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().toggleUnderline().run()}
+                        title="Underline"
+                    >
+                        <u>U</u>
+                    </button>
+                </div>
+
+                {/* Headings */}
+                <select
+                    className="form-select form-select-sm"
+                    style={{ width: 'auto' }}
+                    value={editor.getAttributes('heading').level || ''}
+                    onChange={(e) => {
+                        const level = e.target.value;
+                        if (level === '') {
+                            editor.chain().focus().setParagraph().run();
+                        } else {
+                            editor.chain().focus().toggleHeading({ level: parseInt(level) }).run();
+                        }
+                    }}
+                    title="Heading"
+                >
+                    <option value="">Paragraph</option>
+                    <option value="2">Heading 2</option>
+                    <option value="3">Heading 3</option>
+                    <option value="4">Heading 4</option>
+                </select>
+
+                {/* Lists */}
+                <div className="btn-group">
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive('bulletList') ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
+                        title="Bullet List"
+                    >
+                        <i className="bi bi-list-ul"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive('orderedList') ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                        title="Numbered List"
+                    >
+                        <i className="bi bi-list-ol"></i>
+                    </button>
+                </div>
+
+                {/* Blockquote */}
+                <button
+                    type="button"
+                    className={`btn btn-sm btn-outline-secondary ${editor.isActive('blockquote') ? 'active' : ''}`}
+                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                    title="Blockquote"
+                >
+                    <i className="bi bi-quote"></i>
+                </button>
+
+                {/* Links & Images */}
+                <div className="btn-group">
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive('link') ? 'active' : ''}`}
+                        onClick={setLink}
+                        title="Link"
+                    >
+                        <i className="bi bi-link"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={onImageClick}
+                        title="Insert Image"
+                    >
+                        <i className="bi bi-image"></i>
+                    </button>
+                </div>
+
+                {/* Text Alignment */}
+                <div className="btn-group">
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive({ textAlign: 'left' }) ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                        title="Align Left"
+                    >
+                        <i className="bi bi-text-left"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive({ textAlign: 'center' }) ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                        title="Align Center"
+                    >
+                        <i className="bi bi-text-center"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm btn-outline-secondary ${editor.isActive({ textAlign: 'right' }) ? 'active' : ''}`}
+                        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                        title="Align Right"
+                    >
+                        <i className="bi bi-text-right"></i>
+                    </button>
+                </div>
+
+                {/* Undo/Redo */}
+                <div className="btn-group">
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => editor.chain().focus().undo().run()}
+                        disabled={!editor.can().undo()}
+                        title="Undo"
+                    >
+                        <i className="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => editor.chain().focus().redo().run()}
+                        disabled={!editor.can().redo()}
+                        title="Redo"
+                    >
+                        <i className="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+        );
     };
 
-    const simpleEditorConfig = {
-        height: 200,
-        placeholder: 'Enter your text here...',
-        buttons: [
-            'bold',
-            'italic',
-            'underline',
-            '|',
-            'ul',
-            'ol',
-            '|',
-            'link',
-            '|',
-            'undo',
-            'redo'
-        ],
-        toolbarAdaptive: false
+    // Simple Toolbar for Highlight
+    const SimpleToolbar = ({ editor, onImageClick }) => {
+        if (!editor) {
+            return null;
+        }
+
+        return (
+            <div className="d-flex gap-2 p-2 bg-light border-bottom">
+                <button
+                    type="button"
+                    className={`btn btn-sm btn-outline-secondary ${editor.isActive('bold') ? 'active' : ''}`}
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    title="Bold"
+                >
+                    <strong>B</strong>
+                </button>
+                <button
+                    type="button"
+                    className={`btn btn-sm btn-outline-secondary ${editor.isActive('italic') ? 'active' : ''}`}
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    title="Italic"
+                >
+                    <em>I</em>
+                </button>
+                <button
+                    type="button"
+                    className={`btn btn-sm btn-outline-secondary ${editor.isActive('underline') ? 'active' : ''}`}
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
+                    title="Underline"
+                >
+                    <u>U</u>
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={onImageClick}
+                    title="Insert Image"
+                >
+                    <i className="bi bi-image"></i>
+                </button>
+            </div>
+        );
     };
 
-    const highlightEditorConfig = {
-        height: 150,
-        placeholder: 'Enter highlight text...',
-        buttons: [
-            'bold',
-            'italic',
-            'underline',
-            '|',
-            'ul',
-            'ol',
-            '|',
-            'undo',
-            'redo'
-        ],
-        toolbarAdaptive: false
+    // Editor Components with Bootstrap
+    const CustomEditor = ({ editor, onImageClick, height = 400 }) => {
+        return (
+            <div className="border rounded" style={{ height: `${height}px` }}>
+                <EditorToolbar editor={editor} onImageClick={onImageClick} />
+                <EditorContent
+                    editor={editor}
+                    className="p-3 h-100 overflow-auto"
+                    style={{ minHeight: '200px' }}
+                />
+            </div>
+        );
     };
 
+    const SimpleEditor = ({ editor, onImageClick, height = 200 }) => {
+        return (
+            <div className="border rounded" style={{ height: `${height}px` }}>
+                <SimpleToolbar editor={editor} onImageClick={onImageClick} />
+                <EditorContent
+                    editor={editor}
+                    className="p-3 h-100 overflow-auto"
+                    style={{ minHeight: '100px' }}
+                />
+            </div>
+        );
+    };
+
+    // Image handling
+    const openEditorImageModal = (editorType) => {
+        setCurrentEditor(editorType);
+        setShowImageModal(prev => ({
+            ...prev,
+            editor: true
+        }));
+    };
+
+    const handleEditorImageSelect = (photo) => {
+        const imageUrl = `${API_URL}/${photo.imageUrl}`;
+
+        let currentEditorInstance = null;
+
+        switch (currentEditor) {
+            case 'highlight':
+                currentEditorInstance = highlightEditor;
+                break;
+            case 'shortDescription':
+                currentEditorInstance = shortDescriptionEditor;
+                break;
+            case 'content':
+                currentEditorInstance = contentEditor;
+                break;
+        }
+
+        if (currentEditorInstance) {
+            currentEditorInstance.chain().focus().setImage({
+                src: imageUrl,
+                alt: photo.caption || 'News Image'
+            }).run();
+            toast.success('Image inserted into editor');
+        }
+
+        setShowImageModal(prev => ({
+            ...prev,
+            editor: false
+        }));
+        setCurrentEditor(null);
+    };
+
+    // Add Bootstrap Icons to your index.html head section if not already added
+    // <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    // Rest of your existing code remains the same...
     useEffect(() => {
         fetchDropdownData();
         fetchAlbums();
@@ -167,7 +504,6 @@ const NewsCreate = () => {
                 axios.get(`${API_URL}/api/menus`)
             ]);
 
-            // Extract data with helper function
             const extractArray = (data, possibleKeys) => {
                 if (Array.isArray(data)) return data;
                 for (let key of possibleKeys) {
@@ -183,8 +519,6 @@ const NewsCreate = () => {
 
             setAuthors(extractArray(authorsRes.data, ['authors', 'data', 'rows']));
             setTags(extractArray(tagsRes.data, ['tags', 'data', 'rows']));
-
-            // Process categories to handle hierarchy
             const rawCategories = extractArray(categoriesRes.data, ['menus', 'categories', 'data', 'rows']);
             setCategories(processCategories(rawCategories));
 
@@ -200,7 +534,6 @@ const NewsCreate = () => {
     const fetchAlbums = async () => {
         try {
             const response = await axios.get(`${API_URL}/api/albums`);
-            console.log('Albums response:', response.data);
             const albumsData = response.data.albums || response.data || [];
             setAlbums(albumsData);
         } catch (error) {
@@ -212,7 +545,6 @@ const NewsCreate = () => {
     const fetchAllPhotos = async () => {
         try {
             const response = await axios.get(`${API_URL}/api/photos`);
-            console.log('Photos response:', response.data);
             const photosData = response.data.photos || response.data || [];
             setPhotos(photosData);
             setFilteredPhotos(photosData);
@@ -232,18 +564,13 @@ const NewsCreate = () => {
         }
     };
 
-    // Process categories to handle parent-child relationships
     const processCategories = (categories) => {
         if (!Array.isArray(categories)) return [];
-
         const categoryMap = {};
         const rootCategories = [];
 
         categories.forEach(category => {
-            categoryMap[category.id] = {
-                ...category,
-                children: []
-            };
+            categoryMap[category.id] = { ...category, children: [] };
         });
 
         categories.forEach(category => {
@@ -257,7 +584,6 @@ const NewsCreate = () => {
         return rootCategories;
     };
 
-    // Render categories with hierarchy
     const renderCategoryOptions = (categories, level = 0) => {
         return categories.map(category => (
             <React.Fragment key={category.id}>
@@ -271,16 +597,6 @@ const NewsCreate = () => {
         ));
     };
 
-    // Filtered authors based on search
-    const filteredAuthors = authors.filter(author =>
-        author.name?.toLowerCase().includes(authorSearch.toLowerCase())
-    );
-
-    // Filtered tags based on search
-    const filteredTags = tags.filter(tag =>
-        tag.name?.toLowerCase().includes(tagSearch.toLowerCase())
-    );
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -289,33 +605,11 @@ const NewsCreate = () => {
         }));
     };
 
-    // Rich text editor handlers
-    const handleHighlightChange = (value) => {
-        setFormData(prev => ({
-            ...prev,
-            highlight: value
-        }));
-    };
-
-    const handleShortDescriptionChange = (value) => {
-        setFormData(prev => ({
-            ...prev,
-            shortDescription: value
-        }));
-    };
-
-    const handleContentChange = (value) => {
-        setFormData(prev => ({
-            ...prev,
-            content: value
-        }));
-    };
-
     const handleFileChange = (e) => {
-        const { name, files } = e.target;
+        const { name, files: fileList } = e.target;
         setFiles(prev => ({
             ...prev,
-            [name]: files[0]
+            [name]: fileList[0]
         }));
         setSelectedImages(prev => ({
             ...prev,
@@ -331,7 +625,6 @@ const NewsCreate = () => {
         }));
     };
 
-    // Author selection handlers
     const handleAuthorSelect = (author) => {
         setFormData(prev => ({
             ...prev,
@@ -342,7 +635,6 @@ const NewsCreate = () => {
         setShowAuthorDropdown(false);
     };
 
-    // Tag selection handlers
     const handleTagSelect = (tag) => {
         if (!formData.tagIds.includes(tag.id.toString())) {
             setFormData(prev => ({
@@ -363,7 +655,6 @@ const NewsCreate = () => {
         }));
     };
 
-    // Image selection handlers
     const openImageModal = (imageType) => {
         setSelectedImageType(imageType);
         setShowImageModal(prev => ({
@@ -376,8 +667,11 @@ const NewsCreate = () => {
         setShowImageModal({
             leadImage: false,
             thumbImage: false,
-            metaImage: false
+            metaImage: false,
+            editor: false
         });
+        setSelectedImageType('');
+        setCurrentEditor(null);
     };
 
     const handleImageSelect = (photo) => {
@@ -406,7 +700,9 @@ const NewsCreate = () => {
             // Append form data
             Object.keys(formData).forEach(key => {
                 if (key === 'tagIds' || key === 'categoryIds') {
-                    submitData.append(key, JSON.stringify(formData[key]));
+                    formData[key].forEach(value => {
+                        submitData.append(key, value);
+                    });
                 } else if (key !== 'authorName' && key !== 'tagNames') {
                     submitData.append(key, formData[key]);
                 }
@@ -417,7 +713,7 @@ const NewsCreate = () => {
                 if (files[key]) {
                     submitData.append(key, files[key]);
                 } else if (selectedImages[key]) {
-                    submitData.append(key, selectedImages[key].imageUrl || selectedImages[key].image);
+                    submitData.append(`${key}Path`, selectedImages[key].imageUrl || selectedImages[key].image);
                 }
             });
 
@@ -462,6 +758,11 @@ const NewsCreate = () => {
             });
             setAuthorSearch('');
             setTagSearch('');
+
+            // Reset editors
+            highlightEditor?.commands.setContent('');
+            shortDescriptionEditor?.commands.setContent('');
+            contentEditor?.commands.setContent('');
 
         } catch (error) {
             console.error('Error creating news:', error);
@@ -510,6 +811,98 @@ const NewsCreate = () => {
         return null;
     };
 
+    // Common Modal Component for Image Selection
+    const ImageSelectionModal = ({ show, onClose, onSelect, title }) => {
+        if (!show) return null;
+
+        return (
+            <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                <div className="modal-dialog modal-xl">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title">{title}</h5>
+                            <button type="button" className="btn-close" onClick={onClose}></button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="mb-3">
+                                <label className="form-label">Filter by Album</label>
+                                <select
+                                    className="form-control"
+                                    value={selectedAlbum}
+                                    onChange={handleAlbumChange}
+                                >
+                                    <option value="all">All Albums</option>
+                                    {albums.map(album => (
+                                        <option key={album.id} value={album.id}>
+                                            {album.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="mb-3">
+                                <small className="text-muted">
+                                    Showing {filteredPhotos.length} photos
+                                    {selectedAlbum !== 'all' && ` from selected album`}
+                                </small>
+                            </div>
+
+                            <div className="row">
+                                {filteredPhotos.map(photo => (
+                                    <div key={photo.id} className="col-md-3 mb-3">
+                                        <div
+                                            className="card cursor-pointer"
+                                            onClick={() => onSelect(photo)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <img
+                                                src={`${API_URL}/${photo.imageUrl}`}
+                                                className="card-img-top"
+                                                alt={photo.caption || 'Photo'}
+                                                style={{ height: '150px', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    e.target.src = '/placeholder-image.jpg';
+                                                }}
+                                            />
+                                            <div className="card-body p-2">
+                                                <small className="card-text text-truncate d-block">
+                                                    {photo.caption || 'No caption'}
+                                                </small>
+                                                <small className="text-muted">
+                                                    Album: {albums.find(a => a.id === photo.albumId)?.name || 'Unknown'}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {filteredPhotos.length === 0 && (
+                                <div className="text-center text-muted py-4">
+                                    No photos found
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Filtered data
+    const filteredAuthors = authors.filter(author =>
+        author.name?.toLowerCase().includes(authorSearch.toLowerCase())
+    );
+
+    const filteredTags = tags.filter(tag =>
+        tag.name?.toLowerCase().includes(tagSearch.toLowerCase())
+    );
+
     return (
         <div className="container-fluid custom-font-initial">
             <div className="row">
@@ -554,14 +947,14 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
-                                    {/* Highlight with Jodit Editor */}
+                                    {/* Highlight with TipTap */}
                                     <div className="col-12">
                                         <div className="mb-3">
                                             <label className="form-label">Highlight</label>
-                                            <JoditEditor
-                                                value={formData.highlight}
-                                                config={highlightEditorConfig}
-                                                onBlur={handleHighlightChange}
+                                            <SimpleEditor
+                                                editor={highlightEditor}
+                                                onImageClick={() => openEditorImageModal('highlight')}
+                                                height={150}
                                             />
                                         </div>
                                     </div>
@@ -581,10 +974,11 @@ const NewsCreate = () => {
                                                         setShowAuthorDropdown(true);
                                                     }}
                                                     onFocus={() => setShowAuthorDropdown(true)}
+                                                    onBlur={() => setTimeout(() => setShowAuthorDropdown(false), 200)}
                                                     required
                                                 />
                                                 {showAuthorDropdown && filteredAuthors.length > 0 && (
-                                                    <div className="dropdown-menu show w-100">
+                                                    <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
                                                         {filteredAuthors.map(author => (
                                                             <button
                                                                 key={author.id}
@@ -647,39 +1041,38 @@ const NewsCreate = () => {
                                         <hr />
                                     </div>
 
-                                    {/* Short Description with Jodit Editor */}
+                                    {/* Short Description with TipTap */}
                                     <div className="col-12">
                                         <div className="mb-3">
                                             <label className="form-label">Short Description</label>
-                                            <JoditEditor
-                                                value={formData.shortDescription}
-                                                config={simpleEditorConfig}
-                                                onBlur={handleShortDescriptionChange}
+                                            <SimpleEditor
+                                                editor={shortDescriptionEditor}
+                                                onImageClick={() => openEditorImageModal('shortDescription')}
+                                                height={200}
                                             />
                                         </div>
                                     </div>
 
-                                    {/* Main Content with Full Jodit Editor */}
+                                    {/* Main Content with Full TipTap Editor */}
                                     <div className="col-12">
                                         <div className="mb-3">
                                             <label className="form-label">Content *</label>
-                                            <JoditEditor
-                                                value={formData.content}
-                                                config={editorConfig}
-                                                onBlur={handleContentChange}
+                                            <CustomEditor
+                                                editor={contentEditor}
+                                                onImageClick={() => openEditorImageModal('content')}
+                                                height={400}
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Media with Image Selection */}
+                                {/* Media Section */}
                                 <div className="row mb-4">
                                     <div className="col-12">
                                         <h5>Media</h5>
                                         <hr />
                                     </div>
 
-                                    {/* Lead Image */}
                                     <div className="col-md-4">
                                         <div className="mb-3">
                                             <label className="form-label">Lead Image</label>
@@ -703,7 +1096,6 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
-                                    {/* Thumbnail Image */}
                                     <div className="col-md-4">
                                         <div className="mb-3">
                                             <label className="form-label">Thumbnail Image</label>
@@ -762,7 +1154,6 @@ const NewsCreate = () => {
                                         <hr />
                                     </div>
 
-                                    {/* Hierarchical Categories */}
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Categories</label>
@@ -783,7 +1174,6 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
-                                    {/* Searchable Tags */}
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Tags</label>
@@ -798,9 +1188,10 @@ const NewsCreate = () => {
                                                         setShowTagDropdown(true);
                                                     }}
                                                     onFocus={() => setShowTagDropdown(true)}
+                                                    onBlur={() => setTimeout(() => setShowTagDropdown(false), 200)}
                                                 />
                                                 {showTagDropdown && filteredTags.length > 0 && (
-                                                    <div className="dropdown-menu show w-100">
+                                                    <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
                                                         {filteredTags.map(tag => (
                                                             <button
                                                                 key={tag.id}
@@ -815,7 +1206,6 @@ const NewsCreate = () => {
                                                 )}
                                             </div>
 
-                                            {/* Selected Tags Display */}
                                             {formData.tagNames.length > 0 && (
                                                 <div className="mt-2">
                                                     {formData.tagNames.map((tagName, index) => (
@@ -842,7 +1232,6 @@ const NewsCreate = () => {
                                         <hr />
                                     </div>
 
-                                    {/* Meta Image */}
                                     <div className="col-md-4">
                                         <div className="mb-3">
                                             <label className="form-label">Meta Image</label>
@@ -924,87 +1313,34 @@ const NewsCreate = () => {
                 </div>
             </div>
 
-            {/* Image Selection Modal */}
-            {Object.values(showImageModal).some(val => val) && (
-                <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog modal-xl">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Select Image from Gallery</h5>
-                                <button type="button" className="btn-close" onClick={closeImageModal}></button>
-                            </div>
-                            <div className="modal-body">
-                                {/* Album Selection */}
-                                <div className="mb-3">
-                                    <label className="form-label">Filter by Album</label>
-                                    <select
-                                        className="form-control"
-                                        value={selectedAlbum}
-                                        onChange={handleAlbumChange}
-                                    >
-                                        <option value="all">All Albums</option>
-                                        {albums.map(album => (
-                                            <option key={album.id} value={album.id}>
-                                                {album.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+            {/* Image Selection Modals */}
+            <ImageSelectionModal
+                show={showImageModal.editor}
+                onClose={closeImageModal}
+                onSelect={handleEditorImageSelect}
+                title="Select Image for Editor"
+            />
 
-                                {/* Photos Count */}
-                                <div className="mb-3">
-                                    <small className="text-muted">
-                                        Showing {filteredPhotos.length} photos
-                                        {selectedAlbum !== 'all' && ` from selected album`}
-                                    </small>
-                                </div>
+            <ImageSelectionModal
+                show={showImageModal.leadImage}
+                onClose={closeImageModal}
+                onSelect={handleImageSelect}
+                title="Select Lead Image"
+            />
 
-                                {/* Photos Grid */}
-                                <div className="row">
-                                    {filteredPhotos.map(photo => (
-                                        <div key={photo.id} className="col-md-3 mb-3">
-                                            <div
-                                                className="card cursor-pointer"
-                                                onClick={() => handleImageSelect(photo)}
-                                                style={{ cursor: 'pointer' }}
-                                            >
-                                                <img
-                                                    src={`${API_URL}/${photo.imageUrl}`}
-                                                    className="card-img-top"
-                                                    alt={photo.caption || 'Photo'}
-                                                    style={{ height: '150px', objectFit: 'cover' }}
-                                                    onError={(e) => {
-                                                        e.target.src = '/placeholder-image.jpg';
-                                                    }}
-                                                />
-                                                <div className="card-body p-2">
-                                                    <small className="card-text text-truncate d-block">
-                                                        {photo.caption || 'No caption'}
-                                                    </small>
-                                                    <small className="text-muted">
-                                                        Album: {albums.find(a => a.id === photo.albumId)?.name || 'Unknown'}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+            <ImageSelectionModal
+                show={showImageModal.thumbImage}
+                onClose={closeImageModal}
+                onSelect={handleImageSelect}
+                title="Select Thumbnail Image"
+            />
 
-                                {filteredPhotos.length === 0 && (
-                                    <div className="text-center text-muted py-4">
-                                        No photos found
-                                    </div>
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={closeImageModal}>
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ImageSelectionModal
+                show={showImageModal.metaImage}
+                onClose={closeImageModal}
+                onSelect={handleImageSelect}
+                title="Select Meta Image"
+            />
         </div>
     );
 };

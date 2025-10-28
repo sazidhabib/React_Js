@@ -39,6 +39,13 @@ const NewsCreate = () => {
     const [selectedImageType, setSelectedImageType] = useState('');
     const [currentEditor, setCurrentEditor] = useState(null);
 
+    // Separate state for editor content to avoid circular updates
+    const [editorContent, setEditorContent] = useState({
+        highlight: '',
+        shortDescription: '',
+        content: ''
+    });
+
     const [formData, setFormData] = useState({
         newsHeadline: '',
         highlight: '',
@@ -75,17 +82,9 @@ const NewsCreate = () => {
     const highlightEditor = useEditor({
         extensions: [
             StarterKit.configure({
-                heading: {
-                    levels: [2, 3, 4],
-                },
-                bulletList: {
-                    keepMarks: true,
-                    keepAttributes: false,
-                },
-                orderedList: {
-                    keepMarks: true,
-                    keepAttributes: false,
-                },
+                // Disable the extensions that we're adding separately to avoid duplicates
+                link: false,
+                underline: false,
             }),
             Underline,
             Link.configure({
@@ -103,29 +102,22 @@ const NewsCreate = () => {
                 placeholder: 'Enter highlight text...',
             }),
         ],
-        content: formData.highlight,
+        content: editorContent.highlight,
         onUpdate: ({ editor }) => {
-            setFormData(prev => ({
-                ...prev,
-                highlight: editor.getHTML()
-            }));
+            const html = editor.getHTML();
+            setEditorContent(prev => ({ ...prev, highlight: html }));
         },
+
     });
+
+
 
     const shortDescriptionEditor = useEditor({
         extensions: [
             StarterKit.configure({
-                heading: {
-                    levels: [2, 3, 4],
-                },
-                bulletList: {
-                    keepMarks: true,
-                    keepAttributes: false,
-                },
-                orderedList: {
-                    keepMarks: true,
-                    keepAttributes: false,
-                },
+                // Disable the extensions that we're adding separately to avoid duplicates
+                link: false,
+                underline: false,
             }),
             Underline,
             Link.configure({
@@ -143,29 +135,20 @@ const NewsCreate = () => {
                 placeholder: 'Enter short description...',
             }),
         ],
-        content: formData.shortDescription,
+        content: editorContent.shortDescription,
         onUpdate: ({ editor }) => {
-            setFormData(prev => ({
-                ...prev,
-                shortDescription: editor.getHTML()
-            }));
+            const html = editor.getHTML();
+            setEditorContent(prev => ({ ...prev, shortDescription: html }));
         },
+
     });
 
     const contentEditor = useEditor({
         extensions: [
             StarterKit.configure({
-                heading: {
-                    levels: [2, 3, 4],
-                },
-                bulletList: {
-                    keepMarks: true,
-                    keepAttributes: false,
-                },
-                orderedList: {
-                    keepMarks: true,
-                    keepAttributes: false,
-                },
+                // Disable the extensions that we're adding separately to avoid duplicates
+                link: false,
+                underline: false,
             }),
             Underline,
             Link.configure({
@@ -183,12 +166,10 @@ const NewsCreate = () => {
                 placeholder: 'Start writing your news content...',
             }),
         ],
-        content: formData.content,
+        content: editorContent.content,
         onUpdate: ({ editor }) => {
-            setFormData(prev => ({
-                ...prev,
-                content: editor.getHTML()
-            }));
+            const html = editor.getHTML();
+            setEditorContent(prev => ({ ...prev, content: html }));
         },
     });
 
@@ -420,7 +401,10 @@ const NewsCreate = () => {
                 <EditorContent
                     editor={editor}
                     className="p-3 h-100 overflow-auto"
-                    style={{ minHeight: '200px' }}
+                    style={{
+                        minHeight: '200px',
+                        whiteSpace: 'pre-wrap'
+                    }}
                 />
             </div>
         );
@@ -433,7 +417,7 @@ const NewsCreate = () => {
                 <EditorContent
                     editor={editor}
                     className="p-3 h-100 overflow-auto"
-                    style={{ minHeight: '100px' }}
+                    style={{ minHeight: '100px', whiteSpace: 'pre-wrap' }}
                 />
             </div>
         );
@@ -479,6 +463,57 @@ const NewsCreate = () => {
         }));
         setCurrentEditor(null);
     };
+
+    // Add CSS for ProseMirror
+    const ProseMirrorStyles = () => (
+        <style>
+            {`
+                .ProseMirror {
+                    white-space: pre-wrap;
+                    outline: none;
+                    min-height: 150px;
+                }
+                .ProseMirror p {
+                    margin-bottom: 1em;
+                }
+                .ProseMirror h2 {
+                    font-size: 1.5em;
+                    font-weight: bold;
+                    margin: 1.5em 0 0.5em 0;
+                }
+                .ProseMirror h3 {
+                    font-size: 1.25em;
+                    font-weight: bold;
+                    margin: 1.5em 0 0.5em 0;
+                }
+                .ProseMirror h4 {
+                    font-size: 1.1em;
+                    font-weight: bold;
+                    margin: 1.5em 0 0.5em 0;
+                }
+                .ProseMirror ul, .ProseMirror ol {
+                    padding-left: 1.5em;
+                    margin: 1em 0;
+                }
+                .ProseMirror blockquote {
+                    border-left: 3px solid #3b82f6;
+                    padding-left: 1rem;
+                    margin: 1em 0;
+                    font-style: italic;
+                    background: #f8fafc;
+                    padding: 1rem;
+                    border-radius: 0 0.375rem 0.375rem 0;
+                }
+                .ProseMirror img {
+                    max-width: 100%;
+                    height: auto;
+                }
+                .ProseMirror:focus {
+                    outline: none;
+                }
+            `}
+        </style>
+    );
 
     // Add Bootstrap Icons to your index.html head section if not already added
     // <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
@@ -697,14 +732,23 @@ const NewsCreate = () => {
         try {
             const submitData = new FormData();
 
+            // Update formData with latest editor content before submission
+            const finalFormData = {
+                ...formData,
+                highlight: editorContent.highlight,
+                shortDescription: editorContent.shortDescription,
+                content: editorContent.content
+            };
+
+
             // Append form data
-            Object.keys(formData).forEach(key => {
+            Object.keys(finalFormData).forEach(key => {
                 if (key === 'tagIds' || key === 'categoryIds') {
-                    formData[key].forEach(value => {
+                    finalFormData[key].forEach(value => {
                         submitData.append(key, value);
                     });
                 } else if (key !== 'authorName' && key !== 'tagNames') {
-                    submitData.append(key, formData[key]);
+                    submitData.append(key, finalFormData[key]);
                 }
             });
 
@@ -745,6 +789,11 @@ const NewsCreate = () => {
                 tagIds: [],
                 tagNames: [],
                 categoryIds: []
+            });
+            setEditorContent({
+                highlight: '',
+                shortDescription: '',
+                content: ''
             });
             setFiles({
                 leadImage: null,
@@ -904,444 +953,447 @@ const NewsCreate = () => {
     );
 
     return (
-        <div className="container-fluid custom-font-initial">
-            <div className="row">
-                <div className="col-12">
-                    <div className="card">
-                        <div className="card-header">
-                            <h4 className="card-title">Create New News Post</h4>
-                        </div>
-                        <div className="card-body">
-                            <form onSubmit={handleSubmit}>
-                                {/* Basic Information */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <h5>Basic Information</h5>
-                                        <hr />
-                                    </div>
-
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">News Headline *</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                name="newsHeadline"
-                                                value={formData.newsHeadline}
-                                                onChange={handleInputChange}
-                                                required
-                                            />
+        <>
+            <ProseMirrorStyles />
+            <div className="container-fluid custom-font-initial">
+                <div className="row">
+                    <div className="col-12">
+                        <div className="card">
+                            <div className="card-header">
+                                <h4 className="card-title">Create New News Post</h4>
+                            </div>
+                            <div className="card-body">
+                                <form onSubmit={handleSubmit}>
+                                    {/* Basic Information */}
+                                    <div className="row mb-4">
+                                        <div className="col-12">
+                                            <h5>Basic Information</h5>
+                                            <hr />
                                         </div>
-                                    </div>
 
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Alternative Headline</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                name="alternativeHeadline"
-                                                value={formData.alternativeHeadline}
-                                                onChange={handleInputChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Highlight with TipTap */}
-                                    <div className="col-12">
-                                        <div className="mb-3">
-                                            <label className="form-label">Highlight</label>
-                                            <SimpleEditor
-                                                editor={highlightEditor}
-                                                onImageClick={() => openEditorImageModal('highlight')}
-                                                height={150}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Searchable Author Dropdown */}
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Author *</label>
-                                            <div className="position-relative">
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">News Headline *</label>
                                                 <input
                                                     type="text"
                                                     className="form-control"
-                                                    placeholder="Search author..."
-                                                    value={authorSearch}
-                                                    onChange={(e) => {
-                                                        setAuthorSearch(e.target.value);
-                                                        setShowAuthorDropdown(true);
-                                                    }}
-                                                    onFocus={() => setShowAuthorDropdown(true)}
-                                                    onBlur={() => setTimeout(() => setShowAuthorDropdown(false), 200)}
+                                                    name="newsHeadline"
+                                                    value={formData.newsHeadline}
+                                                    onChange={handleInputChange}
                                                     required
                                                 />
-                                                {showAuthorDropdown && filteredAuthors.length > 0 && (
-                                                    <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
-                                                        {filteredAuthors.map(author => (
-                                                            <button
-                                                                key={author.id}
-                                                                type="button"
-                                                                className="dropdown-item"
-                                                                onClick={() => handleAuthorSelect(author)}
-                                                            >
-                                                                {author.name}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
                                             </div>
-                                            {formData.authorName && (
-                                                <div className="mt-1">
-                                                    <small className="text-success">
-                                                        Selected: {formData.authorName}
-                                                    </small>
-                                                </div>
-                                            )}
                                         </div>
-                                    </div>
 
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Status</label>
-                                            <select
-                                                className="form-control"
-                                                name="status"
-                                                value={formData.status}
-                                                onChange={handleInputChange}
-                                            >
-                                                <option value="draft">Draft</option>
-                                                <option value="published">Published</option>
-                                                <option value="scheduled">Scheduled</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {formData.status === 'scheduled' && (
                                         <div className="col-md-6">
                                             <div className="mb-3">
-                                                <label className="form-label">Schedule Date & Time</label>
+                                                <label className="form-label">Alternative Headline</label>
                                                 <input
-                                                    type="datetime-local"
+                                                    type="text"
                                                     className="form-control"
-                                                    name="newsSchedule"
-                                                    value={formData.newsSchedule}
+                                                    name="alternativeHeadline"
+                                                    value={formData.alternativeHeadline}
                                                     onChange={handleInputChange}
                                                 />
                                             </div>
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Content */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <h5>Content</h5>
-                                        <hr />
-                                    </div>
-
-                                    {/* Short Description with TipTap */}
-                                    <div className="col-12">
-                                        <div className="mb-3">
-                                            <label className="form-label">Short Description</label>
-                                            <SimpleEditor
-                                                editor={shortDescriptionEditor}
-                                                onImageClick={() => openEditorImageModal('shortDescription')}
-                                                height={200}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Main Content with Full TipTap Editor */}
-                                    <div className="col-12">
-                                        <div className="mb-3">
-                                            <label className="form-label">Content *</label>
-                                            <CustomEditor
-                                                editor={contentEditor}
-                                                onImageClick={() => openEditorImageModal('content')}
-                                                height={400}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Media Section */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <h5>Media</h5>
-                                        <hr />
-                                    </div>
-
-                                    <div className="col-md-4">
-                                        <div className="mb-3">
-                                            <label className="form-label">Lead Image</label>
-                                            <div className="d-flex gap-2 mb-2">
-                                                <input
-                                                    type="file"
-                                                    className="form-control"
-                                                    name="leadImage"
-                                                    accept="image/*"
-                                                    onChange={handleFileChange}
+                                        {/* Highlight with TipTap */}
+                                        <div className="col-12">
+                                            <div className="mb-3">
+                                                <label className="form-label">Highlight</label>
+                                                <SimpleEditor
+                                                    editor={highlightEditor}
+                                                    onImageClick={() => openEditorImageModal('highlight')}
+                                                    height={200}
                                                 />
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary"
-                                                    onClick={() => openImageModal('leadImage')}
-                                                >
-                                                    Choose
-                                                </button>
                                             </div>
-                                            <ImagePreview imageType="leadImage" />
                                         </div>
-                                    </div>
 
-                                    <div className="col-md-4">
-                                        <div className="mb-3">
-                                            <label className="form-label">Thumbnail Image</label>
-                                            <div className="d-flex gap-2 mb-2">
-                                                <input
-                                                    type="file"
-                                                    className="form-control"
-                                                    name="thumbImage"
-                                                    accept="image/*"
-                                                    onChange={handleFileChange}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary"
-                                                    onClick={() => openImageModal('thumbImage')}
-                                                >
-                                                    Choose
-                                                </button>
-                                            </div>
-                                            <ImagePreview imageType="thumbImage" />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-md-4">
-                                        <div className="mb-3">
-                                            <label className="form-label">Image Caption</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                name="imageCaption"
-                                                value={formData.imageCaption}
-                                                onChange={handleInputChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-12">
-                                        <div className="mb-3">
-                                            <label className="form-label">YouTube Video Link</label>
-                                            <input
-                                                type="url"
-                                                className="form-control"
-                                                name="videoLink"
-                                                value={formData.videoLink}
-                                                onChange={handleInputChange}
-                                                placeholder="https://www.youtube.com/watch?v=..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Categories & Tags */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <h5>Categories & Tags</h5>
-                                        <hr />
-                                    </div>
-
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Categories</label>
-                                            <select
-                                                className="form-control"
-                                                multiple
-                                                value={formData.categoryIds}
-                                                onChange={(e) => handleMultiSelect(e, 'categoryIds')}
-                                                size="6"
-                                            >
-                                                {categories.length > 0 ? (
-                                                    renderCategoryOptions(categories)
-                                                ) : (
-                                                    <option value="">No categories available</option>
+                                        {/* Searchable Author Dropdown */}
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">Author *</label>
+                                                <div className="position-relative">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="Search author..."
+                                                        value={authorSearch}
+                                                        onChange={(e) => {
+                                                            setAuthorSearch(e.target.value);
+                                                            setShowAuthorDropdown(true);
+                                                        }}
+                                                        onFocus={() => setShowAuthorDropdown(true)}
+                                                        onBlur={() => setTimeout(() => setShowAuthorDropdown(false), 200)}
+                                                        required
+                                                    />
+                                                    {showAuthorDropdown && filteredAuthors.length > 0 && (
+                                                        <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
+                                                            {filteredAuthors.map(author => (
+                                                                <button
+                                                                    key={author.id}
+                                                                    type="button"
+                                                                    className="dropdown-item"
+                                                                    onClick={() => handleAuthorSelect(author)}
+                                                                >
+                                                                    {author.name}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {formData.authorName && (
+                                                    <div className="mt-1">
+                                                        <small className="text-success">
+                                                            Selected: {formData.authorName}
+                                                        </small>
+                                                    </div>
                                                 )}
-                                            </select>
-                                            <small className="text-muted">Hold Ctrl to select multiple categories</small>
+                                            </div>
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">Status</label>
+                                                <select
+                                                    className="form-control"
+                                                    name="status"
+                                                    value={formData.status}
+                                                    onChange={handleInputChange}
+                                                >
+                                                    <option value="draft">Draft</option>
+                                                    <option value="published">Published</option>
+                                                    <option value="scheduled">Scheduled</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {formData.status === 'scheduled' && (
+                                            <div className="col-md-6">
+                                                <div className="mb-3">
+                                                    <label className="form-label">Schedule Date & Time</label>
+                                                    <input
+                                                        type="datetime-local"
+                                                        className="form-control"
+                                                        name="newsSchedule"
+                                                        value={formData.newsSchedule}
+                                                        onChange={handleInputChange}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="row mb-4">
+                                        <div className="col-12">
+                                            <h5>Content</h5>
+                                            <hr />
+                                        </div>
+
+                                        {/* Short Description with TipTap */}
+                                        <div className="col-12">
+                                            <div className="mb-3">
+                                                <label className="form-label">Short Description</label>
+                                                <SimpleEditor
+                                                    editor={shortDescriptionEditor}
+                                                    onImageClick={() => openEditorImageModal('shortDescription')}
+                                                    height={200}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Main Content with Full TipTap Editor */}
+                                        <div className="col-12">
+                                            <div className="mb-3">
+                                                <label className="form-label">Content *</label>
+                                                <CustomEditor
+                                                    editor={contentEditor}
+                                                    onImageClick={() => openEditorImageModal('content')}
+                                                    height={400}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Tags</label>
-                                            <div className="position-relative">
+                                    {/* Media Section */}
+                                    <div className="row mb-4">
+                                        <div className="col-12">
+                                            <h5>Media</h5>
+                                            <hr />
+                                        </div>
+
+                                        <div className="col-md-4">
+                                            <div className="mb-3">
+                                                <label className="form-label">Lead Image</label>
+                                                <div className="d-flex gap-2 mb-2">
+                                                    <input
+                                                        type="file"
+                                                        className="form-control"
+                                                        name="leadImage"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-secondary"
+                                                        onClick={() => openImageModal('leadImage')}
+                                                    >
+                                                        Choose
+                                                    </button>
+                                                </div>
+                                                <ImagePreview imageType="leadImage" />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-md-4">
+                                            <div className="mb-3">
+                                                <label className="form-label">Thumbnail Image</label>
+                                                <div className="d-flex gap-2 mb-2">
+                                                    <input
+                                                        type="file"
+                                                        className="form-control"
+                                                        name="thumbImage"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-secondary"
+                                                        onClick={() => openImageModal('thumbImage')}
+                                                    >
+                                                        Choose
+                                                    </button>
+                                                </div>
+                                                <ImagePreview imageType="thumbImage" />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-md-4">
+                                            <div className="mb-3">
+                                                <label className="form-label">Image Caption</label>
                                                 <input
                                                     type="text"
                                                     className="form-control"
-                                                    placeholder="Search tags..."
-                                                    value={tagSearch}
-                                                    onChange={(e) => {
-                                                        setTagSearch(e.target.value);
-                                                        setShowTagDropdown(true);
-                                                    }}
-                                                    onFocus={() => setShowTagDropdown(true)}
-                                                    onBlur={() => setTimeout(() => setShowTagDropdown(false), 200)}
+                                                    name="imageCaption"
+                                                    value={formData.imageCaption}
+                                                    onChange={handleInputChange}
                                                 />
-                                                {showTagDropdown && filteredTags.length > 0 && (
-                                                    <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
-                                                        {filteredTags.map(tag => (
-                                                            <button
-                                                                key={tag.id}
-                                                                type="button"
-                                                                className="dropdown-item"
-                                                                onClick={() => handleTagSelect(tag)}
-                                                            >
-                                                                {tag.name}
-                                                            </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                            <div className="mb-3">
+                                                <label className="form-label">YouTube Video Link</label>
+                                                <input
+                                                    type="url"
+                                                    className="form-control"
+                                                    name="videoLink"
+                                                    value={formData.videoLink}
+                                                    onChange={handleInputChange}
+                                                    placeholder="https://www.youtube.com/watch?v=..."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Categories & Tags */}
+                                    <div className="row mb-4">
+                                        <div className="col-12">
+                                            <h5>Categories & Tags</h5>
+                                            <hr />
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">Categories</label>
+                                                <select
+                                                    className="form-control"
+                                                    multiple
+                                                    value={formData.categoryIds}
+                                                    onChange={(e) => handleMultiSelect(e, 'categoryIds')}
+                                                    size="6"
+                                                >
+                                                    {categories.length > 0 ? (
+                                                        renderCategoryOptions(categories)
+                                                    ) : (
+                                                        <option value="">No categories available</option>
+                                                    )}
+                                                </select>
+                                                <small className="text-muted">Hold Ctrl to select multiple categories</small>
+                                            </div>
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">Tags</label>
+                                                <div className="position-relative">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        placeholder="Search tags..."
+                                                        value={tagSearch}
+                                                        onChange={(e) => {
+                                                            setTagSearch(e.target.value);
+                                                            setShowTagDropdown(true);
+                                                        }}
+                                                        onFocus={() => setShowTagDropdown(true)}
+                                                        onBlur={() => setTimeout(() => setShowTagDropdown(false), 200)}
+                                                    />
+                                                    {showTagDropdown && filteredTags.length > 0 && (
+                                                        <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
+                                                            {filteredTags.map(tag => (
+                                                                <button
+                                                                    key={tag.id}
+                                                                    type="button"
+                                                                    className="dropdown-item"
+                                                                    onClick={() => handleTagSelect(tag)}
+                                                                >
+                                                                    {tag.name}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {formData.tagNames.length > 0 && (
+                                                    <div className="mt-2">
+                                                        {formData.tagNames.map((tagName, index) => (
+                                                            <span key={formData.tagIds[index]} className="badge bg-primary me-1 mb-1">
+                                                                {tagName}
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn-close btn-close-white ms-1"
+                                                                    style={{ fontSize: '0.7rem' }}
+                                                                    onClick={() => removeTag(formData.tagIds[index])}
+                                                                ></button>
+                                                            </span>
                                                         ))}
                                                     </div>
                                                 )}
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            {formData.tagNames.length > 0 && (
-                                                <div className="mt-2">
-                                                    {formData.tagNames.map((tagName, index) => (
-                                                        <span key={formData.tagIds[index]} className="badge bg-primary me-1 mb-1">
-                                                            {tagName}
-                                                            <button
-                                                                type="button"
-                                                                className="btn-close btn-close-white ms-1"
-                                                                style={{ fontSize: '0.7rem' }}
-                                                                onClick={() => removeTag(formData.tagIds[index])}
-                                                            ></button>
-                                                        </span>
-                                                    ))}
+                                    {/* SEO Section */}
+                                    <div className="row mb-4">
+                                        <div className="col-12">
+                                            <h5>SEO Settings</h5>
+                                            <hr />
+                                        </div>
+
+                                        <div className="col-md-4">
+                                            <div className="mb-3">
+                                                <label className="form-label">Meta Image</label>
+                                                <div className="d-flex gap-2 mb-2">
+                                                    <input
+                                                        type="file"
+                                                        className="form-control"
+                                                        name="metaImage"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-outline-secondary"
+                                                        onClick={() => openImageModal('metaImage')}
+                                                    >
+                                                        Choose
+                                                    </button>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* SEO Section */}
-                                <div className="row mb-4">
-                                    <div className="col-12">
-                                        <h5>SEO Settings</h5>
-                                        <hr />
-                                    </div>
-
-                                    <div className="col-md-4">
-                                        <div className="mb-3">
-                                            <label className="form-label">Meta Image</label>
-                                            <div className="d-flex gap-2 mb-2">
-                                                <input
-                                                    type="file"
-                                                    className="form-control"
-                                                    name="metaImage"
-                                                    accept="image/*"
-                                                    onChange={handleFileChange}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary"
-                                                    onClick={() => openImageModal('metaImage')}
-                                                >
-                                                    Choose
-                                                </button>
+                                                <ImagePreview imageType="metaImage" />
                                             </div>
-                                            <ImagePreview imageType="metaImage" />
+                                        </div>
+
+                                        <div className="col-md-8">
+                                            <div className="mb-3">
+                                                <label className="form-label">Meta Title</label>
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    name="metaTitle"
+                                                    value={formData.metaTitle}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                            <div className="mb-3">
+                                                <label className="form-label">Meta Description</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    name="metaDescription"
+                                                    rows="3"
+                                                    value={formData.metaDescription}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                            <div className="mb-3">
+                                                <label className="form-label">Meta Keywords</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    name="metaKeywords"
+                                                    rows="2"
+                                                    value={formData.metaKeywords}
+                                                    onChange={handleInputChange}
+                                                    placeholder="keyword1, keyword2, keyword3"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="col-md-8">
-                                        <div className="mb-3">
-                                            <label className="form-label">Meta Title</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                name="metaTitle"
-                                                value={formData.metaTitle}
-                                                onChange={handleInputChange}
-                                            />
+                                    <div className="row">
+                                        <div className="col-12">
+                                            <button
+                                                type="submit"
+                                                className="btn btn-primary"
+                                                disabled={loading}
+                                            >
+                                                {loading ? 'Creating...' : 'Create News Post'}
+                                            </button>
                                         </div>
                                     </div>
-
-                                    <div className="col-12">
-                                        <div className="mb-3">
-                                            <label className="form-label">Meta Description</label>
-                                            <textarea
-                                                className="form-control"
-                                                name="metaDescription"
-                                                rows="3"
-                                                value={formData.metaDescription}
-                                                onChange={handleInputChange}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="col-12">
-                                        <div className="mb-3">
-                                            <label className="form-label">Meta Keywords</label>
-                                            <textarea
-                                                className="form-control"
-                                                name="metaKeywords"
-                                                rows="2"
-                                                value={formData.metaKeywords}
-                                                onChange={handleInputChange}
-                                                placeholder="keyword1, keyword2, keyword3"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="row">
-                                    <div className="col-12">
-                                        <button
-                                            type="submit"
-                                            className="btn btn-primary"
-                                            disabled={loading}
-                                        >
-                                            {loading ? 'Creating...' : 'Create News Post'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Image Selection Modals */}
+                <ImageSelectionModal
+                    show={showImageModal.editor}
+                    onClose={closeImageModal}
+                    onSelect={handleEditorImageSelect}
+                    title="Select Image for Editor"
+                />
+
+                <ImageSelectionModal
+                    show={showImageModal.leadImage}
+                    onClose={closeImageModal}
+                    onSelect={handleImageSelect}
+                    title="Select Lead Image"
+                />
+
+                <ImageSelectionModal
+                    show={showImageModal.thumbImage}
+                    onClose={closeImageModal}
+                    onSelect={handleImageSelect}
+                    title="Select Thumbnail Image"
+                />
+
+                <ImageSelectionModal
+                    show={showImageModal.metaImage}
+                    onClose={closeImageModal}
+                    onSelect={handleImageSelect}
+                    title="Select Meta Image"
+                />
             </div>
-
-            {/* Image Selection Modals */}
-            <ImageSelectionModal
-                show={showImageModal.editor}
-                onClose={closeImageModal}
-                onSelect={handleEditorImageSelect}
-                title="Select Image for Editor"
-            />
-
-            <ImageSelectionModal
-                show={showImageModal.leadImage}
-                onClose={closeImageModal}
-                onSelect={handleImageSelect}
-                title="Select Lead Image"
-            />
-
-            <ImageSelectionModal
-                show={showImageModal.thumbImage}
-                onClose={closeImageModal}
-                onSelect={handleImageSelect}
-                title="Select Thumbnail Image"
-            />
-
-            <ImageSelectionModal
-                show={showImageModal.metaImage}
-                onClose={closeImageModal}
-                onSelect={handleImageSelect}
-                title="Select Meta Image"
-            />
-        </div>
+        </>
     );
 };
 

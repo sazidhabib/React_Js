@@ -39,12 +39,7 @@ const NewsCreate = () => {
     const [selectedImageType, setSelectedImageType] = useState('');
     const [currentEditor, setCurrentEditor] = useState(null);
 
-    // Separate state for editor content to avoid circular updates
-    const [editorContent, setEditorContent] = useState({
-        highlight: '',
-        shortDescription: '',
-        content: ''
-    });
+
 
     const [formData, setFormData] = useState({
         newsHeadline: '',
@@ -102,10 +97,10 @@ const NewsCreate = () => {
                 placeholder: 'Enter highlight text...',
             }),
         ],
-        content: editorContent.highlight,
-        onUpdate: ({ editor }) => {
+        content: formData.highlight,
+        onBlur: ({ editor }) => {
             const html = editor.getHTML();
-            setEditorContent(prev => ({ ...prev, highlight: html }));
+            setFormData(prev => ({ ...prev, highlight: html }));
         },
 
     });
@@ -135,10 +130,10 @@ const NewsCreate = () => {
                 placeholder: 'Enter short description...',
             }),
         ],
-        content: editorContent.shortDescription,
-        onUpdate: ({ editor }) => {
+        content: formData.shortDescription,
+        onBlur: ({ editor }) => {
             const html = editor.getHTML();
-            setEditorContent(prev => ({ ...prev, shortDescription: html }));
+            setFormData(prev => ({ ...prev, shortDescription: html }));
         },
 
     });
@@ -166,10 +161,10 @@ const NewsCreate = () => {
                 placeholder: 'Start writing your news content...',
             }),
         ],
-        content: editorContent.content,
-        onUpdate: ({ editor }) => {
+        content: formData.content,
+        onBlur: ({ editor }) => {
             const html = editor.getHTML();
-            setEditorContent(prev => ({ ...prev, content: html }));
+            setFormData(prev => ({ ...prev, content: html }));
         },
     });
 
@@ -732,19 +727,11 @@ const NewsCreate = () => {
         try {
             const submitData = new FormData();
 
-            // Update formData with latest editor content before submission
-            const finalFormData = {
-                ...formData,
-                highlight: editorContent.highlight,
-                shortDescription: editorContent.shortDescription,
-                content: editorContent.content
-            };
-
 
             // Append form data
-            Object.keys(finalFormData).forEach(key => {
+            Object.keys(formData).forEach(key => {
                 if (key === 'tagIds' || key === 'categoryIds') {
-                    finalFormData[key].forEach(value => {
+                    formData[key].forEach(value => {
                         submitData.append(key, value);
                     });
                 } else if (key !== 'authorName' && key !== 'tagNames') {
@@ -790,11 +777,8 @@ const NewsCreate = () => {
                 tagNames: [],
                 categoryIds: []
             });
-            setEditorContent({
-                highlight: '',
-                shortDescription: '',
-                content: ''
-            });
+
+
             setFiles({
                 leadImage: null,
                 thumbImage: null,

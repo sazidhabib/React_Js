@@ -33,7 +33,7 @@ const Story = ({ title, description, image, onClick }) => {
           )}
         </div>
 
-        <div className="col-6 d-block d-md-none">
+        <div className="col-8 d-block d-md-none">
 
           <p className="news-description">
 

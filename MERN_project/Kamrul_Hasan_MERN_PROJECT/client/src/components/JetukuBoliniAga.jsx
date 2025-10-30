@@ -75,7 +75,7 @@ const JetukuBoliniAga = () => {
               <div className="main-text">
                 <p
                   onClick={() => handleOpenModal(jetukuData)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", whiteSpace: "pre-wrap" }}
                   title="সম্পূর্ণ লেখাটি পড়তে ক্লিক করুন"
                 >
                   {jetukuData?.description

@@ -63,7 +63,7 @@ const About = () => {
             <div className="col-lg-6 text-center text-lg-start">
               <h2 className="title">{aboutMenu?.name || "আমার আমি"}</h2>
               <h3 className="subtitle">{aboutData?.title || "সাংবাদিকতা আমার সবকিছু"}</h3>
-              <p className="description">
+              <p className="description" style={{ whiteSpace: "pre-wrap" }}>
                 {aboutData?.description || `
                   বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও। 
                   বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও।

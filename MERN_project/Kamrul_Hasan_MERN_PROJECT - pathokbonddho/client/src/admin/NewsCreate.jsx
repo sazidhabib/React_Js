@@ -104,6 +104,17 @@ const NewsCreate = () => {
         ],
         content: formData.highlight,
         onUpdate: ({ editor }) => {
+            // Debounce the update to prevent performance issues
+            if (highlightTimeoutRef.current) {
+                clearTimeout(highlightTimeoutRef.current);
+            }
+            highlightTimeoutRef.current = setTimeout(() => {
+                const html = editor.getHTML();
+                setFormData(prev => ({ ...prev, highlight: html }));
+            }, 300); // 300ms delay for smooth typing
+        },
+        onBlur: ({ editor }) => {
+            // Immediate save on blur as fallback
             const html = editor.getHTML();
             setFormData(prev => ({ ...prev, highlight: html }));
         },
@@ -142,6 +153,16 @@ const NewsCreate = () => {
         ],
         content: formData.shortDescription,
         onUpdate: ({ editor }) => {
+            // Debounce the update
+            if (shortDescriptionTimeoutRef.current) {
+                clearTimeout(shortDescriptionTimeoutRef.current);
+            }
+            shortDescriptionTimeoutRef.current = setTimeout(() => {
+                const html = editor.getHTML();
+                setFormData(prev => ({ ...prev, shortDescription: html }));
+            }, 300);
+        },
+        onBlur: ({ editor }) => {
             const html = editor.getHTML();
             setFormData(prev => ({ ...prev, shortDescription: html }));
         },
@@ -151,7 +172,6 @@ const NewsCreate = () => {
                 style: 'outline: none; min-height: 120px;',
             },
         },
-
     });
 
     const contentEditor = useEditor({
@@ -168,6 +188,9 @@ const NewsCreate = () => {
             Image.configure({
                 HTMLAttributes: {
                     class: 'img-fluid rounded',
+                    style: 'max-width: 100%; height: auto;',
+                    onload: "this.style.opacity = '1'",
+                    loading: 'lazy',
                 },
             }),
             TextAlign.configure({
@@ -178,11 +201,36 @@ const NewsCreate = () => {
             }),
         ],
         content: formData.content,
+        onUpdate: ({ editor }) => {
+            // Debounce the update
+            if (contentTimeoutRef.current) {
+                clearTimeout(contentTimeoutRef.current);
+            }
+            contentTimeoutRef.current = setTimeout(() => {
+                const html = editor.getHTML();
+                setFormData(prev => ({ ...prev, content: html }));
+            }, 300);
+        },
         onBlur: ({ editor }) => {
             const html = editor.getHTML();
             setFormData(prev => ({ ...prev, content: html }));
         },
+        editorProps: {
+            attributes: {
+                class: 'proseMirror-editor',
+                style: 'outline: none; min-height: 300px;',
+            },
+        },
     });
+
+    // Cleanup timeouts on unmount
+    useEffect(() => {
+        return () => {
+            if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+            if (shortDescriptionTimeoutRef.current) clearTimeout(shortDescriptionTimeoutRef.current);
+            if (contentTimeoutRef.current) clearTimeout(contentTimeoutRef.current);
+        };
+    }, []);
 
     // Toolbar Components with Bootstrap classes
     const EditorToolbar = ({ editor, onImageClick }) => {
@@ -206,25 +254,21 @@ const NewsCreate = () => {
             editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
         };
 
-        // Prevent button from stealing focus
+        // IMPROVED button click handler
         const handleButtonClick = (callback) => (e) => {
             e.preventDefault();
-            e.stopPropagation();
             callback();
-            // Restore focus to editor after a short delay
-            setTimeout(() => {
-                editor.commands.focus();
-            }, 10);
+            // Simple focus restoration
+            setTimeout(() => editor.commands.focus(), 50);
         };
-
         return (
-            <div className="d-flex flex-wrap gap-2 p-2 bg-light border-bottom">
+            <div className="d-flex flex-wrap gap-2 p-2 bg-light border-bottom" >
                 {/* Text Formatting */}
                 <div className="btn-group">
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('bold') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleBold().run())}
+                        onClick={() => editor.chain().focus().toggleBold().run()}
                         title="Bold"
                     >
                         <strong>B</strong>
@@ -232,16 +276,18 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('italic') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleItalic().run())}
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
                         title="Italic"
+
                     >
                         <em>I</em>
                     </button>
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('underline') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleUnderline().run())}
+                        onClick={() => editor.chain().focus().toggleUnderline().run()}
                         title="Underline"
+
                     >
                         <u>U</u>
                     </button>
@@ -259,10 +305,10 @@ const NewsCreate = () => {
                         } else {
                             editor.chain().focus().toggleHeading({ level: parseInt(level) }).run();
                         }
-                        // Restore focus to editor
-                        setTimeout(() => editor.commands.focus(), 10);
+
                     }}
                     title="Heading"
+                    onMouseDown={(e) => e.stopPropagation()}
                 >
                     <option value="">Paragraph</option>
                     <option value="2">Heading 2</option>
@@ -275,7 +321,7 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('bulletList') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleBulletList().run())}
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
                         title="Bullet List"
                     >
                         <i className="fa-solid fa-list-ul"></i>
@@ -283,7 +329,7 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('orderedList') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleOrderedList().run())}
+                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
                         title="Numbered List"
                     >
                         <i className="fa-solid fa-list-ol"></i>
@@ -294,7 +340,7 @@ const NewsCreate = () => {
                 <button
                     type="button"
                     className={`btn btn-sm btn-outline-secondary ${editor.isActive('blockquote') ? 'active' : ''}`}
-                    onClick={handleButtonClick(() => editor.chain().focus().toggleBlockquote().run())}
+                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
                     title="Blockquote"
                 >
                     <i className="fa-solid fa-quote-left"></i>
@@ -307,6 +353,7 @@ const NewsCreate = () => {
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('link') ? 'active' : ''}`}
                         onClick={handleButtonClick(setLink)}
                         title="Link"
+
                     >
                         <i className="fa-solid fa-link"></i>
                     </button>
@@ -315,6 +362,7 @@ const NewsCreate = () => {
                         className="btn btn-sm btn-outline-secondary"
                         onClick={handleButtonClick(onImageClick)}
                         title="Insert Image"
+
                     >
                         <i className="fa-regular fa-images"></i>
                     </button>
@@ -325,24 +373,27 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive({ textAlign: 'left' }) ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().setTextAlign('left').run())}
+                        onClick={() => editor.chain().focus().setTextAlign('left').run()}
                         title="Align Left"
+
                     >
                         <i className="fa-solid fa-align-left"></i>
                     </button>
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive({ textAlign: 'center' }) ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().setTextAlign('center').run())}
+                        onClick={() => editor.chain().focus().setTextAlign('center').run()}
                         title="Align Center"
+
                     >
                         <i className="fa-solid fa-align-center"></i>
                     </button>
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive({ textAlign: 'right' }) ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().setTextAlign('right').run())}
+                        onClick={() => editor.chain().focus().setTextAlign('right').run()}
                         title="Align Right"
+
                     >
                         <i className="fa-solid fa-align-right"></i>
                     </button>
@@ -353,7 +404,7 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-secondary"
-                        onClick={handleButtonClick(() => editor.chain().focus().undo().run())}
+                        onClick={() => editor.chain().focus().undo().run()}
                         disabled={!editor.can().undo()}
                         title="Undo"
                     >
@@ -362,7 +413,7 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-secondary"
-                        onClick={handleButtonClick(() => editor.chain().focus().redo().run())}
+                        onClick={() => editor.chain().focus().redo().run()}
                         disabled={!editor.can().redo()}
                         title="Redo"
                     >
@@ -381,19 +432,19 @@ const NewsCreate = () => {
 
         const handleButtonClick = (callback) => (e) => {
             e.preventDefault();
-            e.stopPropagation();
             callback();
-            setTimeout(() => {
-                editor.commands.focus();
-            }, 10);
+            // Simple focus restoration
+            setTimeout(() => editor.commands.focus(), 50);
         };
 
         return (
-            <div className="d-flex gap-2 p-2 bg-light border-bottom">
+            <div className="d-flex gap-2 p-2 bg-light border-bottom"
+                onMouseDown={(e) => e.preventDefault()}
+            >
                 <button
                     type="button"
                     className={`btn btn-sm btn-outline-secondary ${editor.isActive('bold') ? 'active' : ''}`}
-                    onClick={handleButtonClick(() => editor.chain().focus().toggleBold().run())}
+                    onClick={() => editor.chain().focus().toggleBold().run()}
                     title="Bold"
                 >
                     <strong>B</strong>
@@ -401,7 +452,7 @@ const NewsCreate = () => {
                 <button
                     type="button"
                     className={`btn btn-sm btn-outline-secondary ${editor.isActive('italic') ? 'active' : ''}`}
-                    onClick={handleButtonClick(() => editor.chain().focus().toggleItalic().run())}
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
                     title="Italic"
                 >
                     <em>I</em>
@@ -409,8 +460,9 @@ const NewsCreate = () => {
                 <button
                     type="button"
                     className={`btn btn-sm btn-outline-secondary ${editor.isActive('underline') ? 'active' : ''}`}
-                    onClick={handleButtonClick(() => editor.chain().focus().toggleUnderline().run())}
+                    onClick={() => editor.chain().focus().toggleUnderline().run()}
                     title="Underline"
+
                 >
                     <u>U</u>
                 </button>
@@ -419,6 +471,7 @@ const NewsCreate = () => {
                     className="btn btn-sm btn-outline-secondary"
                     onClick={handleButtonClick(onImageClick)}
                     title="Insert Image"
+
                 >
                     <i className="fa-regular fa-images"></i>
                 </button>
@@ -427,7 +480,7 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('bulletList') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleBulletList().run())}
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
                         title="Bullet List"
                     >
                         <i className="fa-solid fa-list-ul"></i>
@@ -435,8 +488,9 @@ const NewsCreate = () => {
                     <button
                         type="button"
                         className={`btn btn-sm btn-outline-secondary ${editor.isActive('orderedList') ? 'active' : ''}`}
-                        onClick={handleButtonClick(() => editor.chain().focus().toggleOrderedList().run())}
+                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
                         title="Numbered List"
+
                     >
                         <i className="fa-solid fa-list-ol"></i>
                     </button>
@@ -448,29 +502,33 @@ const NewsCreate = () => {
     // Editor Components with Bootstrap
     const CustomEditor = ({ editor, onImageClick, height = 400 }) => {
         return (
-            <div className="border rounded" style={{ height: `${height}px` }}>
+            <div className="border rounded" style={{ height: `${height}px`, display: 'flex', flexDirection: 'column' }}>
                 <EditorToolbar editor={editor} onImageClick={onImageClick} />
-                <EditorContent
-                    editor={editor}
-                    className="p-3 h-100 overflow-auto"
-                    style={{
-                        minHeight: '200px',
-                        whiteSpace: 'pre-wrap'
-                    }}
-                />
+                <div style={{ flex: 1, overflow: 'auto' }}>
+                    <EditorContent
+                        editor={editor}
+                        className="p-3"
+                        style={{
+                            minHeight: '200px',
+                            height: '100%'
+                        }}
+                    />
+                </div>
             </div>
         );
     };
 
     const SimpleEditor = ({ editor, onImageClick, height = 200 }) => {
         return (
-            <div className="border rounded" style={{ height: `${height}px` }}>
+            <div className="border rounded" style={{ height: `${height}px`, display: 'flex', flexDirection: 'column' }}>
                 <SimpleToolbar editor={editor} onImageClick={onImageClick} />
-                <EditorContent
-                    editor={editor}
-                    className="p-3 h-100 overflow-auto"
-                    style={{ minHeight: '100px', whiteSpace: 'pre-wrap' }}
-                />
+                <div style={{ flex: 1, overflow: 'auto' }}>
+                    <EditorContent
+                        editor={editor}
+                        className="p-3"
+                        style={{ minHeight: '100px', height: '100%' }}
+                    />
+                </div>
             </div>
         );
     };
@@ -523,9 +581,9 @@ const NewsCreate = () => {
             .ProseMirror {
                 white-space: pre-wrap;
                 outline: none;
-                min-height: 150px;
-                max-height: calc(100% - 60px); /* Account for toolbar height */
-                overflow-y: auto;
+                min-height: 120px;
+                overflow-wrap: break-word;
+                word-wrap: break-word;
                 padding: 1rem;
             }
             .ProseMirror p {
@@ -571,8 +629,8 @@ const NewsCreate = () => {
                 margin: 1em 0;
             }
             .ProseMirror:focus {
+                
                 outline: none;
-                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
             }
             /* Better scrollbar styling */
             .ProseMirror::-webkit-scrollbar {

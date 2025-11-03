@@ -17,7 +17,7 @@ const truncateByChars = (text, limit) => {
 };
 
 
-const ReportCard = ({ title, date, description, image, onClick }) => {
+const ReportCard = ({ title, date, description, image, onClick, author }) => {
 
   const formatDateBangla = (dateString) => {
     const dateObj = new Date(dateString);
@@ -28,13 +28,11 @@ const ReportCard = ({ title, date, description, image, onClick }) => {
     });
   };
 
-  // Dynamically determine description length based on title length
-
-  let descriptionLength = 150; // Default length
+  let descriptionLength = 150;
   if (title.length >= 70) {
-    descriptionLength = 90; // Long title
+    descriptionLength = 90;
   } else if (title.length <= 30) {
-    descriptionLength = 200; // Short title
+    descriptionLength = 200;
   }
 
   return (
@@ -47,7 +45,12 @@ const ReportCard = ({ title, date, description, image, onClick }) => {
           <h2 className="post-title">{title}</h2>
           <p className="post-description">
             প্রকাশ হয়েছে : {formatDateBangla(date)} <br />
-            {truncateByChars(description, descriptionLength)}</p>
+            {truncateByChars(description, descriptionLength)}
+          </p>
+          {/* Display author information */}
+          <div style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
+            লেখক ID: {author}
+          </div>
         </div>
       </div>
     </div>
@@ -109,12 +112,13 @@ const Report = () => {
 
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/blogs`;
   const fullImageUrl = `${import.meta.env.VITE_API_BASE_URL}/uploads/`;
-
   useEffect(() => {
     const fetchPublishedReports = async () => {
       try {
         const response = await axios.get(API_URL);
+        console.log("Raw API Response:", response.data); // Add this line
         const publishedReports = response.data.filter(report => report.status === true);
+        console.log("Filtered Reports:", publishedReports); // Add this line
         const sortedReports = publishedReports.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );

@@ -2,24 +2,26 @@ const Blog = require("../models/blog-model");
 const fs = require("fs");
 const path = require("path");
 const { Sequelize } = require('sequelize');
-const sequelize = require('../db/database'); // Import the sequelize instance
+const sequelize = require('../db/database');
 const { Op } = require("sequelize");
+
 
 // ✅ Create Blog
 const createBlog = async (req, res) => {
     try {
         const { title, description, status, publishDate } = req.body;
-
-        // Get the authenticated user's ID from authMiddleware
-        const author = req.user.id; // This should come from your auth middleware
+        const author = req.user.id;
+        const _id = generateId();
 
         const blog = await Blog.create({
+            _id,
             title,
             description,
             status: status || true,
             publishDate: publishDate || new Date(),
-            author: author, // Use the authenticated user's ID
-            image: req.file ? req.file.filename : null // Handle uploaded image
+            author: author,
+            UpdatedAt: new Date(), // Set UpdateAt on creation
+            image: req.file ? req.file.filename : null
         });
 
         res.status(201).json({
@@ -56,6 +58,18 @@ const createBlog = async (req, res) => {
 const getAllBlogs = async (req, res) => {
     try {
         const blogs = await Blog.findAll({
+            attributes: [
+                '_id',
+                'image',
+                'title',
+                'description',
+                'status',
+                'publishDate',
+                'author',
+                'createdAt',
+                'updatedAt',
+                // Add the new column
+            ],
             order: [
                 ['publishDate', 'DESC'],
                 ['createdAt', 'DESC']
@@ -69,36 +83,34 @@ const getAllBlogs = async (req, res) => {
 };
 
 // ✅ Update Blog
-// ✅ Update Blog (Partial Update)
 const updateBlog = async (req, res) => {
     try {
         const { title, description, status, publishDate } = req.body;
         const parsedStatus = status === "true" || status === true;
-
-        // Extract fields from req.body only if they exist
-
 
         const existingBlog = await Blog.findByPk(req.params.id);
         if (!existingBlog) {
             return res.status(404).json({ message: "Blog Not Found" });
         }
 
-        // ❗ Check duplicate title (exclude current) with collation-safe comparison
-        const duplicate = await Blog.findOne({
-            where: {
-                [Op.and]: [
-                    Sequelize.where(
-                        Sequelize.literal('BINARY title'),
-                        '=',
-                        title
-                    ),
-                    { id: { [Op.ne]: req.params.id } }
-                ]
-            }
-        });
+        // Check duplicate title (exclude current blog)
+        if (title) {
+            const duplicate = await Blog.findOne({
+                where: {
+                    [Op.and]: [
+                        Sequelize.where(
+                            Sequelize.literal('BINARY title'),
+                            '=',
+                            title
+                        ),
+                        { _id: { [Op.ne]: req.params.id } }
+                    ]
+                }
+            });
 
-        if (duplicate) {
-            return res.status(400).json({ message: "A blog with this title already exists." });
+            if (duplicate) {
+                return res.status(400).json({ message: "A blog with this title already exists." });
+            }
         }
 
         // Delete old image if new one is uploaded
@@ -106,12 +118,14 @@ const updateBlog = async (req, res) => {
             const oldImagePath = path.join(__dirname, "..", "uploads", existingBlog.image);
             if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
         }
+
         const updatedBlog = await existingBlog.update({
-            title,
-            description,
-            status: parsedStatus,
+            title: title || existingBlog.title,
+            description: description || existingBlog.description,
+            status: parsedStatus !== undefined ? parsedStatus : existingBlog.status,
             image: req.file ? req.file.filename : existingBlog.image,
-            publishDate,
+            publishDate: publishDate || existingBlog.publishDate,
+            UpdatedAt: new Date() // Update this field on every modification
         });
 
         res.status(200).json({ message: "Blog Updated", blog: updatedBlog });
@@ -121,7 +135,6 @@ const updateBlog = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-
 
 // ✅ Delete Blog
 const deleteBlog = async (req, res) => {
@@ -140,5 +153,12 @@ const deleteBlog = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
+// Helper function to generate _id (similar to MongoDB ObjectId)
+function generateId() {
+    const timestamp = Math.floor(new Date().getTime() / 1000).toString(16);
+    const random = Math.random().toString(16).substring(2, 10);
+    return timestamp + random.padStart(16, '0');
+}
 
 module.exports = { createBlog, getAllBlogs, updateBlog, deleteBlog };

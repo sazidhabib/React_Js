@@ -104,7 +104,7 @@ const BlogPostDashboard = () => {
             await axios.delete(`${API_URL}/${selectedBlogId}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
-            setBlogs(blogs.filter(blog => blog.id !== selectedBlogId));
+            setBlogs(blogs.filter(blog => blog._id !== selectedBlogId));
             toast.success("Blog deleted successfully!");
         } catch (error) {
             toast.error(`Failed to delete: ${error.message}`);
@@ -174,7 +174,7 @@ const BlogPostDashboard = () => {
 
                 setBlogs(prevBlogs =>
                     prevBlogs
-                        .map(blog => blog.id === editingId ? updatedBlog : blog)
+                        .map(blog => blog._id === editingId ? updatedBlog : blog)
                         .sort((a, b) => new Date(b.publishDate || b.createdAt) - new Date(a.publishDate || a.createdAt))
                 );
 

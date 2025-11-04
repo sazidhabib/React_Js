@@ -42,8 +42,8 @@ const DetailModal = ({ show, handleClose, item, showDate }) => {
                     {item.description}
                 </pre>
             </Modal.Body>
-            <Modal.Footer className="justify-content-center">
-                <Button variant="secondary" onClick={handleClose}>
+            <Modal.Footer className="justify-content-center ">
+                <Button variant="secondary" className="music" onClick={handleClose}>
                     বন্ধ করুন
                 </Button>
             </Modal.Footer>

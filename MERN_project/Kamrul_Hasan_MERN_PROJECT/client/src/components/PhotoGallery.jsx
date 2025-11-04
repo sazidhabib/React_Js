@@ -167,10 +167,10 @@ const PhotoGallery = () => {
                                             action
                                             active={selectedAlbumId === album._id}
                                             onClick={() => setSelectedAlbumId(album._id)}
-                                            className="d-flex justify-content-between align-items-center "
+                                            className="d-flex justify-content-between align-items-center music "
                                         >
                                             {album.name}
-                                            <span className="badge bg-green rounded-pill">
+                                            <span className="badge bg-green rounded-pill music">
                                                 {albumPhotoCounts[album._id] || 0}
                                             </span>
                                         </ListGroup.Item>

@@ -10,6 +10,7 @@ const photoRoutes = require('./router/photoRoutes');
 const menuRoutes = require('./router/menu-routes');
 const heroSectionRoutes = require('./router/heroSectionRoutes');
 const sectionRoutes = require('./router/sectionRoutes');
+const userRoute = require("./router/user-router");
 
 connectDB();
 const app = express();
@@ -43,6 +44,7 @@ app.use('/api', photoRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/hero-section', heroSectionRoutes);
 app.use('/api/sections', sectionRoutes);
+app.use("/api/admin/users", userRoute);
 
 // Test Routes
 app.get("/", (req, res) => {

@@ -55,7 +55,7 @@ const PhotoModal = ({
                 </div>
 
                 {/* Footer Controls */}
-                <div className="w-100 d-flex justify-content-between align-items-center">
+                <div className="w-100 d-flex justify-content-between align-items-center music">
                     <div>{selectedIndex + 1} of {photos.length}</div>
                     <Button variant="secondary" onClick={onHide}>
                         বন্ধ করুন

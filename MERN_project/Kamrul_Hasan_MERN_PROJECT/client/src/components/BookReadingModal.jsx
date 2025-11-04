@@ -28,7 +28,7 @@ const BookReadingModal = ({ show, handleClose, item }) => {
                 )}
                 <pre className="modal-description custom-font text-start" style={{ whiteSpace: "pre-wrap" }}>{item.description}</pre>
             </Modal.Body>
-            <Modal.Footer className="justify-content-center">
+            <Modal.Footer className="justify-content-center music">
                 <Button variant="secondary" onClick={handleClose}>
                     বন্ধ করুন
                 </Button>

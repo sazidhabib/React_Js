@@ -60,7 +60,7 @@ const About = () => {
                 className="img-fluid profile-image"
               />
             </div>
-            <div className="col-lg-6 text-center text-lg-start">
+            <div className="col-lg-6 text-center text-lg-start p-4">
               <h2 className="title">{aboutMenu?.name || "আমার আমি"}</h2>
               <h3 className="subtitle">{aboutData?.title || "সাংবাদিকতা আমার সবকিছু"}</h3>
               <p className="description" style={{ whiteSpace: "pre-wrap" }}>

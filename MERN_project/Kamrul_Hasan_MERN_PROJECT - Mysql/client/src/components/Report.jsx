@@ -47,10 +47,7 @@ const ReportCard = ({ title, date, description, image, onClick, author }) => {
             প্রকাশ হয়েছে : {formatDateBangla(date)} <br />
             {truncateByChars(description, descriptionLength)}
           </p>
-          {/* Display author information */}
-          <div style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
-            লেখক ID: {author}
-          </div>
+
         </div>
       </div>
     </div>
@@ -112,13 +109,25 @@ const Report = () => {
 
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/blogs`;
   const fullImageUrl = `${import.meta.env.VITE_API_BASE_URL}/uploads/`;
+
   useEffect(() => {
     const fetchPublishedReports = async () => {
       try {
         const response = await axios.get(API_URL);
-        console.log("Raw API Response:", response.data); // Add this line
-        const publishedReports = response.data.filter(report => report.status === true);
-        console.log("Filtered Reports:", publishedReports); // Add this line
+        console.log("Raw API Response:", response.data);
+
+        if (response.data.length > 0) {
+          console.log("First item structure:", response.data[0]);
+          console.log("Available fields in first item:", Object.keys(response.data[0]));
+        }
+
+        // Fix the filter logic - handle both string "1" and boolean true
+        const publishedReports = response.data.filter(report =>
+          report.status === true || report.status === "1" || report.status === 1
+        );
+
+        console.log("Filtered Reports:", publishedReports);
+
         const sortedReports = publishedReports.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );

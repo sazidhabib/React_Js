@@ -107,7 +107,7 @@ const Header = () => {
 
 
   return (
-    <header className="header_contentent">
+    <header className="header_contentent min-vh-100">
       {/* Mobile Top Bar */}
       {isMediumOrSmaller && (
         <div

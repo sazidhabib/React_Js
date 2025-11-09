@@ -198,6 +198,7 @@ const UserDashboard = () => {
     };
 
     // NEW: Reset password submit
+
     const handleResetPasswordSubmit = async (e) => {
         e.preventDefault();
 
@@ -213,8 +214,8 @@ const UserDashboard = () => {
         }
 
         try {
-            const token = getToken();
-            await axios.patch(`${API_URL}/${selectedUser._id}/reset-password`,
+            const response = await axios.patch(
+                `${API_URL}/${selectedUser._id}/reset-password`,
                 { newPassword },
                 {
                     headers: {
@@ -223,6 +224,7 @@ const UserDashboard = () => {
                 }
             );
 
+            // ✅ Now response is properly defined
             if (response.data.success) {
                 setShowResetPasswordModal(false);
                 setNewPassword('');

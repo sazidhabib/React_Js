@@ -20,6 +20,7 @@ const getAllUsers = async (req, res) => {
 };
 
 // Reset user password (Admin only)
+// Reset user password (Admin only) - FIXED VERSION
 const resetUserPassword = async (req, res) => {
     try {
         const { id } = req.params;
@@ -32,23 +33,21 @@ const resetUserPassword = async (req, res) => {
             });
         }
 
-        // Manual password hashing
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
+        // Find user and update password directly
+        const user = await User.findById(id);
 
-        // Update user with hashed password
-        const updatedUser = await User.findByIdAndUpdate(
-            id,
-            { password: hashedPassword },
-            { new: true }
-        );
-
-        if (!updatedUser) {
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found"
             });
         }
+
+        // IMPORTANT: Use direct assignment and save to trigger the pre-save middleware
+        user.password = newPassword;
+
+        // Save the user - this will trigger the pre-save middleware to hash the password
+        await user.save();
 
         res.status(200).json({
             success: true,
@@ -63,7 +62,6 @@ const resetUserPassword = async (req, res) => {
         });
     }
 };
-
 // Get user by ID (Admin only)
 const getUserById = async (req, res) => {
     try {

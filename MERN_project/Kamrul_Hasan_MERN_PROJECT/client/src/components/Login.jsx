@@ -102,12 +102,11 @@ function Login() {
       </form>
       <p className="text-center mt-3">
         Don't have an account?{" "}
-        <button
+        <samp
           className="btn btn-link p-0"
-          onClick={() => navigate("/register")}
         >
-          Register
-        </button>
+          Contact Admin
+        </samp>
       </p>
     </div>
   );

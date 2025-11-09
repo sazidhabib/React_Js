@@ -48,8 +48,8 @@ const About = () => {
 
   return (
     <>
-      <section className="about-us" id={aboutMenu?.path || "about-us"}>
-        <div className="container-fluid d-flex align-items-center justify-content-center min-vh-100">
+      <section className="about-us min-vh-100" id={aboutMenu?.path || "about-us"}>
+        <div className="container-fluid d-flex align-items-center justify-content-center ">
           <div className="row align-items-center w-100">
             <div className="col-lg-6 text-center text-lg-end">
               <img

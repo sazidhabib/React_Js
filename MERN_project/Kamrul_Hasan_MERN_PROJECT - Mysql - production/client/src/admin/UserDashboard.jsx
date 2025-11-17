@@ -42,10 +42,7 @@ const UserDashboard = () => {
         isAdmin: false
     });
 
-    // Get token from localStorage
-    const getToken = () => {
-        return localStorage.getItem('token');
-    };
+
 
     // Fetch all users
     const fetchUsers = async () => {
@@ -60,6 +57,7 @@ const UserDashboard = () => {
 
             // Debug: Log the response to see the actual structure
             console.log('Users API Response:', response);
+            console.log('First user data:', response.data?.[0]);
 
             // Handle different possible response structures
             if (response.data && Array.isArray(response.data)) {
@@ -176,14 +174,22 @@ const UserDashboard = () => {
         }
     };
 
-    // Edit user
+
+    // Edit user - FIXED VERSION
     const handleEditUser = (user) => {
+        console.log('Editing user:', user); // Debug log
+        if (!user || !user.id) {
+            console.error('Invalid user data:', user);
+            setError('Invalid user data');
+            return;
+        }
+
         setSelectedUser(user);
         setEditForm({
-            username: user.username,
-            email: user.email,
-            phone: user.phone,
-            isAdmin: user.isAdmin
+            username: user.username || '',
+            email: user.email || '',
+            phone: user.phone || '',
+            isAdmin: user.isAdmin || false
         });
         setShowEditModal(true);
     };
@@ -215,7 +221,7 @@ const UserDashboard = () => {
 
         try {
             const response = await axios.patch(
-                `${API_URL}/${selectedUser._id}/reset-password`,
+                `${API_URL}/${selectedUser.id}/reset-password`,
                 { newPassword },
                 {
                     headers: {
@@ -239,22 +245,50 @@ const UserDashboard = () => {
         }
     };
 
+    // Add this function to handle modal close properly
+    const handleCloseEditModal = () => {
+        setShowEditModal(false);
+        setSelectedUser(null);
+        setEditForm({
+            username: '',
+            email: '',
+            phone: '',
+            isAdmin: false
+        });
+    };
 
-    // Update user
+
+    // Update user - FIXED VERSION
     const handleUpdateUser = async (e) => {
         e.preventDefault();
-        try {
 
-            await axios.put(`${API_URL}/${selectedUser._id}`, editForm, {
+        // Validate selectedUser and ID
+        if (!selectedUser || !selectedUser.id) {
+            setError('No user selected or invalid user ID');
+            console.error('Invalid selectedUser:', selectedUser);
+            return;
+        }
+
+        try {
+            console.log('Updating user with ID:', selectedUser.id); // Debug log
+            console.log('Update data:', editForm); // Debug log
+
+            const response = await axios.put(`${API_URL}/${selectedUser.id}`, editForm, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
+
+            console.log('Update response:', response); // Debug log
+
             setShowEditModal(false);
+            setSelectedUser(null);
             fetchUsers(); // Refresh the list
             fetchUserStats(); // Refresh stats
+            setError(''); // Clear any previous errors
         } catch (error) {
-            setError('Failed to update user');
+            const errorMessage = error.response?.data?.message || 'Failed to update user';
+            setError(errorMessage);
             console.error('Error updating user:', error);
         }
     };
@@ -430,50 +464,56 @@ const UserDashboard = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredUsers.map((user, index) => (
-                                        <tr key={user._id || index}>
-                                            <td>{index + 1}</td>
-                                            <td>
-                                                <div className="d-flex align-items-center">
-                                                    <div className="avatar-sm bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center">
-                                                        <span className="text-white fw-bold">
-                                                            {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
-                                                        </span>
+                                    filteredUsers.map((user, index) => {
+                                        if (!user || !user.id) {
+                                            console.warn('Invalid user object:', user);
+                                            return null; // Skip invalid users
+                                        }
+                                        return (
+                                            <tr key={user.id}>
+
+                                                <td>
+                                                    <div className="d-flex align-items-center">
+                                                        <div className="avatar-sm bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center">
+                                                            <span className="text-white fw-bold">
+                                                                {user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                                                            </span>
+                                                        </div>
+                                                        {user.username || 'N/A'}
                                                     </div>
-                                                    {user.username || 'N/A'}
-                                                </div>
-                                            </td>
-                                            <td>{user.email || 'N/A'}</td>
-                                            <td>{user.phone || 'N/A'}</td>
-                                            <td>
-                                                <span className={`badge ${user.isAdmin ? 'bg-danger' : 'bg-success'}`}>
-                                                    {user.isAdmin ? 'Admin' : 'User'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <div className="btn-group btn-group-sm">
-                                                    <button
-                                                        className="btn btn-outline-primary"
-                                                        onClick={() => handleEditUser(user)}
-                                                    >
-                                                        <i className="fas fa-edit"></i> Edit
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-outline-warning"
-                                                        onClick={() => handleResetPassword(user)}
-                                                    >
-                                                        <i className="fas fa-key"></i> Reset Password
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-outline-danger"
-                                                        onClick={() => handleDeleteUser(user._id)}
-                                                    >
-                                                        <i className="fas fa-trash"></i> Delete
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
+                                                </td>
+                                                <td>{user.email || 'N/A'}</td>
+                                                <td>{user.phone || 'N/A'}</td>
+                                                <td>
+                                                    <span className={`badge ${user.isAdmin ? 'bg-danger' : 'bg-success'}`}>
+                                                        {user.isAdmin ? 'Admin' : 'User'}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div className="btn-group btn-group-sm">
+                                                        <button
+                                                            className="btn btn-outline-primary"
+                                                            onClick={() => handleEditUser(user)}
+                                                        >
+                                                            <i className="fas fa-edit"></i> Edit
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-outline-warning"
+                                                            onClick={() => handleResetPassword(user)}
+                                                        >
+                                                            <i className="fas fa-key"></i> Reset Password
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-outline-danger"
+                                                            onClick={() => handleDeleteUser(user.id)}
+                                                        >
+                                                            <i className="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })
                                 )}
                             </tbody>
                         </table>
@@ -491,7 +531,7 @@ const UserDashboard = () => {
                                 <button
                                     type="button"
                                     className="btn-close"
-                                    onClick={() => setShowEditModal(false)}
+                                    onClick={handleCloseEditModal}
                                 ></button>
                             </div>
                             <form onSubmit={handleUpdateUser}>
@@ -698,7 +738,7 @@ const UserDashboard = () => {
                                                     id="createPassword"
                                                     value={createForm.password}
                                                     onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                                                    placeholder="Minimum 6 characters"
+                                                    placeholder="Minimum 8 characters"
                                                     required
                                                 />
                                             </div>

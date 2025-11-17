@@ -59,34 +59,7 @@ const ArticleDashboard = () => {
     };
 
 
-    const getPaginationButtons = () => {
-        const pages = [];
 
-        // Always show the first page
-        pages.push(1);
-
-        // Show dots if current page is not adjacent to first page
-        if (currentPage > 2) {
-            pages.push("...");
-        }
-
-        // Show current page if it's not first or last
-        if (currentPage > 1 && currentPage < totalPages) {
-            pages.push(currentPage);
-        }
-
-        // Show dots if current page is not adjacent to last page
-        if (currentPage < totalPages - 1) {
-            pages.push("...");
-        }
-
-        // Always show the last page if different from first
-        if (totalPages > 1) {
-            pages.push(totalPages);
-        }
-
-        return pages;
-    };
 
 
 
@@ -250,7 +223,34 @@ const ArticleDashboard = () => {
         setEditingId(article.id);
     };
 
+    const getPaginationButtons = () => {
+        const pages = [];
 
+        // Always show the first page
+        pages.push({ type: 'page', value: 1 });
+
+        // Show dots if current page is not adjacent to first page
+        if (currentPage > 2) {
+            pages.push({ type: 'dots', value: 'left-dots' });
+        }
+
+        // Show current page if it's not first or last
+        if (currentPage > 1 && currentPage < totalPages) {
+            pages.push({ type: 'page', value: currentPage });
+        }
+
+        // Show dots if current page is not adjacent to last page
+        if (currentPage < totalPages - 1) {
+            pages.push({ type: 'dots', value: 'right-dots' });
+        }
+
+        // Always show the last page if different from first
+        if (totalPages > 1) {
+            pages.push({ type: 'page', value: totalPages });
+        }
+
+        return pages;
+    };
 
 
     // Toggle Status
@@ -435,17 +435,17 @@ const ArticleDashboard = () => {
                     Previous
                 </Button>
 
-                {getPaginationButtons().map((page, idx) =>
-                    page === "..." ? (
-                        <span key={idx} className="mx-2 align-self-center">...</span>
+                {getPaginationButtons().map((item) =>
+                    item.type === "dots" ? (
+                        <span key={item.value} className="mx-2 align-self-center">...</span>
                     ) : (
                         <Button
-                            key={page}
-                            variant={page === currentPage ? "primary" : "outline-primary"}
-                            onClick={() => handlePageChange(page)}
+                            key={item.value}
+                            variant={item.value === currentPage ? "primary" : "outline-primary"}
+                            onClick={() => handlePageChange(item.value)}
                             className="me-2"
                         >
-                            {page}
+                            {item.value}
                         </Button>
                     )
                 )}

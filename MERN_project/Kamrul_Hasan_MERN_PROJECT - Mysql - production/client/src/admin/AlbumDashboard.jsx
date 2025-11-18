@@ -52,7 +52,7 @@ const AlbumDashboard = () => {
             };
 
             if (editAlbum) {
-                await axios.patch(`${API_URL}/${editAlbum._id}`, albumData, config);
+                await axios.patch(`${API_URL}/${editAlbum.id}`, albumData, config);
                 toast.success("Album updated successfully");
             } else {
                 await axios.post(API_URL, albumData, config);
@@ -106,7 +106,7 @@ const AlbumDashboard = () => {
                     </thead>
                     <tbody>
                         {albums.map((album, index) => (
-                            <tr key={album._id}>
+                            <tr key={album.id}>
                                 <td>{index + 1}</td>
                                 <td>{album.name}</td>
                                 <td>{album.status}</td>
@@ -122,7 +122,7 @@ const AlbumDashboard = () => {
                                     <Button
                                         variant="danger"
                                         size="sm"
-                                        onClick={() => { setAlbumToDelete(album._id); setConfirmModalShow(true); }}
+                                        onClick={() => { setAlbumToDelete(album.id); setConfirmModalShow(true); }}
                                     >
                                         Delete
                                     </Button>

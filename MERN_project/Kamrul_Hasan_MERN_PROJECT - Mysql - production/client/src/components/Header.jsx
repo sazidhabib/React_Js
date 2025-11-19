@@ -225,13 +225,13 @@ const Header = () => {
               ) : heroSection ? (
                 <div className="text-container">
                   <div className="helloi">{heroSection.lines[0]}</div>
-                  <div className="main-text">{heroSection.lines[1]}</div>
+                  <div className="main-texth">{heroSection.lines[1]}</div>
                   <div className="sub-text">{heroSection.lines[2]}</div>
                 </div>
               ) : (
                 <div className="text-container">
                   <div className="helloi">হ্যালো, আমি</div>
-                  <div className="main-text">কামরুল হাসান</div>
+                  <div className="main-texth">কামরুল হাসান</div>
                   <div className="sub-text">গণমাধ্যম কর্মী (সাংবাদিক)</div>
                 </div>
               )}

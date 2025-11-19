@@ -42,7 +42,7 @@ const DetailModal = ({ show, handleClose, item, showDate }) => {
                     {item.description}
                 </pre>
             </Modal.Body>
-            <Modal.Footer className="justify-content-center">
+            <Modal.Footer className="justify-content-center music">
                 <Button variant="secondary" onClick={handleClose}>
                     বন্ধ করুন
                 </Button>

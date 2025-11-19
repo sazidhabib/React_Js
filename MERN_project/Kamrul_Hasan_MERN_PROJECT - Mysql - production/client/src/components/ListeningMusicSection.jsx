@@ -196,7 +196,7 @@ const ListeningMusicSection = () => {
                       style={{ cursor: 'pointer', transition: '0.3s' }}
                       onClick={() => handlePlayPause(actualIndex)} // ✅ use actualIndex here
                     >
-                      <div className="d-flex align-items-center">
+                      <div className="d-flex align-items-center music">
                         {isCurrent && isPlaying ? (
                           <FaPauseCircle
                             className="me-2 animate__animated animate__pulse animate__infinite"

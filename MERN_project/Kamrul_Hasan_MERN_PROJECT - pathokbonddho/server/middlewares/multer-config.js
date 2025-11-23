@@ -3,6 +3,12 @@ const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
 
+
+// Helper function to sanitize filenames
+const sanitizeFilename = (filename) => {
+    return filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+};
+
 // Use memory storage for in-memory file processing
 const storage = multer.memoryStorage();
 
@@ -21,13 +27,15 @@ const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, //2MB limit
 });
 
-// Middleware to convert uploaded image to WebP - UPDATED FOR MULTIPLE FILES
+
+// Middleware to convert uploaded image to WebP - WITH ORIGINAL NAMES
 const convertToWebp = async (req, res, next) => {
     try {
         // Handle single file uploads (for blog, article, section images)
         if (req.file) {
-            const originalName = req.file.originalname.split('.')[0];
-            const filename = `image-${Date.now()}.webp`;
+            const originalName = path.parse(req.file.originalname).name;
+            const sanitizedOriginalName = sanitizeFilename(originalName);
+            const filename = `${sanitizedOriginalName}-${Date.now()}.webp`;
             const outputPath = path.join("uploads", filename);
 
             // Ensure uploads directory exists
@@ -43,6 +51,7 @@ const convertToWebp = async (req, res, next) => {
             // Attach file info for controller use
             req.file.filename = filename;
             req.file.path = outputPath;
+            req.file.originalname = filename; // Keep track of original name
         }
 
         // Handle multiple file uploads (for photos)
@@ -52,9 +61,12 @@ const convertToWebp = async (req, res, next) => {
                 fs.mkdirSync("uploads", { recursive: true });
             }
 
+            const processedFiles = [];
+
             for (const file of req.files) {
-                const originalName = file.originalname.split('.')[0];
-                const filename = `image-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.webp`;
+                const originalName = path.parse(file.originalname).name;
+                const sanitizedOriginalName = sanitizeFilename(originalName);
+                const filename = `${sanitizedOriginalName}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}.webp`;
                 const outputPath = path.join("uploads", filename);
 
                 // Convert buffer to webp using sharp
@@ -65,7 +77,12 @@ const convertToWebp = async (req, res, next) => {
                 // Attach file info for controller use
                 file.filename = filename;
                 file.path = outputPath;
+                file.originalname = filename;
+
+                processedFiles.push(file);
             }
+
+            req.files = processedFiles;
         }
 
         next();

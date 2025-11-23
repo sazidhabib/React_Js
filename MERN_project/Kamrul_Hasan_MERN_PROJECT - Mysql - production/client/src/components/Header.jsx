@@ -25,7 +25,28 @@ const Header = () => {
     const fetchHeroSection = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hero-section`);
-        setHeroSection(response.data);
+
+        // PROPERLY ACCESS THE DATA
+        const heroData = response.data.data || response.data;
+        console.log("Hero Section Response:", response.data);
+
+        // If it's an array, take the first item, otherwise use the object
+        const heroSectionData = Array.isArray(heroData) ? heroData[0] : heroData;
+
+        // FIX: Parse the lines from JSON string to array
+        if (heroSectionData && heroSectionData.lines) {
+          if (typeof heroSectionData.lines === 'string') {
+            try {
+              heroSectionData.lines = JSON.parse(heroSectionData.lines);
+            } catch (parseError) {
+              console.error("Error parsing lines JSON:", parseError);
+              heroSectionData.lines = ["হ্যালো, আমি", "কামরুল হাসান", "গণমাধ্যম কর্মী (সাংবাদিক)"];
+            }
+          }
+        }
+
+        console.log("Processed Hero Data:", heroSectionData);
+        setHeroSection(heroSectionData);
       } catch (error) {
         console.error("Failed to fetch hero section:", error);
       } finally {
@@ -224,9 +245,9 @@ const Header = () => {
                 <div className="text-center"><Spinner animation="border" /></div>
               ) : heroSection ? (
                 <div className="text-container">
-                  <div className="helloi">{heroSection.lines[0]}</div>
-                  <div className="main-texth">{heroSection.lines[1]}</div>
-                  <div className="sub-text">{heroSection.lines[2]}</div>
+                  <div className="helloi">{heroSection.lines?.[0]}</div>
+                  <div className="main-texth">{heroSection.lines?.[1]}</div>
+                  <div className="sub-text">{heroSection.lines?.[2]}</div>
                 </div>
               ) : (
                 <div className="text-container">

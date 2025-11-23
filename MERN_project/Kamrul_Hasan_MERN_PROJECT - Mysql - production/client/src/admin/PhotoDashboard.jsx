@@ -107,7 +107,7 @@ const PhotoDashboard = () => {
                 <div className="text-center"><Spinner animation="border" /></div>
             ) : (
                 <Table striped bordered hover responsive>
-                    <thead>
+                    <thead className="table-dark">
                         <tr>
                             <th>#</th>
                             <th>Album</th>

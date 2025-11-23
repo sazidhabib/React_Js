@@ -440,7 +440,7 @@ const UserDashboard = () => {
                 <div className="card-body">
                     <div className="table-responsive">
                         <table className="table table-bordered table-hover">
-                            <thead className="table-light">
+                            <thead className="table-dark">
                                 <tr>
                                     <th>#</th>
                                     <th>Username</th>

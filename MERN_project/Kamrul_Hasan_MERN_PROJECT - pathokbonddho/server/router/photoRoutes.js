@@ -25,4 +25,6 @@ router.get('/photos/:albumId', photoController.getPhotosByAlbum);
 router.get('/photos', photoController.getAllPhotos);
 
 
+
+
 module.exports = router;

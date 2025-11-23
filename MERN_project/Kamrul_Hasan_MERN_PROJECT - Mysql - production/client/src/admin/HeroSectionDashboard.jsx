@@ -24,9 +24,32 @@ const HeroSectionDashboard = () => {
         setLoading(true);
         try {
             const res = await axios.get(API_URL);
-            // Handle both array and single object responses
-            const data = res.data.data || res.data;
-            setHeroSections(Array.isArray(data) ? data : [data]);
+
+            // PROPERLY ACCESS THE DATA
+            const responseData = res.data.data || res.data;
+
+            // Ensure we always have an array
+            let sections = [];
+            if (Array.isArray(responseData)) {
+                sections = responseData;
+            } else if (responseData && typeof responseData === 'object') {
+                sections = [responseData];
+            }
+
+            // FIX: Parse lines from JSON string to array for each section
+            const processedSections = sections.map(section => {
+                if (section.lines && typeof section.lines === 'string') {
+                    try {
+                        section.lines = JSON.parse(section.lines);
+                    } catch (parseError) {
+                        console.error("Error parsing lines JSON:", parseError);
+                        section.lines = [];
+                    }
+                }
+                return section;
+            });
+
+            setHeroSections(processedSections);
         } catch (err) {
             toast.error("Failed to fetch hero sections");
             console.error("Fetch error:", err);
@@ -109,7 +132,7 @@ const HeroSectionDashboard = () => {
                 <div className="text-center"><Spinner animation="border" /></div>
             ) : (
                 <Table striped bordered hover responsive>
-                    <thead>
+                    <thead className="table-dark">
                         <tr>
                             <th>#</th>
                             <th>Title</th>
@@ -125,7 +148,7 @@ const HeroSectionDashboard = () => {
                                 <td>{section.title}</td>
                                 <td>
                                     <ol>
-                                        {section.lines.map((line, i) => (
+                                        {(Array.isArray(section.lines) ? section.lines : []).map((line, i) => (
                                             <li key={i}>{line}</li>
                                         ))}
                                     </ol>

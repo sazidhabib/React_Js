@@ -173,7 +173,7 @@ const SongDashboard = () => {
                 <p>No songs found</p>
             ) : (
                 <table className="table table-striped">
-                    <thead>
+                    <thead className='table-dark'>
                         <tr>
                             <th>Position</th>
                             <th>Title</th>

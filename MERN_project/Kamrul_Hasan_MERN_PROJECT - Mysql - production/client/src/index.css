@@ -54,7 +54,130 @@ body {
     pointer-events: none;
 }
 
+/* Sidebar responsive Styles start*/
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 185px;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    overflow-y: auto;
+}
 
+/* Desktop - Sidebar always visible */
+@media (min-width: 992px) {
+    .sidebar {
+        transform: translateX(0) !important;
+        position: relative;
+        height: 100vh;
+    }
+
+    .sidebar.closed {
+        transform: translateX(0) !important;
+    }
+}
+
+/* Mobile - Sidebar as overlay */
+@media (max-width: 991.98px) {
+    .sidebar {
+        transform: translateX(-100%);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+}
+
+/* Active item styling */
+.active-item {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid #007bff;
+}
+
+.nav-link {
+    transition: background-color 0.2s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* sidebar responsive design colse */
+
+
+
+/* sidebar parent style start */
+/* Responsive Sidebar Styles */
+.sidebar-open {
+    transform: translateX(0);
+    min-width: 190px;
+}
+
+.sidebar-closed {
+    transform: translateX(-100%);
+    min-width: 0;
+}
+
+/* Desktop styles */
+@media (min-width: 992px) {
+
+    .sidebar-open,
+    .sidebar-closed {
+        transform: translateX(0) !important;
+    }
+
+    .sidebar-closed {
+        min-width: 0;
+        width: 0 !important;
+    }
+
+    /* Adjust content margin for sidebar */
+    .flex-grow-1 {
+        margin-left: 0;
+        transition: margin-left 0.3s ease-in-out;
+    }
+
+    .sidebar-open-1 {
+        margin-left: 250px;
+    }
+
+    .sidebar-closed+.flex-grow-1 {
+        margin-left: 0;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 991.98px) {
+    .sidebar-open {
+        transform: translateX(0);
+        min-width: 190px;
+        /* Slightly wider on mobile for better touch */
+    }
+
+    .sidebar-closed {
+        transform: translateX(-100%);
+    }
+
+    /* Remove the sticky positioning on mobile */
+    .position-lg-sticky {
+        position: fixed !important;
+    }
+}
+
+/* sidebar parent style end */
 
 @media (min-width: 768px) {
     .onlyphone {
@@ -629,7 +752,7 @@ body {
 }
 
 .sidebar {
-    width: 250px;
+    width: 185px;
     height: 100vh;
     transition: all 0.3s ease-in-out;
 }
@@ -760,8 +883,10 @@ footer {
 .navbar {
     font-size: 18px;
     background-color: #26272e;
-    padding-bottom: 40px;
+
 }
+
+
 
 .main-nav {
     list-style-type: none;
@@ -810,6 +935,8 @@ footer {
         height: 70px;
         align-items: center;
     }
+
+
 
     #chkToggle:checked+ul.main-nav {
         display: flex;

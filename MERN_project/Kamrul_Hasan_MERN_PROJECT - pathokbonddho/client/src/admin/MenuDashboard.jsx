@@ -212,7 +212,8 @@ const MenuDashboard = () => {
                 <div className="text-center"><Spinner animation="border" /></div>
             ) : (
                 <Table striped bordered hover responsive>
-                    <thead>
+
+                    <thead className="table-dark">
                         <tr>
                             <th>Name</th>
                             <th>Path</th>

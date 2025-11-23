@@ -226,7 +226,7 @@ const VideoDashboard = () => {
             ) : (
                 <>
                     <table className="table table-striped">
-                        <thead>
+                        <thead className='table-dark'>
                             <tr>
                                 <th>Thumbnail</th>
                                 <th>Title</th>

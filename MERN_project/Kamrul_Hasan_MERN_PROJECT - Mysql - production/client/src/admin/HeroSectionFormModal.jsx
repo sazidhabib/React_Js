@@ -12,14 +12,25 @@ const HeroSectionFormModal = ({ show, onHide, onSubmit, editData }) => {
     useEffect(() => {
         if (editData) {
             setTitle(editData.title || "");
-            setLines(editData.lines || ["", "", ""]);
+
+            // SAFE ARRAY CHECK - This is the fix
+            const editLines = Array.isArray(editData.lines)
+                ? [...editData.lines]
+                : ["", "", ""];
+
+            // Ensure we always have exactly 3 lines
+            while (editLines.length < 3) {
+                editLines.push("");
+            }
+            setLines(editLines.slice(0, 3));
+
             // Set preview with full URL if imageUrl exists
             setPreview(editData.imageUrl ? `${IMG_URL}${editData.imageUrl.replace(/^\/+/, "")}` : "");
             setImage(null); // Reset image state when editing
         } else {
             resetForm();
         }
-    }, [editData, show]); // Added show to dependencies
+    }, [editData, show]);
 
     const resetForm = () => {
         setTitle("");
@@ -80,6 +91,7 @@ const HeroSectionFormModal = ({ show, onHide, onSubmit, editData }) => {
                         />
                     </Form.Group>
 
+                    {/* This .map is now safe because lines is always an array */}
                     {lines.map((line, index) => (
                         <Form.Group key={index} className="mb-3">
                             <Form.Label>Line {index + 1}</Form.Label>

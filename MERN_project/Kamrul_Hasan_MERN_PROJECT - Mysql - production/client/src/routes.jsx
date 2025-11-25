@@ -1,5 +1,5 @@
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+// import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomeLayout from "./layouts/HomeLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminTable from "./admin/AdminTable";
@@ -19,35 +19,38 @@ import SectionDashboard from "./admin/SectionDashboard";
 import VideoDashboard from "./admin/VideoDashboard";
 import UserDashboard from "./admin/UserDashboard";
 
-
 const AppRoutes = () => {
   return (
     <Router>
-
       <Routes>
-        {/* Home Page Layout */}
-        <Route path="/*" element={<HomeLayout />} />
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Admin Panel Layout */}
-        <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedAdminRoute>
+            <AdminLayout />
+          </ProtectedAdminRoute>
+        }>
           <Route index element={<AdminDashboard />} />
-          <Route path="/admin/table" element={<AdminTable />} />
-          <Route path="/admin/article" element={<ArticleDashboard />} />
-          <Route path="/admin/blog" element={<BlogPostDashboard />} />
-          <Route path="/admin/album" element={<AlbumDashboard />} />
-          <Route path="/admin/photos" element={<PhotoDashboard />} />
-          <Route path="/admin/menu" element={<MenuDashboard />} />
-          <Route path="/admin/songs" element={<SongDashboard />} />
-          <Route path="/admin/videos" element={<VideoDashboard />} />
-          <Route path="/admin/hero-section" element={<HeroSectionDashboard />} />
-          <Route path="/admin/sections" element={<SectionDashboard />} />
-          <Route path="/admin/users" element={<UserDashboard />} />
+          <Route path="table" element={<AdminTable />} />
+          <Route path="article" element={<ArticleDashboard />} />
+          <Route path="blog" element={<BlogPostDashboard />} />
+          <Route path="album" element={<AlbumDashboard />} />
+          <Route path="photos" element={<PhotoDashboard />} />
+          <Route path="menu" element={<MenuDashboard />} />
+          <Route path="songs" element={<SongDashboard />} />
+          <Route path="videos" element={<VideoDashboard />} />
+          <Route path="hero-section" element={<HeroSectionDashboard />} />
+          <Route path="sections" element={<SectionDashboard />} />
+          <Route path="users" element={<UserDashboard />} />
         </Route>
-      </Routes>
 
+        {/* Home/Catch-all Route - MUST BE LAST */}
+        <Route path="/*" element={<HomeLayout />} />
+      </Routes>
     </Router>
   );
 };

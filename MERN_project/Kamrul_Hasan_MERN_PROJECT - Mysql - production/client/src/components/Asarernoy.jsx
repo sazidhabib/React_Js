@@ -192,24 +192,27 @@ const Asarernoy = () => {
                   </button>
                 </li>
 
-                {/* First page */}
+                {/* First page with ellipsis */}
                 {currentPage > 3 && (
-                  <>
-                    <li className={`page-item ${currentPage === 1 ? "active" : ""}`}>
+                  <React.Fragment key="first-pages">
+                    <li className="page-item">
                       <button className="page-link" onClick={() => setCurrentPage(1)}>1</button>
                     </li>
-                    <li className="page-item disabled"><span className="page-link">...</span></li>
-                  </>
+                    <li className="page-item disabled" key="ellipsis1">
+                      <span className="page-link">...</span>
+                    </li>
+                  </React.Fragment>
                 )}
 
                 {/* Pages around current page */}
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter(page =>
                     page === 1 ||
+                    page === totalPages ||
                     Math.abs(currentPage - page) <= 1
                   )
                   .map(page => (
-                    <li key={page} className={`page-item ${currentPage === page ? "active" : ""}`}>
+                    <li key={`page-${page}`} className={`page-item ${currentPage === page ? "active" : ""}`}>
                       <button className="page-link" onClick={() => setCurrentPage(page)}>
                         {page}
                       </button>
@@ -218,12 +221,14 @@ const Asarernoy = () => {
 
                 {/* Ellipsis before last page */}
                 {currentPage < totalPages - 2 && (
-                  <>
-                    <li className="page-item disabled"><span className="page-link">...</span></li>
+                  <React.Fragment key="last-pages">
+                    <li className="page-item disabled" key="ellipsis2">
+                      <span className="page-link">...</span>
+                    </li>
                     <li className={`page-item ${currentPage === totalPages ? "active" : ""}`}>
                       <button className="page-link" onClick={() => setCurrentPage(totalPages)}>{totalPages}</button>
                     </li>
-                  </>
+                  </React.Fragment>
                 )}
 
                 {/* Next button */}
@@ -236,7 +241,6 @@ const Asarernoy = () => {
                   </button>
                 </li>
               </ul>
-
             </nav>
 
           </div>

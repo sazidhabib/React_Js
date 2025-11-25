@@ -20,7 +20,7 @@ const createHeroSection = async (req, res, next) => {
         const heroSection = await HeroSection.create({
             title,
             lines: lines, // Will be converted to JSON string by hook
-            imageUrl: req.file?.path || null
+            imageUrl: req.file?.url || null
         });
 
         res.status(201).json(heroSection);
@@ -82,7 +82,7 @@ const updateHeroSection = async (req, res, next) => {
         };
 
         if (req.file) {
-            updateData.imageUrl = req.file.path;
+            updateData.imageUrl = req.file.url;
         }
 
         await heroSection.update(updateData);

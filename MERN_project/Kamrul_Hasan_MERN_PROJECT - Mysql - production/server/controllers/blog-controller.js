@@ -21,7 +21,7 @@ const createBlog = async (req, res) => {
             publishDate: publishDate || new Date(),
             author: author,
             UpdatedAt: new Date(), // Set UpdateAt on creation
-            image: req.file ? req.file.filename : null
+            image: req.file ? req.file.url : null
         });
 
         res.status(201).json({
@@ -123,7 +123,7 @@ const updateBlog = async (req, res) => {
             title: title || existingBlog.title,
             description: description || existingBlog.description,
             status: parsedStatus !== undefined ? parsedStatus : existingBlog.status,
-            image: req.file ? req.file.filename : existingBlog.image,
+            image: req.file ? req.file.url : existingBlog.image,
             publishDate: publishDate || existingBlog.publishDate,
             UpdatedAt: new Date() // Update this field on every modification
         });

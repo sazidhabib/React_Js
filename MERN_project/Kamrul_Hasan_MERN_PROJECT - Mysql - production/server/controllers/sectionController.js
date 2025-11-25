@@ -6,7 +6,7 @@ const path = require("path");
 const upsertSection = async (req, res) => {
     try {
         const { type, title, description } = req.body;
-        const imageUrl = req.file ? req.file.filename : req.body?.imageUrl;
+        const imageUrl = req.file ? req.file.url : req.body?.imageUrl;
 
         if (!type || !title || !description) {
             return res.status(400).json({ message: "Type, Title and Description are required" });
@@ -51,7 +51,7 @@ const upsertSection = async (req, res) => {
 const updateSectionById = async (req, res) => {
     try {
         const { title, description } = req.body;
-        const imageUrl = req.file ? req.file.filename : req.body?.imageUrl;
+        const imageUrl = req.file ? req.file.url : req.body?.imageUrl;
 
         const existingSection = await Section.findByPk(req.params.id);
         if (!existingSection) {

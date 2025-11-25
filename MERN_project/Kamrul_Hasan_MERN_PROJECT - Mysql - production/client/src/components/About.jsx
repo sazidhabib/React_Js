@@ -18,6 +18,7 @@ const About = () => {
     const fetchAboutData = async () => {
       try {
         const response = await axios.get(API_URL);
+        console.log("Fetched about data:", response.data);
         setAboutData(response.data);
       } catch (err) {
         console.error("Error fetching about data:", err);

@@ -29,7 +29,7 @@ const createArticle = async (req, res) => {
             return res.status(409).json({ message: "An article with this title already exists." });
         }
 
-        const imagePath = req.file ? req.file.filename : null;
+        const imagePath = req.file ? req.file.url : null;
 
         const newArticle = await Article.create({
             title,
@@ -86,7 +86,7 @@ const updateArticle = async (req, res) => {
             title,
             description,
             status: parsedStatus,
-            image: req.file ? req.file.filename : existingArticle.image,
+            image: req.file ? req.file.url : existingArticle.image,
             publishDate,
         });
 

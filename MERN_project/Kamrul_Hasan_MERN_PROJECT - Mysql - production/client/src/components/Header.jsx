@@ -59,19 +59,35 @@ const Header = () => {
 
   // Render menu links dynamically
   const renderMenuLinks = (onClickHandler = null) => {
-    if (loading) return <li>Loading menus...</li>;
+    if (loading) {
+      return (
+        <li key="loading-menu" className="nav-item">
+          <span className="nav-link text-white">Loading menus...</span>
+        </li>
+      );
+    }
 
-    return menus.sort((a, b) => a.order - b.order).map(menu => (
-      <li className="nav-item" key={menu._id}>
-        <Link
-          to={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
-          className="nav-link text-white"
-          onClick={onClickHandler}
-        >
-          {menu.name}
-        </Link>
-      </li>
-    ));
+    if (!menus || menus.length === 0) {
+      return (
+        <li key="no-menus" className="nav-item">
+          <span className="nav-link text-white">No menus available</span>
+        </li>
+      );
+    }
+
+    return menus
+      .sort((a, b) => a.order - b.order)
+      .map(menu => (
+        <li className="nav-item" key={menu._id || menu.id}>
+          <Link
+            to={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
+            className="nav-link text-white"
+            onClick={onClickHandler}
+          >
+            {menu.name}
+          </Link>
+        </li>
+      ));
   };
 
   const homeMenu = getMenuByOrder(1);
@@ -139,10 +155,23 @@ const Header = () => {
             <i className="fas fa-bars text-white fs-4"></i>
           </div>
           <div className="social-iconst">
-            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-            <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+            {[
+              { key: 'linkedin', icon: 'fa-linkedin-in', href: 'https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app' },
+              { key: 'twitter', icon: 'fa-x-twitter', href: '#' },
+              { key: 'facebook', icon: 'fa-facebook-f', href: 'https://www.facebook.com/kamrul.hasan.75286' },
+              { key: 'instagram', icon: 'fa-instagram', href: 'https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#' }
+            ].map(social => (
+              <a
+                key={social.key} // ✅ Add key here
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white me-2"
+              >
+                <i className={`fa-brands ${social.icon}`}></i>
+              </a>
+            ))}
+
           </div>
         </div>
       )}
@@ -267,7 +296,7 @@ const Header = () => {
                   <Spinner animation="border" />
                 ) : heroSection?.imageUrl ? (
                   <img
-                    src={`${import.meta.env.VITE_API_BASE_URL}/${heroSection.imageUrl}`}
+                    src={`${import.meta.env.VITE_API_BASE_URL}${heroSection.imageUrl}`}
                     alt="Profile"
                     className="img-fluid profile-image"
                   />

@@ -26,24 +26,24 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
 
         for (const file of files) {
             // Now file.path should be set by convertToWebp middleware
-            if (!file || !file.path) {
+            if (!file || !file.url) {
                 console.error('File or file.path is undefined after conversion:', file);
                 continue;
             }
 
-            const filePath = file.path.replace(/\\/g, '/');
+            const imageUrl = file.url;
 
             // Optional: Prevent duplicates per album
             const existing = await Photo.findOne({
                 where: {
-                    imageUrl: filePath,
+                    imageUrl: imageUrl,
                     albumId: albumId
                 }
             });
             if (existing) continue;
 
             const photo = await Photo.create({
-                imageUrl: filePath,
+                imageUrl: imageUrl,
                 albumId: albumId,
                 caption: caption?.trim() || '',
             });
@@ -94,16 +94,20 @@ exports.updatePhoto = async (req, res, next) => {
         if (!photo) return res.status(404).json({ message: 'Photo not found' });
 
         // If a new image is uploaded, delete old image
-        if (req.file && req.file.path) {
+        if (req.file && req.file.url) {
             try {
-                // Only delete if old image exists
-                if (photo.imageUrl && fs.existsSync(path.join(__dirname, '..', photo.imageUrl))) {
-                    fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+                // Extract filename from URL for deletion
+                if (photo.imageUrl) {
+                    const oldFilename = photo.imageUrl.split('/').pop();
+                    const oldImagePath = path.join(__dirname, "..", "uploads", oldFilename);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
                 }
             } catch (err) {
                 console.warn('Could not delete old image:', err.message);
             }
-            photo.imageUrl = req.file.path.replace(/\\/g, '/');
+            photo.imageUrl = req.file.url;
         }
 
         // Update album if sent
@@ -132,7 +136,13 @@ exports.deletePhoto = async (req, res, next) => {
 
         // Delete image file
         try {
-            fs.unlinkSync(path.join(__dirname, '..', photo.imageUrl));
+            if (photo.imageUrl) {
+                const filename = photo.imageUrl.split('/').pop();
+                const imagePath = path.join(__dirname, "..", "uploads", filename);
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath);
+                }
+            }
         } catch (err) {
             console.warn('Could not delete image file:', err.message);
         }

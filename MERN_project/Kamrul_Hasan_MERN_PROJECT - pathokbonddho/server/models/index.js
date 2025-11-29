@@ -14,6 +14,7 @@ const Author = require('./author-model'); // Make sure you have this
 const News = require('./news-model');
 const NewsTag = require('./news-tag-model');
 const NewsCategory = require('./news-category-model');
+const ImageRegistry = require('./imageRegistry');
 
 // Associations for Photo Gallery
 Album.hasMany(Photo, {
@@ -122,6 +123,26 @@ NewsCategory.belongsTo(Category, {
     foreignKey: 'categoryId'
 });
 
+// Add after other associations
+ImageRegistry.belongsTo(Article, {
+    foreignKey: 'sourceId',
+    constraints: false,
+    as: 'article'
+});
+
+ImageRegistry.belongsTo(Blog, {
+    foreignKey: 'sourceId',
+    constraints: false,
+    as: 'blog'
+});
+
+ImageRegistry.belongsTo(Photo, {
+    foreignKey: 'sourceId',
+    constraints: false,
+    as: 'photo'
+});
+
+
 // Export everything
 module.exports = {
     sequelize,
@@ -139,4 +160,5 @@ module.exports = {
     News,
     NewsTag,
     NewsCategory,
+    ImageRegistry,
 };

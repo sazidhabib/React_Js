@@ -35,5 +35,16 @@ const Blog = sequelize.define("Blog", {
     collate: "utf8mb4_unicode_ci"
 });
 
+// Add association
+Blog.associate = function (models) {
+    Blog.hasOne(models.ImageRegistry, {
+        foreignKey: 'sourceId',
+        constraints: false,
+        scope: {
+            sourceType: 'blog'
+        }
+    });
+};
+
 
 module.exports = Blog;

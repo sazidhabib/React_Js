@@ -33,4 +33,15 @@ const Article = sequelize.define("Article", {
   collate: "utf8mb4_unicode_ci"
 });
 
+// Add association
+Article.associate = function (models) {
+  Article.hasOne(models.ImageRegistry, {
+    foreignKey: 'sourceId',
+    constraints: false,
+    scope: {
+      sourceType: 'article'
+    }
+  });
+};
+
 module.exports = Article;

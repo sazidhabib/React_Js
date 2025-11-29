@@ -31,4 +31,15 @@ const Photo = sequelize.define("Photo", {
     tableName: 'photos'
 });
 
+// Add association
+Photo.associate = function (models) {
+    Photo.hasOne(models.ImageRegistry, {
+        foreignKey: 'sourceId',
+        constraints: false,
+        scope: {
+            sourceType: 'photo'
+        }
+    });
+};
+
 module.exports = Photo;

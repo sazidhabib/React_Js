@@ -6,6 +6,11 @@ const { upload, convertToWebp } = require('../middlewares/multer-config');
 const authMiddleware = require('../middlewares/auth-middleware');
 
 
+// NEW ROUTES for centralized image management
+router.get('/all/images', authMiddleware, photoController.getAllImages);
+router.post('/add-to-gallery', authMiddleware, photoController.addToGallery);
+router.post('/scan-images', authMiddleware, photoController.scanExistingImages); // For migration
+
 // Album CRUD (Admin only)
 router.post('/albums', authMiddleware, albumController.createAlbum);
 router.patch('/albums/:id', authMiddleware, albumController.updateAlbum);

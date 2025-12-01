@@ -33,6 +33,7 @@ const tagRoutes = require("./router/tag-router");
 const authorRoutes = require('./router/author-router');
 const adRouter = require('./router/ad-router');
 const designRoutes = require('./router/design-router');
+const imageRegistryRoutes = require('./routes/imageRegistryRoutes');
 
 // Routes
 app.use("/api/auth", require("./router/auth-router"));
@@ -50,6 +51,7 @@ app.use('/api/authors', authorRoutes);
 app.use('/api/ads', adRouter);
 app.use('/api/designs', designRoutes);
 app.use("/api/images", require("./router/imageRoutes"));
+app.use('/api/image-registry', imageRegistryRoutes);
 
 app.get("/", (req, res) => res.send("Database is connected successfully"));
 app.get("/register", (req, res) => res.send("Hello World this is register page"));

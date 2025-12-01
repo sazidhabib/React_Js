@@ -9,6 +9,19 @@ class ImageService {
     // Register a new image
     static async registerImage(filename, filePath, sourceType, sourceId, mimeType = null, fileSize = null) {
         try {
+            // Check if already exists
+            const existing = await ImageRegistry.findOne({
+                where: {
+                    filename,
+                    sourceType,
+                    sourceId
+                }
+            });
+
+            if (existing) {
+                return existing;
+            }
+
             return await ImageRegistry.create({
                 filename,
                 filePath,
@@ -55,6 +68,10 @@ class ImageService {
                         model: Photo,
                         as: 'photo',
                         attributes: ['id', 'caption', 'albumId'],
+                        include: [{
+                            model: require('../models/album'),
+                            attributes: ['id', 'name']
+                        }],
                         required: false
                     }
                 ]
@@ -77,8 +94,15 @@ class ImageService {
         const uploadsDir = path.join(__dirname, '../uploads');
 
         try {
+            if (!fs.existsSync(uploadsDir)) {
+                console.log('Uploads directory does not exist');
+                return;
+            }
+
             const files = fs.readdirSync(uploadsDir);
             const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+
+            let registeredCount = 0;
 
             for (const file of files) {
                 const fileExt = path.extname(file).toLowerCase();
@@ -90,11 +114,14 @@ class ImageService {
                             filename: file,
                             filePath: `uploads/${file}`,
                             sourceType: 'other',
-                            sourceId: 0 // Or you can create a system to track orphaned images
+                            sourceId: 0
                         });
+                        registeredCount++;
                     }
                 }
             }
+
+            console.log(`✅ Registered ${registeredCount} new images from uploads directory`);
         } catch (error) {
             console.error('Error scanning uploads directory:', error);
         }

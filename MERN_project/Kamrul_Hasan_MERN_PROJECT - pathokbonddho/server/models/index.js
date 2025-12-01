@@ -127,19 +127,28 @@ NewsCategory.belongsTo(Category, {
 ImageRegistry.belongsTo(Article, {
     foreignKey: 'sourceId',
     constraints: false,
-    as: 'article'
+    as: 'article',
+    scope: {
+        sourceType: 'article'
+    }
 });
 
 ImageRegistry.belongsTo(Blog, {
     foreignKey: 'sourceId',
     constraints: false,
-    as: 'blog'
+    as: 'blog',
+    scope: {
+        sourceType: 'blog'
+    }
 });
 
 ImageRegistry.belongsTo(Photo, {
     foreignKey: 'sourceId',
     constraints: false,
-    as: 'photo'
+    as: 'photo',
+    scope: {
+        sourceType: 'photo'
+    }
 });
 
 

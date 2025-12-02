@@ -1,9 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const ImageRegistry = require('../models/imageRegistry');
-const Article = require('../models/article-model');
-const Blog = require('../models/blog-model');
-const Photo = require('../models/photo-model');
+
 
 class ImageService {
     // Register a new image
@@ -51,30 +49,7 @@ class ImageService {
                 limit: limit,
                 offset: offset,
                 order: [['createdAt', 'DESC']],
-                include: [
-                    {
-                        model: Article,
-                        as: 'article',
-                        attributes: ['id', 'title'],
-                        required: false
-                    },
-                    {
-                        model: Blog,
-                        as: 'blog',
-                        attributes: ['id', 'title'],
-                        required: false
-                    },
-                    {
-                        model: Photo,
-                        as: 'photo',
-                        attributes: ['id', 'caption', 'albumId'],
-                        include: [{
-                            model: require('../models/album'),
-                            attributes: ['id', 'name']
-                        }],
-                        required: false
-                    }
-                ]
+
             });
 
             return {

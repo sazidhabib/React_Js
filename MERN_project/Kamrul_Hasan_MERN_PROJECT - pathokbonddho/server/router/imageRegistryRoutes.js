@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const imageRegistryController = require('../controllers/imageRegistryController');
-const authMiddleware = require('../middleware/authMiddleware');
+const authMiddleware = require('../middlewares/auth-middleware');
 
 router.get('/', authMiddleware, imageRegistryController.getAllImages);
 router.get('/search', authMiddleware, imageRegistryController.searchImages);

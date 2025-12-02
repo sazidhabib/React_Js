@@ -6,6 +6,8 @@ const PageSection = require('./pageSection');
 const Row = require('./row');
 const Column = require('./column');
 const User = require('./user-model');
+const Article = require('./article-model');
+const Blog = require('./blog-model');
 
 // Import your new models
 const Tag = require('./tag-model');

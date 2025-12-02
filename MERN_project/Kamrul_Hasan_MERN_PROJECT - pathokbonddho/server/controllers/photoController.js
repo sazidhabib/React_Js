@@ -409,3 +409,107 @@ async function registerBlogsImages() {
         console.error('Error registering blog images:', error);
     }
 }
+
+exports.deleteImageFromRegistry = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { deleteFromFS = false } = req.body;
+
+        console.log('🗑️ Deleting image from registry:', id);
+
+        const imageRecord = await ImageRegistry.findByPk(id);
+
+        if (!imageRecord) {
+            return res.status(404).json({
+                success: false,
+                message: 'Image not found in registry'
+            });
+        }
+
+        // Delete image file if requested
+        if (deleteFromFS) {
+            try {
+                if (imageRecord.filePath && fs.existsSync(path.join(__dirname, '..', imageRecord.filePath))) {
+                    fs.unlinkSync(path.join(__dirname, '..', imageRecord.filePath));
+                    console.log('✅ Image file deleted from filesystem');
+                }
+            } catch (err) {
+                console.warn('⚠️ Could not delete image file:', err.message);
+            }
+        }
+
+        // Delete from registry
+        await imageRecord.destroy();
+
+        res.status(200).json({
+            success: true,
+            message: 'Image deleted from registry successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting image from registry:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete image from registry'
+        });
+    }
+};
+
+// NEW: Convert image to photo (for orphaned images)
+exports.convertToPhoto = async (req, res, next) => {
+    try {
+        const { registryId, caption = '', albumId = null } = req.body;
+
+        console.log('🔄 Converting image to photo:', { registryId, caption, albumId });
+
+        // Find the image in registry
+        const imageRecord = await ImageRegistry.findByPk(registryId);
+
+        if (!imageRecord) {
+            return res.status(404).json({
+                success: false,
+                message: 'Image not found in registry'
+            });
+        }
+
+        // Validate album exists if provided
+        if (albumId) {
+            const album = await Album.findByPk(albumId);
+            if (!album) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Album not found'
+                });
+            }
+        }
+
+        // Create photo entry
+        const photo = await Photo.create({
+            imageUrl: imageRecord.filePath,
+            caption: caption.trim(),
+            albumId: albumId || null
+        });
+
+        // Update the image registry to change source type
+        await imageRecord.update({
+            sourceType: 'photo',
+            sourceId: photo.id
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'Image converted to photo successfully',
+            photo: {
+                id: photo.id,
+                imageUrl: photo.imageUrl,
+                caption: photo.caption,
+                albumId: photo.albumId
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error converting image to photo:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to convert image to photo'
+        });
+    }
+};

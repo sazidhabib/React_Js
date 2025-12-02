@@ -33,7 +33,7 @@ const tagRoutes = require("./router/tag-router");
 const authorRoutes = require('./router/author-router');
 const adRouter = require('./router/ad-router');
 const designRoutes = require('./router/design-router');
-const imageRegistryRoutes = require('./routes/imageRegistryRoutes');
+const imageRegistryRoutes = require('./router/imageRegistryRoutes');
 
 // Routes
 app.use("/api/auth", require("./router/auth-router"));

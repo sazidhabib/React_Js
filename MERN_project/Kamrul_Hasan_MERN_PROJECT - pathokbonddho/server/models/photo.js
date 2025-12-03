@@ -20,7 +20,8 @@ const Photo = sequelize.define("Photo", {
     },
     albumId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,  // CHANGE from false to true
+        defaultValue: null,
         references: {
             model: 'albums',
             key: 'id'

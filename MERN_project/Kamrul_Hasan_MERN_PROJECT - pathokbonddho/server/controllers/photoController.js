@@ -10,49 +10,76 @@ const Blog = require('../models/blog-model'); // Add this
 // NEW: Get all images from all sources
 exports.getAllImages = async (req, res, next) => {
     try {
-        const { page = 1, limit = 50, sourceType } = req.query;
+        const { page = 1, limit = 20, sourceType } = req.query;
 
         console.log('📸 Fetching all images - Page:', page, 'Limit:', limit, 'Source:', sourceType);
 
-        const result = await ImageService.getAllImages(
-            parseInt(page),
-            parseInt(limit),
-            sourceType
-        );
+        // Simple query without associations
+        const offset = (page - 1) * limit;
 
-        // Transform data for frontend
-        const transformedImages = result.images.map(img => ({
-            id: img.id,
-            filename: img.filename,
-            imageUrl: img.filePath,
-            source: img.sourceType,
-            caption: img.photo?.caption || '',
-            albumId: img.photo?.albumId || null,
-            albumName: img.photo?.Album?.name || null,
-            isManaged: img.sourceType === 'photo',
-            relatedEntity: {
-                article: img.article ? { id: img.article.id, title: img.article.title } : null,
-                blog: img.blog ? { id: img.blog.id, title: img.blog.title } : null,
-                photo: img.photo ? { id: img.photo.id, caption: img.photo.caption } : null
-            },
-            createdAt: img.createdAt,
-            updatedAt: img.updatedAt
-        }));
+        const whereClause = {};
+        if (sourceType) {
+            whereClause.sourceType = sourceType;
+        }
+
+        // Get total count
+        const totalCount = await ImageRegistry.count({ where: whereClause });
+
+        // Get paginated data
+        const images = await ImageRegistry.findAll({
+            where: whereClause,
+            limit: parseInt(limit),
+            offset: offset,
+            order: [['createdAt', 'DESC']]
+        });
+
+        console.log(`✅ Found ${images.length} images (total: ${totalCount})`);
+
+        // Transform data for frontend with corrected image URLs
+        const transformedImages = images.map(img => {
+            // FIX: Ensure filePath has 'uploads/' prefix
+            let imageUrl = img.filePath;
+
+            // Check if the path needs 'uploads/' prefix
+            if (!imageUrl.includes('uploads/') && !imageUrl.includes('/uploads/')) {
+                // It's just a filename like 'image-1748248838166.webp'
+                imageUrl = `uploads/${imageUrl}`;
+            } else if (imageUrl.startsWith('/') && !imageUrl.includes('uploads/')) {
+                // It's like '/image-1748248838166.webp'
+                imageUrl = `uploads${imageUrl}`;
+            }
+
+            // Clean up any double slashes
+            imageUrl = imageUrl.replace(/([^:]\/)\/+/g, '$1');
+
+            return {
+                id: img.id,
+                filename: img.filename,
+                imageUrl: imageUrl,  // Use the corrected path
+                source: img.sourceType,
+                caption: '',
+                albumId: null,
+                albumName: null,
+                isManaged: img.sourceType === 'photo',
+                createdAt: img.createdAt,
+                updatedAt: img.updatedAt
+            };
+        });
 
         res.status(200).json({
             success: true,
             images: transformedImages,
             pagination: {
-                currentPage: result.currentPage,
-                totalPages: result.totalPages,
-                totalCount: result.totalCount
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalCount / limit),
+                totalCount: totalCount
             }
         });
     } catch (error) {
-        console.error('❌ Error in getAllImages:', error);
+        console.error('❌ Error in getAllImages:', error.message);
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch images'
+            message: 'Failed to fetch images: ' + error.message
         });
     }
 };
@@ -471,9 +498,21 @@ exports.convertToPhoto = async (req, res, next) => {
             });
         }
 
-        // Validate album exists if provided
-        if (albumId) {
-            const album = await Album.findByPk(albumId);
+        // If no albumId provided, use a default album
+        let targetAlbumId = albumId;
+        if (!targetAlbumId) {
+            // Find or create a "Default" album
+            const [defaultAlbum] = await Album.findOrCreate({
+                where: { name: 'Uncategorized' },
+                defaults: {
+                    name: 'Uncategorized',
+                    description: 'Default album for images without album'
+                }
+            });
+            targetAlbumId = defaultAlbum.id;
+        } else {
+            // Validate album exists if provided
+            const album = await Album.findByPk(targetAlbumId);
             if (!album) {
                 return res.status(404).json({
                     success: false,
@@ -486,7 +525,7 @@ exports.convertToPhoto = async (req, res, next) => {
         const photo = await Photo.create({
             imageUrl: imageRecord.filePath,
             caption: caption.trim(),
-            albumId: albumId || null
+            albumId: targetAlbumId || null
         });
 
         // Update the image registry to change source type
@@ -509,7 +548,7 @@ exports.convertToPhoto = async (req, res, next) => {
         console.error('❌ Error converting image to photo:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to convert image to photo'
+            message: 'Failed to convert image to photo' + error.message
         });
     }
 };

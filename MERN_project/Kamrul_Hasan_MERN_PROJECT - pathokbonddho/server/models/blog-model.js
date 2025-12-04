@@ -2,6 +2,12 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../db/database");
 
 const Blog = sequelize.define("Blog", {
+    _id: {  // Use _id as primary key
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        field: '_id'  // Explicitly map to _id column
+    },
     image: {
         type: DataTypes.STRING, // store image path
     },

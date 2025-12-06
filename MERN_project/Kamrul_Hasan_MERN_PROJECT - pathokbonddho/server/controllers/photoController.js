@@ -2,10 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const Photo = require('../models/photo');
 const Album = require('../models/album');
-const ImageRegistry = require('../models/imageRegistry'); // Add this
-const ImageService = require('../services/imageService'); // Add this
-const Article = require('../models/article-model'); // Add this
-const Blog = require('../models/blog-model'); // Add this
+const ImageRegistry = require('../models/imageRegistry');
+const ImageService = require('../services/imageService');
+const Article = require('../models/article-model');
+const Blog = require('../models/blog-model');
+const News = require('../models/news-model');
 
 // NEW: Get all images from all sources
 exports.getAllImages = async (req, res, next) => {
@@ -35,9 +36,50 @@ exports.getAllImages = async (req, res, next) => {
 
         console.log(`✅ Found ${images.length} images (total: ${totalCount})`);
 
-        // Transform data for frontend with corrected image URLs
-        const transformedImages = images.map(img => {
-            // FIX: Ensure filePath has 'uploads/' prefix
+        // Update the transform part in getAllImages function:
+        const transformedImages = await Promise.all(images.map(async (img) => {
+            // Get additional info based on source type
+            let relatedInfo = {};
+            let sourceTitle = '';
+
+            try {
+                if (img.sourceType === 'article') {
+                    const article = await Article.findByPk(img.sourceId);
+                    if (article) {
+                        relatedInfo.title = article.title;
+                        sourceTitle = `Article: ${article.title}`;
+                    }
+                } else if (img.sourceType === 'blog') {
+                    const blog = await Blog.findByPk(img.sourceId);
+                    if (blog) {
+                        relatedInfo.title = blog.title;
+                        sourceTitle = `Blog: ${blog.title}`;
+                    }
+                } else if (img.sourceType === 'news') { // ADD THIS
+                    const news = await News.findByPk(img.sourceId);
+                    if (news) {
+                        relatedInfo.title = news.newsHeadline;
+                        sourceTitle = `News: ${news.newsHeadline}`;
+                    }
+                } else if (img.sourceType === 'photo') {
+                    const photo = await Photo.findByPk(img.sourceId, {
+                        include: [{
+                            model: Album,
+                            attributes: ['id', 'name']
+                        }]
+                    });
+                    if (photo) {
+                        relatedInfo.caption = photo.caption;
+                        relatedInfo.albumId = photo.albumId;
+                        relatedInfo.albumName = photo.Album?.name || null;
+                        sourceTitle = `Photo: ${photo.caption || 'No caption'}`;
+                    }
+                }
+            } catch (error) {
+                console.warn(`Could not fetch related info for ${img.sourceType} ${img.sourceId}:`, error.message);
+            }
+
+            // Fix image URL - ensure it starts with uploads/
             let imageUrl = img.filePath;
 
             // Check if the path needs 'uploads/' prefix
@@ -55,16 +97,23 @@ exports.getAllImages = async (req, res, next) => {
             return {
                 id: img.id,
                 filename: img.filename,
-                imageUrl: imageUrl,  // Use the corrected path
+                imageUrl: imageUrl,
                 source: img.sourceType,
-                caption: '',
-                albumId: null,
-                albumName: null,
+                caption: relatedInfo.caption || '',
+                albumId: relatedInfo.albumId || null,
+                albumName: relatedInfo.albumName || null,
                 isManaged: img.sourceType === 'photo',
+                sourceTitle: sourceTitle,
+                relatedEntity: {
+                    article: img.sourceType === 'article' ? { id: img.sourceId, title: relatedInfo.title } : null,
+                    blog: img.sourceType === 'blog' ? { id: img.sourceId, title: relatedInfo.title } : null,
+                    news: img.sourceType === 'news' ? { id: img.sourceId, title: relatedInfo.title } : null, // ADD THIS
+                    photo: img.sourceType === 'photo' ? { id: img.sourceId, caption: relatedInfo.caption } : null
+                },
                 createdAt: img.createdAt,
                 updatedAt: img.updatedAt
             };
-        });
+        }));
 
         res.status(200).json({
             success: true,
@@ -382,6 +431,7 @@ exports.scanExistingImages = async (req, res, next) => {
         // Also register images from articles and blogs
         await registerArticlesImages();
         await registerBlogsImages();
+        await registerNewsImages();
 
         res.status(200).json({
             success: true,
@@ -434,6 +484,55 @@ async function registerBlogsImages() {
         console.log(`✅ Registered ${blogs.length} blog images`);
     } catch (error) {
         console.error('Error registering blog images:', error);
+    }
+}
+
+async function registerNewsImages() {
+    try {
+        const newsList = await News.findAll();
+        let registeredCount = 0;
+
+        for (const news of newsList) {
+            // Register leadImage if exists
+            if (news.leadImage && news.leadImage.trim() !== '') {
+                const filename = path.basename(news.leadImage);
+                await ImageService.registerImage(
+                    filename,
+                    news.leadImage,
+                    'news',
+                    news.id
+                );
+                registeredCount++;
+            }
+
+            // Register thumbImage if exists
+            if (news.thumbImage && news.thumbImage.trim() !== '') {
+                const filename = path.basename(news.thumbImage);
+                await ImageService.registerImage(
+                    filename,
+                    news.thumbImage,
+                    'news',
+                    news.id
+                );
+                registeredCount++;
+            }
+
+            // Register metaImage if exists
+            if (news.metaImage && news.metaImage.trim() !== '') {
+                const filename = path.basename(news.metaImage);
+                await ImageService.registerImage(
+                    filename,
+                    news.metaImage,
+                    'news',
+                    news.id
+                );
+                registeredCount++;
+            }
+        }
+
+        console.log(`✅ Registered ${registeredCount} news images`);
+    } catch (error) {
+        console.error('Error registering news images:', error);
     }
 }
 

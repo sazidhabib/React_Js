@@ -200,6 +200,9 @@ const PhotoDashboard = () => {
             if (image.relatedEntity.blog) {
                 return `Blog: ${image.relatedEntity.blog.title}`;
             }
+            if (image.relatedEntity.news) {
+                return `News: ${image.relatedEntity.news.title}`;
+            }
             if (image.relatedEntity.photo) {
                 return `Photo: ${image.relatedEntity.photo.caption || 'No caption'}`;
             }
@@ -241,6 +244,7 @@ const PhotoDashboard = () => {
                         <option value="">All Sources</option>
                         <option value="article">Articles</option>
                         <option value="blog">Blogs</option>
+                        <option value="news">News</option>
                         <option value="photo">Photo Gallery</option>
                         <option value="other">Other/Orphaned</option>
                     </Form.Select>

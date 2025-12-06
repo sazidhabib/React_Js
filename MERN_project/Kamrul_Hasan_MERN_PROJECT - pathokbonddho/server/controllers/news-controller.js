@@ -5,6 +5,8 @@ const NewsCategory = require("../models/news-category-model");
 const Tag = require("../models/tag-model");
 const Category = require("../models/category-model");
 const Author = require("../models/author-model");
+const ImageService = require('../services/imageService');
+const ImageRegistry = require('../models/image-registry-model');
 const fs = require("fs");
 const path = require("path");
 const { Sequelize } = require('sequelize');
@@ -64,6 +66,11 @@ const createNews = async (req, res) => {
         const thumbImage = req.files?.thumbImage ? req.files.thumbImage[0].filename : null;
         const metaImage = req.files?.metaImage ? req.files.metaImage[0].filename : null;
 
+        // Create full paths for images
+        const leadImagePath = leadImage ? `uploads/${leadImage}` : null;
+        const thumbImagePath = thumbImage ? `uploads/${thumbImage}` : null;
+        const metaImagePath = metaImage ? `uploads/${metaImage}` : null;
+
         const newNews = await News.create({
             newsHeadline,
             highlight,
@@ -71,15 +78,15 @@ const createNews = async (req, res) => {
             authorId: parseInt(authorId),
             shortDescription,
             content,
-            leadImage,
-            thumbImage,
+            leadImage: leadImagePath,
+            thumbImage: thumbImagePath,
             imageCaption,
             videoLink,
             newsSchedule: newsSchedule || null,
             metaTitle: metaTitle || newsHeadline,
             metaKeywords,
             metaDescription: metaDescription || shortDescription,
-            metaImage,
+            metaImage: metaImagePath,
             status: status || 'draft',
             slug
         });
@@ -99,6 +106,38 @@ const createNews = async (req, res) => {
                 categoryId: parseInt(categoryId)
             }));
             await NewsCategory.bulkCreate(newsCategories);
+        }
+
+        // REGISTER IMAGES IN CENTRALIZED REGISTRY
+        try {
+            if (leadImagePath) {
+                await ImageService.registerImage(
+                    leadImage,
+                    leadImagePath,
+                    'news',
+                    newNews.id
+                );
+            }
+            if (thumbImagePath) {
+                await ImageService.registerImage(
+                    thumbImage,
+                    thumbImagePath,
+                    'news',
+                    newNews.id
+                );
+            }
+            if (metaImagePath) {
+                await ImageService.registerImage(
+                    metaImage,
+                    metaImagePath,
+                    'news',
+                    newNews.id
+                );
+            }
+            console.log(`✅ Registered news images for news ID: ${newNews.id}`);
+        } catch (imageError) {
+            console.error('Error registering news images:', imageError);
+            // Don't fail the request if image registration fails
         }
 
         // Fetch complete news with associations
@@ -367,34 +406,82 @@ const updateNews = async (req, res) => {
         if (req.files?.leadImage) {
             // Delete old lead image
             if (existingNews.leadImage) {
-                const oldImagePath = path.join(__dirname, "..", "uploads", "news", existingNews.leadImage);
+                const oldImagePath = path.join(__dirname, "..", existingNews.leadImage);
                 if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath);
                 }
+                // Remove from image registry
+                await ImageRegistry.destroy({
+                    where: {
+                        sourceType: 'news',
+                        sourceId: req.params.id,
+                        filePath: existingNews.leadImage
+                    }
+                });
             }
-            updateData.leadImage = req.files.leadImage[0].filename;
+            updateData.leadImage = `uploads/${req.files.leadImage[0].filename}`;
+
+            // Register new image
+            await ImageService.registerImage(
+                req.files.leadImage[0].filename,
+                updateData.leadImage,
+                'news',
+                req.params.id
+            );
         }
 
         // Handle thumb image
         if (req.files?.thumbImage) {
             if (existingNews.thumbImage) {
-                const oldImagePath = path.join(__dirname, "..", "uploads", "news", existingNews.thumbImage);
+                const oldImagePath = path.join(__dirname, "..", existingNews.thumbImage);
                 if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath);
                 }
+                // Remove from image registry
+                await ImageRegistry.destroy({
+                    where: {
+                        sourceType: 'news',
+                        sourceId: req.params.id,
+                        filePath: existingNews.thumbImage
+                    }
+                });
             }
-            updateData.thumbImage = req.files.thumbImage[0].filename;
+            updateData.thumbImage = `uploads/${req.files.leadImage[0].filename}`;
+
+            // Register new image
+            await ImageService.registerImage(
+                req.files.thumbImage[0].filename,
+                updateData.thumbImage,
+                'news',
+                req.params.id
+            );
         }
 
         // Handle meta image
         if (req.files?.metaImage) {
             if (existingNews.metaImage) {
-                const oldImagePath = path.join(__dirname, "..", "uploads", "news", existingNews.metaImage);
+                const oldImagePath = path.join(__dirname, "..", existingNews.metaImage);
                 if (fs.existsSync(oldImagePath)) {
                     fs.unlinkSync(oldImagePath);
                 }
+                // Remove from image registry
+                await ImageRegistry.destroy({
+                    where: {
+                        sourceType: 'news',
+                        sourceId: req.params.id,
+                        filePath: existingNews.metaImage
+                    }
+                });
             }
             updateData.metaImage = req.files.metaImage[0].filename;
+
+            // Register new image
+            await ImageService.registerImage(
+                req.files.metaImage[0].filename,
+                updateData.metaImage,
+                'news',
+                req.params.id
+            );
         }
 
         const updatedNews = await existingNews.update(updateData);
@@ -456,12 +543,20 @@ const deleteNews = async (req, res) => {
         const imageFields = ['leadImage', 'thumbImage', 'metaImage'];
         for (const field of imageFields) {
             if (news[field]) {
-                const imagePath = path.join(__dirname, "..", "uploads", "news", news[field]);
+                const imagePath = path.join(__dirname, "..", news[field]);
                 if (fs.existsSync(imagePath)) {
                     fs.unlinkSync(imagePath);
                 }
             }
         }
+
+        // Delete from image registry
+        await ImageRegistry.destroy({
+            where: {
+                sourceType: 'news',
+                sourceId: req.params.id
+            }
+        });
 
         // Delete associations
         await NewsTag.destroy({ where: { newsId: req.params.id } });

@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const ImageRegistry = require('../models/imageRegistry');
+const News = require('../models/news-model');
+
 
 
 class ImageService {
@@ -64,6 +66,56 @@ class ImageService {
         }
     }
 
+    // NEW: Register existing news images
+    static async registerExistingNewsImages() {
+        try {
+            const newsList = await News.findAll();
+            let registeredCount = 0;
+
+            for (const news of newsList) {
+                // Register leadImage if exists
+                if (news.leadImage && news.leadImage.trim() !== '') {
+                    const filename = path.basename(news.leadImage);
+                    await this.registerImage(
+                        filename,
+                        news.leadImage,
+                        'news',
+                        news.id
+                    );
+                    registeredCount++;
+                }
+
+                // Register thumbImage if exists
+                if (news.thumbImage && news.thumbImage.trim() !== '') {
+                    const filename = path.basename(news.thumbImage);
+                    await this.registerImage(
+                        filename,
+                        news.thumbImage,
+                        'news',
+                        news.id
+                    );
+                    registeredCount++;
+                }
+
+                // Register metaImage if exists
+                if (news.metaImage && news.metaImage.trim() !== '') {
+                    const filename = path.basename(news.metaImage);
+                    await this.registerImage(
+                        filename,
+                        news.metaImage,
+                        'news',
+                        news.id
+                    );
+                    registeredCount++;
+                }
+            }
+
+            console.log(`✅ Registered ${registeredCount} news images`);
+        } catch (error) {
+            console.error('Error registering news images:', error);
+        }
+    }
+
     // Scan uploads directory and register existing images
     static async scanAndRegisterExistingImages() {
         const uploadsDir = path.join(__dirname, '../uploads');
@@ -97,9 +149,14 @@ class ImageService {
             }
 
             console.log(`✅ Registered ${registeredCount} new images from uploads directory`);
+
+            // Also register news images
+            await this.registerExistingNewsImages();
         } catch (error) {
             console.error('Error scanning uploads directory:', error);
         }
+
+
     }
 }
 

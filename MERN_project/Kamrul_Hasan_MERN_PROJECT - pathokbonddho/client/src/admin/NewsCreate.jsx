@@ -176,7 +176,7 @@ const NewsCreate = () => {
 
     const fetchAllPhotos = async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/photos`);
+            const response = await axios.get(`${API_URL}/api/all/images`);
             const photosData = response.data.photos || response.data || [];
             setPhotos(photosData);
             setFilteredPhotos(photosData);

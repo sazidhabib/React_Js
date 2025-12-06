@@ -16,7 +16,7 @@ const ImageRegistry = sequelize.define("ImageRegistry", {
         allowNull: false
     },
     sourceType: {
-        type: DataTypes.ENUM('article', 'blog', 'photo', 'other'),
+        type: DataTypes.ENUM('article', 'blog', 'photo', 'news', 'other'),
         allowNull: false
     },
     sourceId: {

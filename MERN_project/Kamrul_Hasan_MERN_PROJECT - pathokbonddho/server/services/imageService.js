@@ -3,8 +3,6 @@ const path = require('path');
 const ImageRegistry = require('../models/imageRegistry');
 const News = require('../models/news-model');
 
-
-
 class ImageService {
     // Register a new image
     static async registerImage(filename, filePath, sourceType, sourceId, mimeType = null, fileSize = null) {

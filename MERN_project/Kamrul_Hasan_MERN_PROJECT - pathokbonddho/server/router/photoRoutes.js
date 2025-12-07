@@ -7,6 +7,7 @@ const authMiddleware = require('../middlewares/auth-middleware');
 
 // ========== CENTRALIZED IMAGE MANAGEMENT ROUTES ==========
 router.get('/all/images', authMiddleware, photoController.getAllImages);
+router.get('/all/images/all', authMiddleware, photoController.getAllImagesNoPagination);
 router.post('/add-to-gallery', authMiddleware, photoController.addToGallery);
 router.post('/convert-to-photo', authMiddleware, photoController.convertToPhoto);
 router.delete('/registry/:id', authMiddleware, photoController.deleteImageFromRegistry);

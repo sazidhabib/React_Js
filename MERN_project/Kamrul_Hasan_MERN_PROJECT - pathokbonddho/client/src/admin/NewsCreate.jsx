@@ -17,6 +17,10 @@ const NewsCreate = () => {
     const [photos, setPhotos] = useState([]);
     const [filteredPhotos, setFilteredPhotos] = useState([]);
     const [selectedAlbum, setSelectedAlbum] = useState('all');
+    const [imageSearch, setImageSearch] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [uploadAlbumId, setUploadAlbumId] = useState('');
 
     // State for searchable dropdowns
     const [authorSearch, setAuthorSearch] = useState('');
@@ -66,6 +70,17 @@ const NewsCreate = () => {
         metaImage: null
     });
 
+    // Add this useEffect to debug
+    useEffect(() => {
+        console.log('Photos state updated:', {
+            totalPhotos: photos.length,
+            filteredPhotos: filteredPhotos.length,
+            selectedAlbum: selectedAlbum,
+            uniqueSources: [...new Set(photos.map(p => p.source))],
+            photoSample: photos.slice(0, 3).map(p => ({ id: p.id, source: p.source, filename: p.filename }))
+        });
+    }, [photos, filteredPhotos, selectedAlbum]);
+
     // Image handling functions
     const openEditorImageModal = (editorType) => {
         setCurrentEditor(editorType);
@@ -73,6 +88,68 @@ const NewsCreate = () => {
             ...prev,
             editor: true
         }));
+    };
+
+    const getSourceBadgeClass = (source) => {
+        const classes = {
+            'article': 'bg-info',
+            'blog': 'bg-success',
+            'news': 'bg-warning',
+            'photo': 'bg-primary',
+            'other': 'bg-secondary'
+        };
+        return classes[source] || 'bg-secondary';
+    };
+
+    const getSourceLabel = (source) => {
+        const labels = {
+            'article': 'Article',
+            'blog': 'Blog',
+            'news': 'News',
+            'photo': 'Gallery',
+            'other': 'Other'
+        };
+        return labels[source] || source;
+    };
+
+    // Add upload handler
+    const handleUploadImage = async () => {
+        if (!uploadFile) {
+            toast.error('Please select a file to upload');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('images', uploadFile);
+
+            if (uploadAlbumId) {
+                formData.append('albumId', uploadAlbumId);
+            }
+
+            const response = await axios.post(`${API_URL}/api/upload`, formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            toast.success('Image uploaded successfully!');
+
+            // Reset upload state
+            setUploadFile(null);
+            setUploadAlbumId('');
+
+            // Refresh the photos list
+            await fetchAllPhotos();
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error(error.response?.data?.message || 'Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleEditorImageSelect = (photo) => {
@@ -176,19 +253,82 @@ const NewsCreate = () => {
 
     const fetchAllPhotos = async () => {
         try {
-            const response = await axios.get(`${API_URL}/api/all/images`);
-            const photosData = response.data.photos || response.data || [];
-            setPhotos(photosData);
-            setFilteredPhotos(photosData);
+            // First, get total count
+            const countResponse = await axios.get(`${API_URL}/api/all/images`, {
+                params: { limit: 1 }, // Just to get total count
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const totalCount = countResponse.data.pagination?.totalCount || 0;
+            console.log(`Total images available: ${totalCount}`);
+
+            // Calculate how many pages we need to fetch
+            const limit = 100; // Fetch 100 per request
+            const totalPages = Math.ceil(totalCount / limit);
+
+            // Fetch all pages
+            const allImages = [];
+
+            for (let page = 1; page <= totalPages; page++) {
+                try {
+                    const response = await axios.get(`${API_URL}/api/all/images`, {
+                        params: {
+                            page: page,
+                            limit: limit
+                        },
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+
+                    if (response.data.images && Array.isArray(response.data.images)) {
+                        allImages.push(...response.data.images);
+                    }
+                    console.log(`Fetched page ${page}/${totalPages}: ${response.data.images?.length || 0} images`);
+                } catch (pageError) {
+                    console.error(`Error fetching page ${page}:`, pageError);
+                }
+            }
+
+            console.log(`Total images fetched: ${allImages.length}`);
+
+            // Filter out invalid images
+            const validPhotos = allImages.filter(photo =>
+                photo &&
+                (photo.imageUrl || photo.image) &&
+                photo.filename
+            ).map(photo => ({
+                id: photo.id,
+                filename: photo.filename,
+                imageUrl: photo.imageUrl || photo.image,
+                caption: photo.caption || '',
+                albumId: photo.albumId || null,
+                source: photo.source || 'other',
+                isManaged: photo.isManaged !== undefined ? photo.isManaged : false,
+                createdAt: photo.createdAt
+            }));
+
+            // Sort by creation date (newest first)
+            validPhotos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            setPhotos(validPhotos);
+            setFilteredPhotos(validPhotos);
+            console.log(`Loaded ${validPhotos.length} valid images`);
+
         } catch (error) {
             console.error('Error fetching photos:', error);
-            toast.error('Failed to load photos');
+            toast.error('Failed to load photos from centralized registry');
+            setPhotos([]);
+            setFilteredPhotos([]);
         }
     };
 
     const filterPhotosByAlbum = () => {
         if (selectedAlbum === 'all') {
             setFilteredPhotos(photos);
+        } else if (selectedAlbum === 'filtered') {
+            // Show filtered view by source type
+            const sourceFilter = 'photo'; // Only show gallery photos
+            const filtered = photos.filter(photo => photo.source === sourceFilter);
+            setFilteredPhotos(filtered);
         } else {
             const albumId = parseInt(selectedAlbum);
             const filtered = photos.filter(photo => photo.albumId === albumId);
@@ -319,7 +459,28 @@ const NewsCreate = () => {
     };
 
     const handleAlbumChange = (e) => {
-        setSelectedAlbum(e.target.value);
+        const value = e.target.value;
+        setSelectedAlbum(value);
+
+        if (value === 'all') {
+            setFilteredPhotos(photos);
+        } else if (['article', 'blog', 'news', 'photo', 'other'].includes(value)) {
+            // Filter by source type
+            const filtered = photos.filter(photo =>
+                photo.source && photo.source.toLowerCase() === value.toLowerCase()
+            );
+            setFilteredPhotos(filtered);
+            console.log(`Filtered by ${value}: ${filtered.length} images`);
+        } else {
+            // Filter by album ID
+            const albumId = parseInt(value);
+            const filtered = photos.filter(photo =>
+                photo.albumId === albumId ||
+                (photo.albumId && photo.albumId.toString() === value)
+            );
+            setFilteredPhotos(filtered);
+            console.log(`Filtered by album ${albumId}: ${filtered.length} images`);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -344,8 +505,13 @@ const NewsCreate = () => {
             Object.keys(files).forEach(key => {
                 if (files[key]) {
                     submitData.append(key, files[key]);
-                } else if (selectedImages[key]) {
-                    submitData.append(`${key}Path`, selectedImages[key].imageUrl || selectedImages[key].image);
+                }
+            });
+
+            // Append selected image paths from gallery
+            Object.keys(selectedImages).forEach(key => {
+                if (selectedImages[key]) {
+                    submitData.append(`${key}Path`, selectedImages[key].imageUrl);
                 }
             });
 
@@ -441,73 +607,195 @@ const NewsCreate = () => {
 
     // Common Modal Component for Image Selection
     const ImageSelectionModal = ({ show, onClose, onSelect, title }) => {
+        const [imageSearch, setImageSearch] = useState('');
+        const [showUploadSection, setShowUploadSection] = useState(false);
+
         if (!show) return null;
+
+        // Filter photos based on search
+        const searchedPhotos = imageSearch ? filteredPhotos.filter(photo =>
+            photo.filename.toLowerCase().includes(imageSearch.toLowerCase()) ||
+            (photo.caption && photo.caption.toLowerCase().includes(imageSearch.toLowerCase())) ||
+            (photo.source && photo.source.toLowerCase().includes(imageSearch.toLowerCase()))
+        ) : filteredPhotos;
 
         return (
             <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                <div className="modal-dialog modal-xl">
+                <div className="modal-dialog modal-xl modal-dialog-scrollable">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">{title}</h5>
                             <button type="button" className="btn-close" onClick={onClose}></button>
                         </div>
                         <div className="modal-body">
-                            <div className="mb-3">
-                                <label className="form-label">Filter by Album</label>
-                                <select
-                                    className="form-control"
-                                    value={selectedAlbum}
-                                    onChange={handleAlbumChange}
-                                >
-                                    <option value="all">All Albums</option>
-                                    {albums.map(album => (
-                                        <option key={album.id} value={album.id}>
-                                            {album.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="mb-3">
-                                <small className="text-muted">
-                                    Showing {filteredPhotos.length} photos
-                                    {selectedAlbum !== 'all' && ` from selected album`}
-                                </small>
-                            </div>
-
-                            <div className="row">
-                                {filteredPhotos.map(photo => (
-                                    <div key={photo.id} className="col-md-3 mb-3">
-                                        <div
-                                            className="card cursor-pointer"
-                                            onClick={() => onSelect(photo)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <img
-                                                src={`${API_URL}/${photo.imageUrl}`}
-                                                className="card-img-top"
-                                                alt={photo.caption || 'Photo'}
-                                                style={{ height: '150px', objectFit: 'cover' }}
-                                                onError={(e) => {
-                                                    e.target.src = '/placeholder-image.jpg';
-                                                }}
-                                            />
-                                            <div className="card-body p-2">
-                                                <small className="card-text text-truncate d-block">
-                                                    {photo.caption || 'No caption'}
-                                                </small>
-                                                <small className="text-muted">
-                                                    Album: {albums.find(a => a.id === photo.albumId)?.name || 'Unknown'}
-                                                </small>
+                            {/* Upload Section */}
+                            <div className="card mb-4">
+                                <div className="card-header">
+                                    <button
+                                        className="btn btn-link text-decoration-none"
+                                        onClick={() => setShowUploadSection(!showUploadSection)}
+                                    >
+                                        {showUploadSection ? '▲' : '▼'} Upload New Image
+                                    </button>
+                                </div>
+                                {showUploadSection && (
+                                    <div className="card-body">
+                                        <div className="row">
+                                            <div className="col-md-6">
+                                                <div className="mb-3">
+                                                    <label className="form-label">Select Image</label>
+                                                    <input
+                                                        type="file"
+                                                        className="form-control"
+                                                        accept="image/*"
+                                                        onChange={(e) => setUploadFile(e.target.files[0])}
+                                                    />
+                                                    {uploadFile && (
+                                                        <small className="text-muted">
+                                                            Selected: {uploadFile.name}
+                                                        </small>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="col-md-4">
+                                                <div className="mb-3">
+                                                    <label className="form-label">Album (Optional)</label>
+                                                    <select
+                                                        className="form-control"
+                                                        value={uploadAlbumId}
+                                                        onChange={(e) => setUploadAlbumId(e.target.value)}
+                                                    >
+                                                        <option value="">Select Album</option>
+                                                        {albums.map(album => (
+                                                            <option key={album.id} value={album.id}>
+                                                                {album.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-2 d-flex align-items-end">
+                                                <button
+                                                    className="btn btn-primary w-100"
+                                                    onClick={handleUploadImage}
+                                                    disabled={uploading || !uploadFile}
+                                                >
+                                                    {uploading ? (
+                                                        <>
+                                                            <span className="spinner-border spinner-border-sm me-1"></span>
+                                                            Uploading...
+                                                        </>
+                                                    ) : 'Upload'}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                )}
                             </div>
 
-                            {filteredPhotos.length === 0 && (
+                            {/* Search and Filter Section */}
+                            <div className="row mb-3">
+                                <div className="col-md-6">
+                                    <label className="form-label">Filter Images</label>
+                                    <select
+                                        className="form-control"
+                                        value={selectedAlbum}
+                                        onChange={handleAlbumChange}
+                                    >
+                                        <option value="all">All Images ({photos.length})</option>
+                                        <optgroup label="By Source">
+                                            <option value="article">Articles ({photos.filter(p => p.source === 'article').length})</option>
+                                            <option value="blog">Blogs ({photos.filter(p => p.source === 'blog').length})</option>
+                                            <option value="news">News ({photos.filter(p => p.source === 'news').length})</option>
+                                            <option value="photo">Gallery Photos ({photos.filter(p => p.source === 'photo').length})</option>
+                                            <option value="other">Orphaned/Other ({photos.filter(p => p.source === 'other').length})</option>
+                                        </optgroup>
+                                        <optgroup label="By Album">
+                                            {albums.map(album => {
+                                                const albumImageCount = photos.filter(p => p.albumId === album.id || p.albumId === album.id.toString()).length;
+                                                return (
+                                                    <option key={album.id} value={album.id}>
+                                                        {album.name} ({albumImageCount})
+                                                    </option>
+                                                );
+                                            })}
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label">Search Images</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Search by filename, caption, or source..."
+                                        value={imageSearch}
+                                        onChange={(e) => setImageSearch(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Image Count */}
+                            <div className="mb-3">
+                                <small className="text-muted">
+                                    Showing {searchedPhotos.length} of {photos.length} total images
+                                    {selectedAlbum !== 'all' &&
+                                        ` • Filtered: ${getSourceLabel(selectedAlbum)}`
+                                    }
+                                    {imageSearch && ` • Search: "${imageSearch}"`}
+                                </small>
+                            </div>
+
+                            {/* Images Grid */}
+                            {searchedPhotos.length === 0 ? (
                                 <div className="text-center text-muted py-4">
-                                    No photos found
+                                    {imageSearch ?
+                                        `No images found matching "${imageSearch}"` :
+                                        'No images found. Try uploading some images!'}
+                                </div>
+                            ) : (
+                                <div className="row">
+                                    {searchedPhotos.map(photo => (
+                                        <div key={photo.id} className="col-md-3 mb-3">
+                                            <div
+                                                className="card cursor-pointer h-100"
+                                                onClick={() => onSelect(photo)}
+                                                style={{ cursor: 'pointer' }}
+                                                title={`Click to select\nSource: ${getSourceLabel(photo.source)}\n${photo.caption || 'No caption'}`}
+                                            >
+                                                <div className="position-relative">
+                                                    <img
+                                                        src={`${API_URL}/${photo.imageUrl}`}
+                                                        className="card-img-top"
+                                                        alt={photo.caption || 'Photo'}
+                                                        style={{ height: '150px', objectFit: 'cover' }}
+                                                        onError={(e) => {
+                                                            e.target.src = '/placeholder-image.jpg';
+                                                            e.target.onerror = null;
+                                                        }}
+                                                    />
+                                                    <span className={`badge position-absolute top-0 end-0 m-1 ${getSourceBadgeClass(photo.source)}`}>
+                                                        {getSourceLabel(photo.source)}
+                                                    </span>
+                                                </div>
+                                                <div className="card-body p-2">
+                                                    <small className="card-text d-block text-truncate" title={photo.caption}>
+                                                        {photo.caption || 'No caption'}
+                                                    </small>
+                                                    {photo.albumId && (
+                                                        <small className="text-muted d-block">
+                                                            Album: {albums.find(a => a.id === photo.albumId)?.name || 'Unknown'}
+                                                        </small>
+                                                    )}
+                                                    <small className="text-muted d-block text-truncate" title={photo.filename}>
+                                                        {photo.filename}
+                                                    </small>
+                                                    <small className="text-muted d-block">
+                                                        Added: {new Date(photo.createdAt).toLocaleDateString()}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>

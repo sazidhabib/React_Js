@@ -62,9 +62,9 @@ const createNews = async (req, res) => {
         const parsedCategoryIds = categoryIds ? JSON.parse(categoryIds) : [];
 
         // Handle file uploads
-        const leadImage = req.files?.leadImage ? req.files.leadImage[0].filename : null;
-        const thumbImage = req.files?.thumbImage ? req.files.thumbImage[0].filename : null;
-        const metaImage = req.files?.metaImage ? req.files.metaImage[0].filename : null;
+        const leadImage = req.files?.leadImage ? `uploads/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
+        const thumbImage = req.files?.thumbImage ? `uploads/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
+        const metaImage = req.files?.metaImage ? `uploads/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
 
         // Create full paths for images
         const leadImagePath = leadImage ? `uploads/${leadImage}` : null;

@@ -65,39 +65,41 @@ const PhotoDashboard = () => {
 
     const handleDelete = async () => {
         try {
-            // Check if it's a managed photo or just a registry entry
-            if (imageToDelete.isManaged) {
-                // Delete from photos table
-                await axios.delete(`${API_BASE_URL}/${imageToDelete.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    data: {
-                        deleteFromFS: deleteFromFS
-                    }
-                });
-            } else {
-                // Delete from image registry
-                await axios.delete(`${API_BASE_URL}/registry/${imageToDelete.id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    data: {
-                        deleteFromFS: deleteFromFS
-                    }
-                });
-            }
+            let deleteUrl;
+
+            console.log('Image to delete:', imageToDelete);
+
+            // ALWAYS use the registry endpoint for deletion
+            // The registry endpoint handles both photos and other images
+            deleteUrl = `${API_BASE_URL}/registry/${imageToDelete.id}`;
+
+            console.log('Delete URL:', deleteUrl);
+
+            const response = await axios.delete(deleteUrl, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                data: {
+                    deleteFromFS: deleteFromFS
+                }
+            });
 
             toast.success("Image deleted successfully");
             setConfirmModalShow(false);
             setDeleteFromFS(false);
             fetchAllImages();
+
         } catch (err) {
+            console.error("Delete error details:", {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                url: err.config?.url
+            });
+
             toast.error(err.response?.data?.message || "Failed to delete image");
-            console.error("Delete error:", err);
         }
     };
-
     const handleAddToGallery = async (image) => {
         try {
             await axios.post(`${API_BASE_URL}/add-to-gallery`, {

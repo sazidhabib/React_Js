@@ -1,14 +1,44 @@
 const Menu = require('../models/menu-model');
 const { Op } = require('sequelize');
 
+
+// Debug middleware for getMenus
+const debugMiddleware = (req, res, next) => {
+    console.log('🔍 Debug - Request received for getMenus');
+    console.log('URL:', req.url);
+    console.log('Method:', req.method);
+
+    // Store the original json method
+    const originalJson = res.json;
+
+    // Override json method to see what's being sent
+    res.json = function (data) {
+        console.log('🔍 Debug - Response being sent:');
+        console.log('Type:', typeof data);
+        console.log('Is array?', Array.isArray(data));
+        console.log('Data:', JSON.stringify(data).substring(0, 200) + '...');
+
+        // Call original method
+        return originalJson.call(this, data);
+    };
+
+    next();
+};
+
+
 // Helper function to build menu tree
 const buildMenuTree = (menus, parentId = null) => {
+    if (!menus || !Array.isArray(menus)) return [];
+
     return menus
         .filter(menu => menu.parentId === parentId)
-        .map(menu => ({
-            ...menu.toJSON(),
-            children: buildMenuTree(menus, menu.id)
-        }))
+        .map(menu => {
+            const menuObj = menu.toJSON ? menu.toJSON() : menu;
+            return {
+                ...menuObj,
+                children: buildMenuTree(menus, menuObj.id)
+            };
+        })
         .sort((a, b) => a.order - b.order);
 };
 
@@ -85,46 +115,104 @@ const createMenu = async (req, res) => {
     }
 };
 
+
 // Public Routes
 const getMenus = async (req, res) => {
+    console.log('✅✅✅ SIMPLE GET MENUS CALLED ✅✅✅');
+
     try {
-        const { format = 'flat', activeOnly = 'false' } = req.query;
-
-        const whereClause = {};
-        if (activeOnly === 'true') {
-            whereClause.isActive = true;
-        }
-
-        const menus = await Menu.findAll({
-            where: whereClause,
-            include: [{
-                model: Menu,
-                as: 'parent',
-                attributes: ['id', 'name']
-            }],
-            order: [['level', 'ASC'], ['order', 'ASC']]
-        });
-
-        let responseData;
-        if (format === 'tree') {
-            responseData = buildMenuTree(menus);
-        } else {
-            responseData = menus;
-        }
-
-        res.status(200).json({
+        // Just return a simple object
+        const response = {
             success: true,
-            data: responseData,
-            format: format
-        });
+            data: [
+                { id: 1, name: 'Test from getMenus', path: '/test' }
+            ],
+            message: 'getMenus function is working!'
+        };
+
+        console.log('Sending response:', response);
+        res.json(response);
+
     } catch (err) {
-        res.status(500).json({
+        console.error('Error in simple getMenus:', err);
+        res.json({
             success: false,
-            message: 'Server error',
             error: err.message
         });
     }
+    // console.log('=== 🎯 GET MENUS CALLED 🎯 ===');
+
+    // try {
+    //     const { format = 'flat', activeOnly = 'false' } = req.query;
+    //     console.log('Params - format:', format, 'activeOnly:', activeOnly);
+
+    //     // Build where clause
+    //     const whereClause = {};
+    //     if (activeOnly === 'true') {
+    //         whereClause.isActive = true;
+    //     }
+    //     console.log('Where clause:', whereClause);
+
+    //     // Get menus
+    //     const menus = await Menu.findAll({
+    //         where: whereClause,
+    //         include: [{
+    //             model: Menu,
+    //             as: 'parent',
+    //             attributes: ['id', 'name']
+    //         }],
+    //         order: [['level', 'ASC'], ['order', 'ASC']]
+    //     });
+
+    //     console.log('Found', menus.length, 'menus in database');
+
+    //     if (menus.length > 0) {
+    //         console.log('Sample menu:', {
+    //             id: menus[0].id,
+    //             name: menus[0].name,
+    //             parent: menus[0].parent
+    //         });
+    //     }
+
+    //     let responseData;
+    //     if (format === 'tree') {
+    //         responseData = buildMenuTree(menus);
+    //     } else {
+    //         responseData = menus;
+    //     }
+
+    //     // 🚨 CRITICAL: Always return object structure, not array
+    //     const response = {
+    //         success: true,
+    //         data: responseData || [],
+    //         format: format,
+    //         count: Array.isArray(responseData) ? responseData.length : 0
+    //     };
+
+    //     console.log('Sending response structure:', {
+    //         type: typeof response,
+    //         keys: Object.keys(response),
+    //         dataIsArray: Array.isArray(response.data),
+    //         dataLength: response.data.length
+    //     });
+
+    //     // 🚨 Make sure to send the OBJECT, not the array
+    //     res.status(200).json(response);
+
+    // } catch (err) {
+    //     console.error('❌ Get menus error:', err);
+    //     console.error('Error stack:', err.stack);
+
+    //     // Even errors should return object structure
+    //     res.status(500).json({
+    //         success: false,
+    //         message: 'Server error',
+    //         error: err.message,
+    //         data: []  // Always include data property
+    //     });
+    // }
 };
+
 
 // Get menu by ID with children
 const getMenuById = async (req, res) => {
@@ -184,13 +272,14 @@ const getParentMenus = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: parentMenus
+            data: parentMenus || []
         });
     } catch (err) {
         res.status(500).json({
             success: false,
             message: 'Server error',
-            error: err.message
+            error: err.message,
+            data: []
         });
     }
 };
@@ -363,5 +452,6 @@ module.exports = {
     getParentMenus,
     updateMenu,
     deleteMenu,
-    updateMenuOrder
+    updateMenuOrder,
+    debugMiddleware
 };

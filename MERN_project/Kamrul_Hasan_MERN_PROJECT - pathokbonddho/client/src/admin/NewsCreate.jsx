@@ -207,27 +207,42 @@ const NewsCreate = () => {
         try {
             console.log('Fetching dropdown data...');
 
-            const [authorsRes, tagsRes, categoriesRes] = await Promise.all([
-                axios.get(`${API_URL}/api/authors`),
-                axios.get(`${API_URL}/api/tags`),
-                axios.get(`${API_URL}/api/menus`)
-            ]);
+            // Fetch authors
+            const authorsRes = await axios.get(`${API_URL}/api/authors`);
+            console.log('Authors API response:', authorsRes.data);
 
-            const extractArray = (data, possibleKeys) => {
-                if (Array.isArray(data)) return data;
-                for (let key of possibleKeys) {
-                    if (data && Array.isArray(data[key])) return data[key];
-                }
-                if (data && typeof data === 'object') {
-                    for (let key in data) {
-                        if (Array.isArray(data[key])) return data[key];
-                    }
-                }
-                return [];
-            };
+            // Your API returns: { authors: [...], totalCount: X, ... }
+            // So extract authors from the response correctly
+            let authorsData = [];
+            if (authorsRes.data.authors && Array.isArray(authorsRes.data.authors)) {
+                authorsData = authorsRes.data.authors;
+            } else if (Array.isArray(authorsRes.data)) {
+                authorsData = authorsRes.data;
+            } else if (authorsRes.data.rows && Array.isArray(authorsRes.data.rows)) {
+                authorsData = authorsRes.data.rows;
+            }
+            console.log('Extracted authors:', authorsData);
+            setAuthors(authorsData);
 
-            setAuthors(extractArray(authorsRes.data, ['authors', 'data', 'rows']));
-            setTags(extractArray(tagsRes.data, ['tags', 'data', 'rows']));
+            // Fetch tags
+            const tagsRes = await axios.get(`${API_URL}/api/tags`);
+            console.log('Tags API response:', tagsRes.data);
+
+            let tagsData = [];
+            if (tagsRes.data.tags && Array.isArray(tagsRes.data.tags)) {
+                tagsData = tagsRes.data.tags;
+            } else if (Array.isArray(tagsRes.data)) {
+                tagsData = tagsRes.data;
+            } else if (tagsRes.data.rows && Array.isArray(tagsRes.data.rows)) {
+                tagsData = tagsRes.data.rows;
+            }
+            console.log('Extracted tags:', tagsData);
+            setTags(tagsData);
+
+            // Fetch categories
+            const categoriesRes = await axios.get(`${API_URL}/api/menus`);
+            console.log('Categories API response:', categoriesRes.data);
+
             const rawCategories = extractArray(categoriesRes.data, ['menus', 'categories', 'data', 'rows']);
             setCategories(processCategories(rawCategories));
 

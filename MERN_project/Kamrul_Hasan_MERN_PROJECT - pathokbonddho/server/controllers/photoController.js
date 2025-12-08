@@ -580,56 +580,7 @@ exports.deleteImageFromRegistry = async (req, res, next) => {
     }
 };
 
-// Add this endpoint
-exports.getAllImagesNoPagination = async (req, res, next) => {
-    try {
-        console.log('📸 Fetching ALL images without pagination');
 
-        // Get ALL images without pagination
-        const images = await ImageRegistry.findAll({
-            order: [['createdAt', 'DESC']]
-        });
-
-        console.log(`✅ Found ${images.length} total images`);
-
-        // Transform data for frontend
-        const transformedImages = images.map(img => {
-            let imageUrl = img.filePath;
-
-            if (!imageUrl.includes('uploads/') && !imageUrl.includes('/uploads/')) {
-                imageUrl = `uploads/${imageUrl}`;
-            } else if (imageUrl.startsWith('/') && !imageUrl.includes('uploads/')) {
-                imageUrl = `uploads${imageUrl}`;
-            }
-
-            imageUrl = imageUrl.replace(/([^:]\/)\/+/g, '$1');
-
-            return {
-                id: img.id,
-                filename: img.filename,
-                imageUrl: imageUrl,
-                source: img.sourceType,
-                caption: '',
-                albumId: null,
-                source: img.sourceType,
-                createdAt: img.createdAt,
-                updatedAt: img.updatedAt
-            };
-        });
-
-        res.status(200).json({
-            success: true,
-            images: transformedImages,
-            totalCount: images.length
-        });
-    } catch (error) {
-        console.error('❌ Error in getAllImagesNoPagination:', error.message);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch images: ' + error.message
-        });
-    }
-};
 
 // NEW: Convert image to photo (for orphaned images)
 exports.convertToPhoto = async (req, res, next) => {

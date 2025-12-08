@@ -21,7 +21,6 @@ const MenuDashboard = () => {
 
     const { token } = useAuth();
 
-    // Fetch menus
     const fetchMenus = async () => {
         setLoading(true);
         try {
@@ -30,11 +29,42 @@ const MenuDashboard = () => {
                 activeOnly: activeOnly
             };
 
+            console.log('🔄 Fetching menus from:', API_URL);
+            console.log('With params:', params);
+            console.log('Full URL:', `${API_URL}?format=${viewFormat}&activeOnly=${activeOnly}`);
+
             const res = await axios.get(API_URL, { params });
-            setMenus(res.data.data);
+
+            console.log('📦 Full API Response:', res);
+            console.log('📦 Response status:', res.status);
+            console.log('📦 Response headers:', res.headers);
+            console.log('📦 Response data:', res.data);
+
+            // Direct check
+            if (Array.isArray(res.data)) {
+                console.log('Response is a direct array');
+                setMenus(res.data);
+            } else if (res.data && res.data.data) {
+                console.log('Response has data property');
+                setMenus(res.data.data);
+            } else {
+                console.log('Unexpected response structure');
+                setMenus([]);
+            }
+
         } catch (err) {
-            toast.error("Failed to fetch menus");
-            console.error("Fetch error:", err);
+            console.error('❌ Fetch error:', {
+                message: err.message,
+                code: err.code,
+                response: err.response?.data,
+                status: err.response?.status,
+                config: {
+                    url: err.config?.url,
+                    method: err.config?.method
+                }
+            });
+            toast.error(`Failed to fetch menus: ${err.message}`);
+            setMenus([]);
         } finally {
             setLoading(false);
         }
@@ -44,9 +74,21 @@ const MenuDashboard = () => {
     const fetchParentMenus = async () => {
         try {
             const res = await axios.get(`${API_URL}/parents`);
-            setParentMenus(res.data.data);
+            console.log('Parent menus response:', res.data);
+
+            // Check if response has data property
+            if (res.data.success && res.data.data) {
+                const parentData = Array.isArray(res.data.data) ? res.data.data : [];
+                setParentMenus(parentData);
+                console.log('Parent menus set:', parentData.length, 'items');
+            } else {
+                console.warn('Unexpected parent menus response:', res.data);
+                setParentMenus([]);
+            }
         } catch (err) {
             console.error("Failed to fetch parent menus:", err);
+            toast.error("Failed to load parent menus");
+            setParentMenus([]);
         }
     };
 

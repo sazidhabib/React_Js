@@ -5,8 +5,6 @@ const fs = require("fs");
 require("dotenv").config();
 
 const sequelize = require("./db/database");
-const { getSyncOptions } = require("./config/database");
-const safeSync = require("./utils/databaseSync");
 const errorMiddleware = require("./middlewares/error-middleware");
 
 const app = express();
@@ -34,6 +32,7 @@ const authorRoutes = require('./router/author-router');
 const adRouter = require('./router/ad-router');
 const designRoutes = require('./router/design-router');
 const imageRegistryRoutes = require('./router/imageRegistryRoutes');
+const menuRoutes = require('./router/menu-routes');
 
 // Routes
 app.use("/api/auth", require("./router/auth-router"));
@@ -41,7 +40,7 @@ app.use("/api/articles", require("./router/article-router"));
 app.use("/api/blogs", require("./router/blog-router"));
 app.use("/api/songs", require("./router/songsRoutes"));
 app.use("/api", require("./router/photoRoutes"));
-app.use("/api/menus", require("./router/menu-routes"));
+app.use("/api/menus", menuRoutes);
 app.use("/api/hero-section", require("./router/heroSectionRoutes"));
 app.use("/api/sections", require("./router/sectionRoutes"));
 app.use("/api/v1/videos", require("./router/videoRoutes"));

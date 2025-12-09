@@ -35,12 +35,11 @@ const imageRegistryRoutes = require('./router/imageRegistryRoutes');
 const menuRoutes = require('./router/menu-routes');
 
 // Routes
+app.use("/api/menus", menuRoutes);
 app.use("/api/auth", require("./router/auth-router"));
 app.use("/api/articles", require("./router/article-router"));
 app.use("/api/blogs", require("./router/blog-router"));
 app.use("/api/songs", require("./router/songsRoutes"));
-app.use("/api", require("./router/photoRoutes"));
-app.use("/api/menus", menuRoutes);
 app.use("/api/hero-section", require("./router/heroSectionRoutes"));
 app.use("/api/sections", require("./router/sectionRoutes"));
 app.use("/api/v1/videos", require("./router/videoRoutes"));
@@ -49,8 +48,10 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/authors', authorRoutes);
 app.use('/api/ads', adRouter);
 app.use('/api/designs', designRoutes);
+app.use("/api", require("./router/photoRoutes"));
 app.use("/api/images", require("./router/imageRoutes"));
 app.use('/api/image-registry', imageRegistryRoutes);
+
 
 app.get("/", (req, res) => res.send("Database is connected successfully"));
 app.get("/register", (req, res) => res.send("Hello World this is register page"));

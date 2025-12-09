@@ -117,100 +117,122 @@ const createMenu = async (req, res) => {
 
 
 // Public Routes
+// Public Routes
 const getMenus = async (req, res) => {
-    console.log('✅✅✅ SIMPLE GET MENUS CALLED ✅✅✅');
+    console.log('=== 🎯 GET MENUS CALLED 🎯 ===');
 
     try {
-        // Just return a simple object
+        const { format = 'flat', activeOnly = 'false' } = req.query;
+        console.log('Query params:', { format, activeOnly });
+
+        // 1. Build where clause FIRST
+        const whereClause = {};
+        if (activeOnly === 'true') {
+            whereClause.isActive = true;
+        }
+        console.log('Where clause:', whereClause);
+
+        // 2. Test queries (optional - for debugging)
+        console.log('=== Testing different queries ===');
+
+        const allMenus = await Menu.findAll({
+            order: [['id', 'ASC']]
+        });
+        console.log('All menus (no conditions):', allMenus.length);
+
+        const activeMenus = await Menu.findAll({
+            where: { isActive: true },
+            order: [['id', 'ASC']]
+        });
+        console.log('Active menus only:', activeMenus.length);
+
+        const inactiveMenus = await Menu.findAll({
+            where: { isActive: false },
+            order: [['id', 'ASC']]
+        });
+        console.log('Inactive menus:', inactiveMenus.length);
+
+        console.log('=== Testing complete ===');
+
+        // 3. Get menus with the actual query using whereClause
+        const menus = await Menu.findAll({
+            where: whereClause,
+            include: [{
+                model: Menu,
+                as: 'parent',
+                attributes: ['id', 'name']
+            }],
+            order: [['level', 'ASC'], ['order', 'ASC']]
+        });
+
+        console.log('Main query found:', menus.length, 'menus');
+
+        if (menus.length === 0) {
+            console.log('No menus found with current filters');
+            return res.json({
+                success: true,
+                data: [],
+                count: 0,
+                format: format,
+                message: 'No menus found'
+            });
+        }
+
+        console.log('First menu sample:', {
+            id: menus[0].id,
+            name: menus[0].name,
+            parentId: menus[0].parentId,
+            parent: menus[0].parent,
+            isActive: menus[0].isActive
+        });
+
+        // 4. Convert to plain objects
+        const plainMenus = menus.map(menu => menu.toJSON());
+
+        // 5. Add parent information manually (if not already included)
+        const menusWithParents = await Promise.all(
+            plainMenus.map(async (menu) => {
+                if (!menu.parent && menu.parentId) {
+                    const parent = await Menu.findByPk(menu.parentId, {
+                        attributes: ['id', 'name']
+                    });
+                    menu.parent = parent ? { id: parent.id, name: parent.name } : null;
+                } else if (!menu.parentId) {
+                    menu.parent = null;
+                }
+                return menu;
+            })
+        );
+
+        // 6. Build response based on format
+        let responseData;
+        if (format === 'tree') {
+            responseData = buildMenuTree(menusWithParents);
+        } else {
+            responseData = menusWithParents;
+        }
+
+        // 7. Send response
         const response = {
             success: true,
-            data: [
-                { id: 1, name: 'Test from getMenus', path: '/test' }
-            ],
-            message: 'getMenus function is working!'
+            data: responseData,
+            count: responseData.length,
+            format: format
         };
 
-        console.log('Sending response:', response);
+        console.log('📤 Sending response with', response.data.length, 'menus');
         res.json(response);
 
     } catch (err) {
-        console.error('Error in simple getMenus:', err);
-        res.json({
+        console.error('❌ Get menus error:', err.message);
+        console.error('Error stack:', err.stack);
+        res.status(500).json({
             success: false,
-            error: err.message
+            message: 'Server error',
+            error: err.message,
+            data: []
         });
     }
-    // console.log('=== 🎯 GET MENUS CALLED 🎯 ===');
-
-    // try {
-    //     const { format = 'flat', activeOnly = 'false' } = req.query;
-    //     console.log('Params - format:', format, 'activeOnly:', activeOnly);
-
-    //     // Build where clause
-    //     const whereClause = {};
-    //     if (activeOnly === 'true') {
-    //         whereClause.isActive = true;
-    //     }
-    //     console.log('Where clause:', whereClause);
-
-    //     // Get menus
-    //     const menus = await Menu.findAll({
-    //         where: whereClause,
-    //         include: [{
-    //             model: Menu,
-    //             as: 'parent',
-    //             attributes: ['id', 'name']
-    //         }],
-    //         order: [['level', 'ASC'], ['order', 'ASC']]
-    //     });
-
-    //     console.log('Found', menus.length, 'menus in database');
-
-    //     if (menus.length > 0) {
-    //         console.log('Sample menu:', {
-    //             id: menus[0].id,
-    //             name: menus[0].name,
-    //             parent: menus[0].parent
-    //         });
-    //     }
-
-    //     let responseData;
-    //     if (format === 'tree') {
-    //         responseData = buildMenuTree(menus);
-    //     } else {
-    //         responseData = menus;
-    //     }
-
-    //     // 🚨 CRITICAL: Always return object structure, not array
-    //     const response = {
-    //         success: true,
-    //         data: responseData || [],
-    //         format: format,
-    //         count: Array.isArray(responseData) ? responseData.length : 0
-    //     };
-
-    //     console.log('Sending response structure:', {
-    //         type: typeof response,
-    //         keys: Object.keys(response),
-    //         dataIsArray: Array.isArray(response.data),
-    //         dataLength: response.data.length
-    //     });
-
-    //     // 🚨 Make sure to send the OBJECT, not the array
-    //     res.status(200).json(response);
-
-    // } catch (err) {
-    //     console.error('❌ Get menus error:', err);
-    //     console.error('Error stack:', err.stack);
-
-    //     // Even errors should return object structure
-    //     res.status(500).json({
-    //         success: false,
-    //         message: 'Server error',
-    //         error: err.message,
-    //         data: []  // Always include data property
-    //     });
-    // }
 };
 
 

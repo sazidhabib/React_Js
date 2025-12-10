@@ -208,46 +208,57 @@ const NewsCreate = () => {
             console.log('Fetching dropdown data...');
 
             // Fetch authors
+            console.log('Fetching authors...');
             const authorsRes = await axios.get(`${API_URL}/api/authors`);
-            console.log('Authors API response:', authorsRes.data);
+            console.log('Authors API full response:', authorsRes);
 
-            // Your API returns: { authors: [...], totalCount: X, ... }
-            // So extract authors from the response correctly
+            // Extract authors data
             let authorsData = [];
-            if (authorsRes.data.authors && Array.isArray(authorsRes.data.authors)) {
+            if (authorsRes.data && authorsRes.data.authors) {
                 authorsData = authorsRes.data.authors;
             } else if (Array.isArray(authorsRes.data)) {
                 authorsData = authorsRes.data;
-            } else if (authorsRes.data.rows && Array.isArray(authorsRes.data.rows)) {
-                authorsData = authorsRes.data.rows;
             }
-            console.log('Extracted authors:', authorsData);
+            console.log('Authors data extracted:', authorsData.length, 'authors');
+            console.log('Sample author:', authorsData[0]);
             setAuthors(authorsData);
 
             // Fetch tags
+            console.log('Fetching tags...');
             const tagsRes = await axios.get(`${API_URL}/api/tags`);
-            console.log('Tags API response:', tagsRes.data);
+            console.log('Tags API full response:', tagsRes);
 
             let tagsData = [];
-            if (tagsRes.data.tags && Array.isArray(tagsRes.data.tags)) {
+            if (tagsRes.data && tagsRes.data.tags) {
                 tagsData = tagsRes.data.tags;
             } else if (Array.isArray(tagsRes.data)) {
                 tagsData = tagsRes.data;
-            } else if (tagsRes.data.rows && Array.isArray(tagsRes.data.rows)) {
-                tagsData = tagsRes.data.rows;
             }
-            console.log('Extracted tags:', tagsData);
+            console.log('Tags data extracted:', tagsData.length, 'tags');
+            console.log('Sample tag:', tagsData[0]);
             setTags(tagsData);
 
-            // Fetch categories
+            // Fetch categories (menus)
+            console.log('Fetching categories...');
             const categoriesRes = await axios.get(`${API_URL}/api/menus`);
-            console.log('Categories API response:', categoriesRes.data);
+            console.log('Categories API full response:', categoriesRes);
 
-            const rawCategories = extractArray(categoriesRes.data, ['menus', 'categories', 'data', 'rows']);
-            setCategories(processCategories(rawCategories));
+            let categoriesData = [];
+            if (categoriesRes.data && categoriesRes.data.data) {
+                categoriesData = categoriesRes.data.data;
+            } else if (Array.isArray(categoriesRes.data)) {
+                categoriesData = categoriesRes.data;
+            }
+
+            console.log('Categories data extracted:', categoriesData.length, 'categories');
+            console.log('Sample category:', categoriesData[0]);
+
+            // Process categories for hierarchical display
+            setCategories(processCategories(categoriesData));
 
         } catch (error) {
             console.error('Error fetching dropdown data:', error);
+            console.error('Error response:', error.response?.data);
             toast.error('Failed to load dropdown data');
             setAuthors([]);
             setTags([]);
@@ -255,6 +266,28 @@ const NewsCreate = () => {
         }
     };
 
+    // Add this helper function
+    const extractArray = (data, possibleKeys) => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+
+        for (let key of possibleKeys) {
+            if (data && data[key] && Array.isArray(data[key])) {
+                return data[key];
+            }
+        }
+
+        // If no array found, try to find any array in the object
+        if (data && typeof data === 'object') {
+            for (let key in data) {
+                if (Array.isArray(data[key])) {
+                    return data[key];
+                }
+            }
+        }
+
+        return [];
+    };
     const fetchAlbums = async () => {
         try {
             const response = await axios.get(`${API_URL}/api/albums`);

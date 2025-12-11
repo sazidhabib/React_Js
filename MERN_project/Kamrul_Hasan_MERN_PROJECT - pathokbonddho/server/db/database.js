@@ -25,9 +25,7 @@ const sequelize = new Sequelize(
             acquire: 30000,
             idle: 10000,
         },
-        //logging: false,
-        logging: console.log, // Enable SQL logging to see queries
-        // Prevent automatic sync operations
+        logging: false,
         sync: {
             force: false,
             alter: false

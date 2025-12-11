@@ -3,10 +3,10 @@ const News = require("../models/news-model");
 const NewsTag = require("../models/news-tag-model");
 const NewsCategory = require("../models/news-category-model");
 const Tag = require("../models/tag-model");
-const Category = require("../models/category-model");
+const Category = require("../models/menu-model");
 const Author = require("../models/author-model");
 const ImageService = require('../services/imageService');
-const ImageRegistry = require('../models/image-registry-model');
+const ImageRegistry = require('../models/imageRegistry');
 const fs = require("fs");
 const path = require("path");
 const { Sequelize } = require('sequelize');
@@ -57,9 +57,45 @@ const createNews = async (req, res) => {
             });
         }
 
-        // Parse tagIds and categoryIds
-        const parsedTagIds = tagIds ? JSON.parse(tagIds) : [];
-        const parsedCategoryIds = categoryIds ? JSON.parse(categoryIds) : [];
+        // FIXED: Handle tagIds parsing properly
+        let parsedTagIds = [];
+        if (tagIds) {
+            if (typeof tagIds === 'string') {
+                try {
+                    // Try parsing if it's a JSON string
+                    parsedTagIds = JSON.parse(tagIds);
+                } catch (error) {
+                    // If parsing fails, assume it's a comma-separated string
+                    parsedTagIds = tagIds.split(',').filter(id => id.trim() !== '');
+                }
+            } else if (Array.isArray(tagIds)) {
+                // If it's already an array, use it directly
+                parsedTagIds = tagIds;
+            }
+        }
+
+        // FIXED: Handle categoryIds parsing properly
+        let parsedCategoryIds = [];
+        if (categoryIds) {
+            if (typeof categoryIds === 'string') {
+                try {
+                    // Try parsing if it's a JSON string
+                    parsedCategoryIds = JSON.parse(categoryIds);
+                } catch (error) {
+                    // If parsing fails, assume it's a single ID or comma-separated
+                    parsedCategoryIds = categoryIds.split(',').filter(id => id.trim() !== '');
+                }
+            } else if (Array.isArray(categoryIds)) {
+                // If it's already an array, use it directly
+                parsedCategoryIds = categoryIds;
+            } else {
+                // If it's a single value, put it in an array
+                parsedCategoryIds = [categoryIds];
+            }
+        }
+
+        console.log('parsedTagIds:', parsedTagIds);
+        console.log('parsedCategoryIds:', parsedCategoryIds);
 
         // Handle file uploads
         const leadImage = req.files?.leadImage ? `uploads/${req.files.leadImage[0].filename}` : req.body.leadImagePath;

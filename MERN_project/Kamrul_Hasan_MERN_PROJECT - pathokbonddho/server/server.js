@@ -33,6 +33,7 @@ const adRouter = require('./router/ad-router');
 const designRoutes = require('./router/design-router');
 const imageRegistryRoutes = require('./router/imageRegistryRoutes');
 const menuRoutes = require('./router/menu-routes');
+const newsRouter = require('./router/news-router');
 
 // Routes
 app.use("/api/menus", menuRoutes);
@@ -51,6 +52,7 @@ app.use('/api/designs', designRoutes);
 app.use("/api", require("./router/photoRoutes"));
 app.use("/api/images", require("./router/imageRoutes"));
 app.use('/api/image-registry', imageRegistryRoutes);
+app.use("/api/news", newsRouter);
 
 
 app.get("/", (req, res) => res.send("Database is connected successfully"));

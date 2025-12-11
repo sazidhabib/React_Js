@@ -45,22 +45,48 @@ const NewsList = () => {
         }
     };
 
-    // Helper function to extract array from different response formats
     const extractArrayFromResponse = (data, key) => {
+        console.log('API Response data:', data); // Debug log
+
+        if (!data) {
+            console.warn('No data received from API');
+            return [];
+        }
+
+        // Check different possible locations
         if (Array.isArray(data)) {
             return data;
-        } else if (data && Array.isArray(data[key])) {
-            return data[key];
-        } else if (data && data.data && Array.isArray(data.data)) {
-            return data.data;
-        } else if (data && data[key] && Array.isArray(data[key])) {
-            return data[key];
-        } else if (data && data.rows && Array.isArray(data.rows)) {
+        }
+
+        // Check for 'news' key (your backend format)
+        if (data.news && Array.isArray(data.news)) {
+            return data.news;
+        }
+
+        // Check for 'rows' key (Sequelize format)
+        if (data.rows && Array.isArray(data.rows)) {
             return data.rows;
         }
-        console.warn(`No array found in response for ${key}:`, data);
+
+        // Check for 'data' key (common API format)
+        if (data.data && Array.isArray(data.data)) {
+            return data.data;
+        }
+
+        // Check if the key parameter exists
+        if (key && data[key] && Array.isArray(data[key])) {
+            return data[key];
+        }
+
+        console.warn('Could not find array in response:', data);
         return [];
     };
+
+    useEffect(() => {
+        console.log('Current news state:', news);
+        console.log('News length:', news.length);
+        console.log('Is news array?', Array.isArray(news));
+    }, [news]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this news post?')) {

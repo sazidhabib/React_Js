@@ -11,7 +11,7 @@ const Blog = require('./blog-model');
 
 // Import your new models
 const Tag = require('./tag-model');
-const Category = require('./menu-model'); // Make sure you have this
+const Menu = require('./menu-model'); // Make sure you have this
 const Author = require('./author-model'); // Make sure you have this
 const News = require('./news-model');
 const NewsTag = require('./news-tag-model');
@@ -79,13 +79,13 @@ Tag.belongsToMany(News, {
 });
 
 // News ↔ Category (Many-to-Many through NewsCategory)
-News.belongsToMany(Category, {
+News.belongsToMany(Menu, {
     through: NewsCategory,
     foreignKey: 'newsId',
     otherKey: 'categoryId',
     onDelete: 'CASCADE'
 });
-Category.belongsToMany(News, {
+Menu.belongsToMany(News, {
     through: NewsCategory,
     foreignKey: 'categoryId',
     otherKey: 'newsId',
@@ -117,11 +117,11 @@ NewsCategory.belongsTo(News, {
     foreignKey: 'newsId'
 });
 
-Category.hasMany(NewsCategory, {
+Menu.hasMany(NewsCategory, {
     foreignKey: 'categoryId',
     onDelete: 'CASCADE'
 });
-NewsCategory.belongsTo(Category, {
+NewsCategory.belongsTo(Menu, {
     foreignKey: 'categoryId'
 });
 
@@ -166,7 +166,7 @@ module.exports = {
     User,
     // Export new models
     Tag,
-    Category,
+    Menu,
     Author,
     News,
     NewsTag,

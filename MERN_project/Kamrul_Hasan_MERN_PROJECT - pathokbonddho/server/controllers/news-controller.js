@@ -3,7 +3,7 @@ const News = require("../models/news-model");
 const NewsTag = require("../models/news-tag-model");
 const NewsCategory = require("../models/news-category-model");
 const Tag = require("../models/tag-model");
-const Category = require("../models/menu-model");
+const Menu = require("../models/menu-model");
 const Author = require("../models/author-model");
 const ImageService = require('../services/imageService');
 const ImageRegistry = require('../models/imageRegistry');
@@ -180,7 +180,7 @@ const createNews = async (req, res) => {
         const completeNews = await News.findByPk(newNews.id, {
             include: [
                 { model: Tag, through: { attributes: [] } },
-                { model: Category, through: { attributes: [] } },
+                { model: Menu, through: { attributes: [] } },
                 { model: Author }
             ]
         });
@@ -201,6 +201,8 @@ const createNews = async (req, res) => {
 // ✅ Get All News Posts
 const getAllNews = async (req, res) => {
     try {
+        console.log('=== GET ALL NEWS CONTROLLER ===');
+        console.log('Query params:', req.query);
         const {
             page = 1,
             limit = 10,
@@ -221,7 +223,7 @@ const getAllNews = async (req, res) => {
                 attributes: ['id', 'name', 'slug']
             },
             {
-                model: Category,
+                model: Menu,
                 through: { attributes: [] },
                 attributes: ['id', 'name', 'slug']
             },
@@ -230,6 +232,17 @@ const getAllNews = async (req, res) => {
                 attributes: ['id', 'name']
             }
         ];
+
+        // Debug: First check if news exist without any filters
+        const allNewsCount = await News.count();
+        console.log(`Total news in database: ${allNewsCount}`);
+
+        // Debug: Get first few news without filters
+        const sampleNews = await News.findAll({
+            limit: 5,
+            order: [["createdAt", "DESC"]]
+        });
+        console.log('Sample news (first 5):', JSON.stringify(sampleNews, null, 2));
 
         // Search functionality
         if (search) {
@@ -269,8 +282,12 @@ const getAllNews = async (req, res) => {
             order: [["createdAt", "DESC"]],
             limit: parseInt(limit),
             offset: parseInt(offset),
-            distinct: true
+            distinct: true,
+            logging: console.log
         });
+
+        console.log(`Found ${count} news with current filters`);
+        console.log(`Returning ${rows.length} news`);
 
         res.status(200).json({
             news: rows,
@@ -300,7 +317,7 @@ const getNews = async (req, res) => {
                     attributes: ['id', 'name', 'slug']
                 },
                 {
-                    model: Category,
+                    model: Menu,
                     through: { attributes: [] },
                     attributes: ['id', 'name', 'slug']
                 },
@@ -340,7 +357,7 @@ const getNewsBySlug = async (req, res) => {
                     attributes: ['id', 'name', 'slug']
                 },
                 {
-                    model: Category,
+                    model: Menu,
                     through: { attributes: [] },
                     attributes: ['id', 'name', 'slug']
                 },
@@ -549,7 +566,7 @@ const updateNews = async (req, res) => {
         const completeNews = await News.findByPk(req.params.id, {
             include: [
                 { model: Tag, through: { attributes: [] } },
-                { model: Category, through: { attributes: [] } },
+                { model: Menu, through: { attributes: [] } },
                 { model: Author }
             ]
         });

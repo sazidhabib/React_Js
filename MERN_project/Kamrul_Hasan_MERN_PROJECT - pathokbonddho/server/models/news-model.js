@@ -87,4 +87,27 @@ const News = sequelize.define("News", {
     collate: "utf8mb4_unicode_ci"
 });
 
+// Associations
+News.associate = (models) => {
+    News.belongsToMany(models.Tag, {
+        through: 'NewsTag',
+        foreignKey: 'newsId',
+        otherKey: 'tagId',
+        as: 'Tags' // Make sure this matches what you're using in include
+    });
+
+    News.belongsToMany(models.Menu, {
+        through: 'NewsCategory',
+        foreignKey: 'newsId',
+        otherKey: 'categoryId',
+        as: 'Categories' // Make sure this matches
+    });
+
+    News.belongsTo(models.Author, {
+        foreignKey: 'authorId',
+        as: 'Author' // Make sure this matches
+    });
+};
+
+
 module.exports = News;

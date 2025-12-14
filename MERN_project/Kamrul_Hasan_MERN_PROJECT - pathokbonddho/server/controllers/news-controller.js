@@ -12,6 +12,13 @@ const path = require("path");
 const { Sequelize } = require('sequelize');
 const { Op } = require("sequelize");
 
+
+console.log('=== MODELS CHECK ===');
+console.log('News model:', News ? 'Loaded' : 'Not loaded');
+console.log('Menu model:', Menu ? 'Loaded' : 'Not loaded');
+console.log('Tag model:', Tag ? 'Loaded' : 'Not loaded');
+console.log('Author model:', Author ? 'Loaded' : 'Not loaded');
+
 // ✅ Create News Post
 const createNews = async (req, res) => {
     try {
@@ -127,6 +134,28 @@ const createNews = async (req, res) => {
             slug
         });
 
+        console.log('=== NEWS CREATION DEBUG ===');
+        console.log('New News ID:', newNews.id);
+        console.log('New News data:', {
+            id: newNews.id,
+            newsHeadline: newNews.newsHeadline,
+            status: newNews.status,
+            authorId: newNews.authorId,
+            createdAt: newNews.createdAt
+        });
+
+        // Verify it was saved to database
+        const savedNews = await News.findByPk(newNews.id);
+        console.log('Retrieved from database:', savedNews ? 'Yes' : 'No');
+        if (savedNews) {
+            console.log('Saved news details:', {
+                id: savedNews.id,
+                newsHeadline: savedNews.newsHeadline,
+                status: savedNews.status,
+                createdAt: savedNews.createdAt
+            });
+        }
+
         // Create associations
         if (parsedTagIds.length > 0) {
             const newsTags = parsedTagIds.map(tagId => ({
@@ -198,11 +227,11 @@ const createNews = async (req, res) => {
     }
 };
 
-// ✅ Get All News Posts
+// ✅ Get All News Posts - SIMPLIFIED VERSION
 const getAllNews = async (req, res) => {
     try {
         console.log('=== GET ALL NEWS CONTROLLER ===');
-        console.log('Query params:', req.query);
+
         const {
             page = 1,
             limit = 10,
@@ -215,34 +244,8 @@ const getAllNews = async (req, res) => {
 
         const offset = (page - 1) * limit;
 
+        // SIMPLIFY: First, try without includes
         let whereClause = {};
-        let include = [
-            {
-                model: Tag,
-                through: { attributes: [] },
-                attributes: ['id', 'name', 'slug']
-            },
-            {
-                model: Menu,
-                through: { attributes: [] },
-                attributes: ['id', 'name', 'slug']
-            },
-            {
-                model: Author,
-                attributes: ['id', 'name']
-            }
-        ];
-
-        // Debug: First check if news exist without any filters
-        const allNewsCount = await News.count();
-        console.log(`Total news in database: ${allNewsCount}`);
-
-        // Debug: Get first few news without filters
-        const sampleNews = await News.findAll({
-            limit: 5,
-            order: [["createdAt", "DESC"]]
-        });
-        console.log('Sample news (first 5):', JSON.stringify(sampleNews, null, 2));
 
         // Search functionality
         if (search) {
@@ -250,8 +253,7 @@ const getAllNews = async (req, res) => {
                 [Op.or]: [
                     { newsHeadline: { [Op.like]: `%${search}%` } },
                     { alternativeHeadline: { [Op.like]: `%${search}%` } },
-                    { shortDescription: { [Op.like]: `%${search}%` } },
-                    { content: { [Op.like]: `%${search}%` } }
+                    { shortDescription: { [Op.like]: `%${search}%` } }
                 ]
             };
         }
@@ -261,36 +263,58 @@ const getAllNews = async (req, res) => {
             whereClause.status = status;
         }
 
-        // Filter by category
-        if (category) {
-            include[1].where = { slug: category };
-        }
+        console.log('Querying News with where:', whereClause);
 
-        // Filter by tag
-        if (tag) {
-            include[0].where = { slug: tag };
-        }
-
-        // Filter by author
-        if (author) {
-            include[2].where = { id: author };
-        }
-
+        // Try simple query first
         const { count, rows } = await News.findAndCountAll({
             where: whereClause,
-            include: include,
             order: [["createdAt", "DESC"]],
             limit: parseInt(limit),
-            offset: parseInt(offset),
-            distinct: true,
-            logging: console.log
+            offset: parseInt(offset)
         });
 
-        console.log(`Found ${count} news with current filters`);
-        console.log(`Returning ${rows.length} news`);
+        console.log(`Found ${count} news, returning ${rows.length} rows`);
+
+        if (rows.length > 0) {
+            console.log('First news item:', {
+                id: rows[0].id,
+                headline: rows[0].newsHeadline,
+                status: rows[0].status
+            });
+        }
+
+        // Now try to include associations for the returned rows
+        const newsWithAssociations = await Promise.all(
+            rows.map(async (newsItem) => {
+                try {
+                    const fullNews = await News.findByPk(newsItem.id, {
+                        include: [
+                            {
+                                model: Tag,
+                                through: { attributes: [] },
+                                attributes: ['id', 'name', 'slug']
+                            },
+                            {
+                                model: Menu,
+                                through: { attributes: [] },
+                                attributes: ['id', 'name', 'slug']
+                            },
+                            {
+                                model: Author,
+                                attributes: ['id', 'name']
+                            }
+                        ]
+                    });
+                    return fullNews || newsItem;
+                } catch (error) {
+                    console.error(`Error loading associations for news ${newsItem.id}:`, error.message);
+                    return newsItem; // Return basic news if associations fail
+                }
+            })
+        );
 
         res.status(200).json({
-            news: rows,
+            news: newsWithAssociations,
             totalCount: count,
             currentPage: parseInt(page),
             totalPages: Math.ceil(count / limit),
@@ -299,10 +323,30 @@ const getAllNews = async (req, res) => {
         });
     } catch (error) {
         console.error("Get All News Error:", error);
-        res.status(500).json({
-            message: "Internal Server Error",
-            error: error.message
-        });
+        console.error("Error stack:", error.stack);
+
+        // Fallback: Direct SQL query
+        try {
+            const sequelize = require("../db/database");
+            const [newsRows] = await sequelize.query(
+                "SELECT id, newsHeadline, status, authorId, createdAt FROM news ORDER BY createdAt DESC LIMIT 10"
+            );
+
+            res.status(200).json({
+                news: newsRows,
+                totalCount: newsRows.length,
+                currentPage: 1,
+                totalPages: 1,
+                hasNext: false,
+                hasPrev: false,
+                error: "Using SQL fallback due to ORM error"
+            });
+        } catch (sqlError) {
+            res.status(500).json({
+                message: "Internal Server Error",
+                error: error.message
+            });
+        }
     }
 };
 

@@ -49,10 +49,13 @@ app.use('/api/tags', tagRoutes);
 app.use('/api/authors', authorRoutes);
 app.use('/api/ads', adRouter);
 app.use('/api/designs', designRoutes);
+app.use("/api/news", newsRouter);
+
+//wildcard route like /api, / or /*, it might be intercepting the /api/news request & others API routes
 app.use("/api", require("./router/photoRoutes"));
 app.use("/api/images", require("./router/imageRoutes"));
 app.use('/api/image-registry', imageRegistryRoutes);
-app.use("/api/news", newsRouter);
+
 
 
 app.get("/", (req, res) => res.send("Database is connected successfully"));

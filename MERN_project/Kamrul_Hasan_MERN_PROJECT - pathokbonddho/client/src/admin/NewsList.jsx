@@ -4,6 +4,8 @@ import { useAuth } from '../store/auth';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
+
 const NewsList = () => {
     const { token } = useAuth();
     const [news, setNews] = useState([]);
@@ -29,7 +31,7 @@ const NewsList = () => {
                 ...(statusFilter && { status: statusFilter })
             };
 
-            const response = await axios.get('/api/news', { params });
+            const response = await axios.get(`${API_URL}/api/news`, { params });
 
             // Extract news array from different response formats
             const newsData = extractArrayFromResponse(response.data, 'news');
@@ -94,7 +96,7 @@ const NewsList = () => {
         }
 
         try {
-            await axios.delete(`/api/news/${id}`, {
+            await axios.delete(`${API_URL}/api/news/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -120,7 +122,7 @@ const NewsList = () => {
 
         try {
             if (bulkAction === 'delete') {
-                await axios.post('/api/news/bulk-delete',
+                await axios.post(`${API_URL}/api/news/bulk-delete`,
                     { newsIds: selectedNews },
                     { headers: { 'Authorization': `Bearer ${token}` } }
                 );
@@ -345,7 +347,7 @@ const NewsList = () => {
                                                     <td>
                                                         <div className="btn-group">
                                                             <Link
-                                                                to={`/admin/news/edit/${item.id}`}
+                                                                to={`${API_URL}/admin/news/edit/${item.id}`}
                                                                 className="btn btn-sm btn-outline-primary"
                                                             >
                                                                 <i className="fas fa-edit"></i>

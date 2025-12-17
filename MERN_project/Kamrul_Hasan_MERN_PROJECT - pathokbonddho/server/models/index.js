@@ -83,6 +83,7 @@ News.belongsToMany(Menu, {
     through: NewsCategory,
     foreignKey: 'newsId',
     otherKey: 'categoryId',
+    as: 'Categories',
     onDelete: 'CASCADE'
 });
 Menu.belongsToMany(News, {

@@ -1,4 +1,5 @@
 // controllers/news-controller.js
+const { v4: uuidv4 } = require('uuid');
 const News = require("../models/news-model");
 const NewsTag = require("../models/news-tag-model");
 const NewsCategory = require("../models/news-category-model");
@@ -20,6 +21,7 @@ console.log('Tag model:', Tag ? 'Loaded' : 'Not loaded');
 console.log('Author model:', Author ? 'Loaded' : 'Not loaded');
 
 // ✅ Create News Post
+// ✅ Create News Post
 const createNews = async (req, res) => {
     try {
         console.log('=== CREATE NEWS CONTROLLER ===');
@@ -32,8 +34,8 @@ const createNews = async (req, res) => {
             alternativeHeadline,
             authorId,
             shortDescription,
-            tagIds, // array of tag IDs
-            categoryIds, // array of category IDs
+            tagIds,
+            categoryIds,
             content,
             imageCaption,
             videoLink,
@@ -44,11 +46,42 @@ const createNews = async (req, res) => {
             status
         } = req.body;
 
-        // Generate slug from newsHeadline
-        const slug = newsHeadline.toLowerCase()
-            .replace(/[^a-z0-9 -]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-');
+        // Generate random slug using UUID
+        const generateRandomSlug = () => {
+            // Generate UUID and remove hyphens
+            const uuid = uuidv4().replace(/-/g, '');
+
+            // Take first 12 characters (or any length you prefer)
+            // You can adjust the length as needed:
+            // - 8 chars: .substring(0, 8)
+            // - 12 chars: .substring(0, 12) (recommended)
+            // - 16 chars: .substring(0, 16)
+            return uuid.substring(0, 12);
+        };
+
+        let slug = generateRandomSlug();
+        console.log('Generated slug:', slug);
+
+        // Verify slug is unique (though with UUID it's extremely unlikely)
+        let attempts = 0;
+        const maxAttempts = 5;
+        while (attempts < maxAttempts) {
+            const existingSlug = await News.findOne({ where: { slug } });
+            if (!existingSlug) {
+                break;
+            }
+            // If by extreme chance the slug exists, generate a new one
+            slug = generateRandomSlug();
+            attempts++;
+            console.log(`Slug exists (attempt ${attempts}), trying: ${slug}`);
+        }
+
+        // If we exhausted attempts, append timestamp
+        if (attempts === maxAttempts) {
+            const timestamp = Date.now().toString(36).slice(-4);
+            slug = `${slug}-${timestamp}`;
+            console.log('Added timestamp to ensure uniqueness:', slug);
+        }
 
         if (!newsHeadline || !authorId || !content) {
             return res.status(400).json({
@@ -56,51 +89,36 @@ const createNews = async (req, res) => {
             });
         }
 
-        // Check if slug already exists
-        const existingSlug = await News.findOne({ where: { slug } });
-        if (existingSlug) {
-            return res.status(409).json({
-                message: "A news post with this headline already exists."
-            });
-        }
-
-        // FIXED: Handle tagIds parsing properly
+        // Parse tagIds and categoryIds
         let parsedTagIds = [];
         if (tagIds) {
             if (typeof tagIds === 'string') {
                 try {
-                    // Try parsing if it's a JSON string
                     parsedTagIds = JSON.parse(tagIds);
                 } catch (error) {
-                    // If parsing fails, assume it's a comma-separated string
                     parsedTagIds = tagIds.split(',').filter(id => id.trim() !== '');
                 }
             } else if (Array.isArray(tagIds)) {
-                // If it's already an array, use it directly
                 parsedTagIds = tagIds;
             }
         }
 
-        // FIXED: Handle categoryIds parsing properly
         let parsedCategoryIds = [];
         if (categoryIds) {
             if (typeof categoryIds === 'string') {
                 try {
-                    // Try parsing if it's a JSON string
                     parsedCategoryIds = JSON.parse(categoryIds);
                 } catch (error) {
-                    // If parsing fails, assume it's a single ID or comma-separated
                     parsedCategoryIds = categoryIds.split(',').filter(id => id.trim() !== '');
                 }
             } else if (Array.isArray(categoryIds)) {
-                // If it's already an array, use it directly
                 parsedCategoryIds = categoryIds;
             } else {
-                // If it's a single value, put it in an array
                 parsedCategoryIds = [categoryIds];
             }
         }
 
+        console.log('Final slug:', slug);
         console.log('parsedTagIds:', parsedTagIds);
         console.log('parsedCategoryIds:', parsedCategoryIds);
 
@@ -109,10 +127,16 @@ const createNews = async (req, res) => {
         const thumbImage = req.files?.thumbImage ? `uploads/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
         const metaImage = req.files?.metaImage ? `uploads/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
 
-        // Create full paths for images
-        const leadImagePath = leadImage ? `uploads/${leadImage}` : null;
-        const thumbImagePath = thumbImage ? `uploads/${thumbImage}` : null;
-        const metaImagePath = metaImage ? `uploads/${metaImage}` : null;
+        // Remove duplicate 'uploads/' prefix if present in body path
+        const leadImagePath = leadImage ? leadImage : null;
+        const thumbImagePath = thumbImage ? thumbImage : null;
+        const metaImagePath = metaImage ? metaImage : null;
+
+        console.log('Image paths:', {
+            leadImagePath,
+            thumbImagePath,
+            metaImagePath
+        });
 
         const newNews = await News.create({
             newsHeadline,
@@ -139,6 +163,7 @@ const createNews = async (req, res) => {
         console.log('New News data:', {
             id: newNews.id,
             newsHeadline: newNews.newsHeadline,
+            slug: newNews.slug, // Log the slug
             status: newNews.status,
             authorId: newNews.authorId,
             createdAt: newNews.createdAt
@@ -151,6 +176,7 @@ const createNews = async (req, res) => {
             console.log('Saved news details:', {
                 id: savedNews.id,
                 newsHeadline: savedNews.newsHeadline,
+                slug: savedNews.slug, // Log the saved slug
                 status: savedNews.status,
                 createdAt: savedNews.createdAt
             });
@@ -208,15 +234,16 @@ const createNews = async (req, res) => {
         // Fetch complete news with associations
         const completeNews = await News.findByPk(newNews.id, {
             include: [
-                { model: Tag, through: { attributes: [] } },
-                { model: Menu, through: { attributes: [] } },
-                { model: Author }
+                { model: Tag, through: { attributes: [] }, as: 'Tags' },
+                { model: Menu, through: { attributes: [] }, as: 'Categories' },
+                { model: Author, as: 'Author' }
             ]
         });
 
         res.status(201).json({
             message: "News Post Created Successfully",
-            news: completeNews
+            news: completeNews,
+            slug: slug // Return the slug in response if needed
         });
     } catch (error) {
         console.error("Create News Error:", error);
@@ -227,7 +254,7 @@ const createNews = async (req, res) => {
     }
 };
 
-// ✅ Get All News Posts - SIMPLIFIED VERSION
+// ✅ Get All News Posts - UPDATED VERSION
 const getAllNews = async (req, res) => {
     try {
         console.log('=== GET ALL NEWS CONTROLLER ===');
@@ -244,7 +271,6 @@ const getAllNews = async (req, res) => {
 
         const offset = (page - 1) * limit;
 
-        // SIMPLIFY: First, try without includes
         let whereClause = {};
 
         // Search functionality
@@ -263,71 +289,73 @@ const getAllNews = async (req, res) => {
             whereClause.status = status;
         }
 
-        console.log('Querying News with where:', whereClause);
+        console.log('Where clause:', whereClause);
 
-        // Try simple query first
+        // Add this debug code in your getAllNews function
+        console.log('Debug: Checking News model associations:');
+        try {
+            // Access the internal associations object
+            console.log('Available associations for News model:');
+            for (const assocAlias in News.associations) {
+                console.log(`- ${assocAlias}`);
+            }
+        } catch (debugErr) {
+            console.log('Could not access associations:', debugErr.message);
+        }
+
+        // Get news WITH associations
         const { count, rows } = await News.findAndCountAll({
             where: whereClause,
+            include: [
+                {
+                    model: Tag,
+                    through: { attributes: [] },
+                    attributes: ['id', 'name', 'slug'],
+                    as: 'Tags'
+                },
+                {
+                    model: Menu,
+                    through: { attributes: [] },
+                    attributes: ['id', 'name', 'path'],
+                    as: 'Categories'
+                },
+                {
+                    model: Author,
+                    attributes: ['id', 'name'],
+                    as: 'Author'
+                }
+            ],
             order: [["createdAt", "DESC"]],
             limit: parseInt(limit),
-            offset: parseInt(offset)
+            offset: parseInt(offset),
+            distinct: true
         });
 
-        console.log(`Found ${count} news, returning ${rows.length} rows`);
+        console.log(`Found ${count} news with associations`);
 
         if (rows.length > 0) {
-            console.log('First news item:', {
-                id: rows[0].id,
-                headline: rows[0].newsHeadline,
-                status: rows[0].status
+            console.log('First news associations:', {
+                tags: rows[0].Tags?.length || 0,
+                categories: rows[0].Menus?.length || 0,
+                author: rows[0].Author?.name
             });
         }
 
-        // Now try to include associations for the returned rows
-        const newsWithAssociations = await Promise.all(
-            rows.map(async (newsItem) => {
-                try {
-                    const fullNews = await News.findByPk(newsItem.id, {
-                        include: [
-                            {
-                                model: Tag,
-                                through: { attributes: [] },
-                                attributes: ['id', 'name', 'slug']
-                            },
-                            {
-                                model: Menu,
-                                through: { attributes: [] },
-                                attributes: ['id', 'name', 'slug']
-                            },
-                            {
-                                model: Author,
-                                attributes: ['id', 'name']
-                            }
-                        ]
-                    });
-                    return fullNews || newsItem;
-                } catch (error) {
-                    console.error(`Error loading associations for news ${newsItem.id}:`, error.message);
-                    return newsItem; // Return basic news if associations fail
-                }
-            })
-        );
-
         res.status(200).json({
-            news: newsWithAssociations,
+            news: rows,
             totalCount: count,
             currentPage: parseInt(page),
             totalPages: Math.ceil(count / limit),
             hasNext: page * limit < count,
             hasPrev: page > 1
         });
+
     } catch (error) {
         console.error("Get All News Error:", error);
         console.error("Error stack:", error.stack);
 
-        // Fallback: Direct SQL query
+        // Direct SQL query as fallback
         try {
-            const sequelize = require("../db/database");
             const [newsRows] = await sequelize.query(
                 "SELECT id, newsHeadline, status, authorId, createdAt FROM news ORDER BY createdAt DESC LIMIT 10"
             );
@@ -339,7 +367,7 @@ const getAllNews = async (req, res) => {
                 totalPages: 1,
                 hasNext: false,
                 hasPrev: false,
-                error: "Using SQL fallback due to ORM error"
+                error: "Using SQL fallback"
             });
         } catch (sqlError) {
             res.status(500).json({
@@ -349,6 +377,26 @@ const getAllNews = async (req, res) => {
         }
     }
 };
+
+const getCategories = async (req, res) => {
+    try {
+        const categories = await Menu.findAll({
+            where: { isActive: true },
+            attributes: ['id', 'name', 'path'],
+            order: [['name', 'ASC']]
+        });
+
+        res.status(200).json(categories);
+    } catch (error) {
+        console.error("Get Categories Error:", error);
+        res.status(500).json({
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
+
 
 // ✅ Get Single News Post
 const getNews = async (req, res) => {
@@ -363,7 +411,8 @@ const getNews = async (req, res) => {
                 {
                     model: Menu,
                     through: { attributes: [] },
-                    attributes: ['id', 'name', 'slug']
+                    attributes: ['id', 'name', 'path'],
+                    as: 'Categories'
                 },
                 {
                     model: Author,
@@ -403,7 +452,8 @@ const getNewsBySlug = async (req, res) => {
                 {
                     model: Menu,
                     through: { attributes: [] },
-                    attributes: ['id', 'name', 'slug']
+                    attributes: ['id', 'name', 'path'],
+                    as: 'Categories'
                 },
                 {
                     model: Author,
@@ -609,9 +659,9 @@ const updateNews = async (req, res) => {
         // Fetch updated news with associations
         const completeNews = await News.findByPk(req.params.id, {
             include: [
-                { model: Tag, through: { attributes: [] } },
-                { model: Menu, through: { attributes: [] } },
-                { model: Author }
+                { model: Tag, through: { attributes: [] }, as: 'Tags' },
+                { model: Menu, through: { attributes: [] }, as: 'Categories' },
+                { model: Author, as: 'Author' }
             ]
         });
 
@@ -722,5 +772,6 @@ module.exports = {
     getNewsBySlug,
     updateNews,
     deleteNews,
-    bulkDeleteNews
+    bulkDeleteNews,
+    getCategories
 };

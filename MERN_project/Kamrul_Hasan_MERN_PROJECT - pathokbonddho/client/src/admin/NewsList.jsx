@@ -182,14 +182,26 @@ const NewsList = () => {
 
     // Safe access for nested properties
     const getAuthorName = (newsItem) => {
-        return newsItem.Author?.name || newsItem.author?.name || 'N/A';
+        console.log('News item for author:', newsItem);
+
+        // Try multiple possible locations
+        return newsItem.Author?.name ||
+            newsItem.author?.name ||
+            (newsItem.authorId && `Author ID: ${newsItem.authorId}`) ||
+            'N/A';
     };
 
     const getCategories = (newsItem) => {
+        console.log('News item categories:', newsItem.Categories);
         return newsItem.Categories || newsItem.categories || [];
     };
 
+    // If you need to display category path somewhere
+    const getCategoryPath = (category) => {
+        return category.path || category.slug || '';
+    };
     const getTags = (newsItem) => {
+        console.log('News item tags:', newsItem.Tags, newsItem.tags);
         return newsItem.Tags || newsItem.tags || [];
     };
 
@@ -347,7 +359,7 @@ const NewsList = () => {
                                                     <td>
                                                         <div className="btn-group">
                                                             <Link
-                                                                to={`${API_URL}/admin/news/edit/${item.id}`}
+                                                                to={`/admin/news/edit/${item.id}`}
                                                                 className="btn btn-sm btn-outline-primary"
                                                             >
                                                                 <i className="fas fa-edit"></i>

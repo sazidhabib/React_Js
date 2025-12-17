@@ -14,7 +14,8 @@ const {
     getNewsBySlug,
     updateNews,
     deleteNews,
-    bulkDeleteNews
+    bulkDeleteNews,
+    getCategories
 } = require("../controllers/news-controller");
 const authMiddleware = require("../middlewares/auth-middleware");
 
@@ -29,6 +30,7 @@ const newsUpload = upload.fields([
 router.get("/", getAllNews);
 router.get("/:id", getNews);
 router.get("/slug/:slug", getNewsBySlug);
+router.get("/categories/list", getCategories);
 
 // Protected routes (require authentication)
 router.post("/", authMiddleware, newsUpload, convertToWebp, createNews);

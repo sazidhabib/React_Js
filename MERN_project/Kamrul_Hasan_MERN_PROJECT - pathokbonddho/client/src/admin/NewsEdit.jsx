@@ -93,13 +93,13 @@ const NewsEdit = () => {
             const [authorsRes, tagsRes, categoriesRes] = await Promise.all([
                 axios.get('/api/authors'),
                 axios.get('/api/tags'),
-                axios.get('/api/categories')
+                axios.get('/api/news/categories/list')
             ]);
 
             // Handle different response formats
             setAuthors(extractArrayFromResponse(authorsRes.data, 'authors'));
             setTags(extractArrayFromResponse(tagsRes.data, 'tags'));
-            setCategories(extractArrayFromResponse(categoriesRes.data, 'categories'));
+            setCategories(categoriesRes.data || []);
         } catch (error) {
             console.error('Error fetching dropdown data:', error);
             toast.error('Failed to load dropdown data');

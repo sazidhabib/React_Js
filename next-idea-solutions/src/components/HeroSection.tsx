@@ -8,49 +8,93 @@ import {
   Database,
   Cloud,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const HeroSection = () => {
+  const { t } = useLanguage();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const },
+    },
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-0">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/10" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl float-animation" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl float-animation-delayed" />
+      <motion.div
+        className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.3, 0.2] }}
+        transition={{ duration: 8, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl"
+        animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.2, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity, delay: 4 }}
+      />
 
       {/* Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <motion.div
+        className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/30 mb-8">
+        <motion.div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/30 mb-8"
+          variants={itemVariants}
+        >
           <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
           <span className="text-sm text-muted-foreground">
-            Trusted by 500+ companies worldwide
+            {t("hero.badge")}
           </span>
-        </div>
+        </motion.div>
 
         {/* Main Heading */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-          Build tomorrow, today with
+        <motion.h1
+          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+          variants={itemVariants}
+        >
+          {t("hero.title1")}
           <br />
-          <span className="gradient-text">Next Idea Solution</span>
-        </h1>
+          <span className="gradient-text">{t("hero.title2")}</span>
+        </motion.h1>
 
         {/* Subtext */}
-        <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10">
-          Transform your vision into reality with intelligent software built for
-          the modern world. We deliver precision, speed, and elegance in every
-          line of code.
-        </p>
+        <motion.p
+          className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10"
+          variants={itemVariants}
+        >
+          {t("hero.subtitle")}
+        </motion.p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <motion.div
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          variants={itemVariants}
+        >
           <Button
             size="lg"
             className="bg-primary hover:bg-primary/90 glow-primary text-lg px-8 py-6 group"
           >
-            Start Building
+            {t("hero.startBuilding")}
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
           <Button
@@ -59,12 +103,15 @@ const HeroSection = () => {
             className="text-lg px-8 py-6 group glass"
           >
             <Play className="mr-2 w-5 h-5" />
-            Watch Demo
+            {t("hero.watchDemo")}
           </Button>
-        </div>
+        </motion.div>
 
         {/* 3D Tech Dashboard Illustration */}
-        <div className="relative max-w-4xl mx-auto">
+        <motion.div
+          className="relative max-w-4xl mx-auto"
+          variants={itemVariants}
+        >
           <div className="relative glass-strong rounded-2xl p-4 md:p-8 glow-primary">
             <div className="aspect-video rounded-xl bg-gradient-to-br from-card via-muted to-card overflow-hidden relative">
               {/* Dashboard Mockup */}
@@ -85,14 +132,15 @@ const HeroSection = () => {
                   {/* Sidebar */}
                   <div className="col-span-2 glass rounded-xl p-2 md:p-3 space-y-3">
                     {[Zap, Shield, Globe, Database].map((Icon, i) => (
-                      <div
+                      <motion.div
                         key={i}
                         className={`p-2 rounded-lg ${
                           i === 0 ? "bg-primary/30" : "hover:bg-primary/10"
                         } transition-colors`}
+                        whileHover={{ scale: 1.1 }}
                       >
                         <Icon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
 
@@ -102,22 +150,28 @@ const HeroSection = () => {
                     <div className="grid grid-cols-3 gap-2 md:gap-3">
                       {[
                         {
-                          label: "Active Users",
+                          label: t("hero.activeUsers"),
                           value: "12.4K",
                           color: "from-primary to-accent",
                         },
                         {
-                          label: "Revenue",
+                          label: t("hero.revenue"),
                           value: "$84K",
                           color: "from-chart-2 to-chart-4",
                         },
                         {
-                          label: "Growth",
+                          label: t("hero.growth"),
                           value: "+24%",
                           color: "from-chart-3 to-chart-1",
                         },
                       ].map((stat, i) => (
-                        <div key={i} className="glass rounded-xl p-2 md:p-3">
+                        <motion.div
+                          key={i}
+                          className="glass rounded-xl p-2 md:p-3"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.5 + i * 0.1 }}
+                        >
                           <p className="text-[10px] md:text-xs text-muted-foreground">
                             {stat.label}
                           </p>
@@ -126,7 +180,7 @@ const HeroSection = () => {
                           >
                             {stat.value}
                           </p>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
 
@@ -135,10 +189,15 @@ const HeroSection = () => {
                       <div className="flex items-end justify-between h-20 md:h-32 gap-1 md:gap-2">
                         {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 88].map(
                           (height, i) => (
-                            <div
+                            <motion.div
                               key={i}
                               className="flex-1 rounded-t-sm bg-gradient-to-t from-primary/80 to-accent/60"
-                              style={{ height: `${height}%` }}
+                              initial={{ height: 0 }}
+                              animate={{ height: `${height}%` }}
+                              transition={{
+                                delay: 0.8 + i * 0.05,
+                                duration: 0.5,
+                              }}
                             />
                           )
                         )}
@@ -151,17 +210,23 @@ const HeroSection = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <Cloud className="w-4 h-4 text-primary" />
                       <span className="text-[10px] md:text-xs font-medium">
-                        Activity
+                        {t("hero.activity")}
                       </span>
                     </div>
                     {[1, 2, 3, 4].map((_, i) => (
-                      <div key={i} className="flex items-center gap-2">
+                      <motion.div
+                        key={i}
+                        className="flex items-center gap-2"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1 + i * 0.1 }}
+                      >
                         <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-primary/40 to-accent/40" />
                         <div className="flex-1 space-y-1">
                           <div className="h-2 bg-muted rounded w-3/4" />
                           <div className="h-1.5 bg-muted/50 rounded w-1/2" />
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 </div>
@@ -174,41 +239,60 @@ const HeroSection = () => {
           </div>
 
           {/* Floating Stats Cards */}
-          <div className="absolute -left-4 top-1/4 hidden lg:block">
+          <motion.div
+            className="absolute -left-4 top-1/4 hidden lg:block"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.2, duration: 0.6 }}
+          >
             <div className="glass-strong rounded-xl p-4 float-animation border border-primary/20">
               <div className="flex items-center gap-2 mb-1">
                 <Cpu className="w-4 h-4 text-primary" />
                 <p className="text-2xl font-bold gradient-text">99.9%</p>
               </div>
-              <p className="text-sm text-muted-foreground">Uptime</p>
+              <p className="text-sm text-muted-foreground">
+                {t("hero.uptime")}
+              </p>
             </div>
-          </div>
-          <div className="absolute -right-4 bottom-1/4 hidden lg:block">
+          </motion.div>
+          <motion.div
+            className="absolute -right-4 bottom-1/4 hidden lg:block"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.4, duration: 0.6 }}
+          >
             <div className="glass-strong rounded-xl p-4 float-animation-delayed border border-accent/20">
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-4 h-4 text-accent-foreground" />
                 <p className="text-2xl font-bold gradient-text">500+</p>
               </div>
-              <p className="text-sm text-muted-foreground">Projects</p>
+              <p className="text-sm text-muted-foreground">
+                {t("hero.projects")}
+              </p>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Trust Logos - Infinite Scroll Marquee */}
-        <div className="mt-16 md:mt-24">
+        <motion.div
+          className="mt-16 md:mt-24"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6, duration: 0.6 }}
+        >
           <p className="text-sm text-muted-foreground mb-8">
-            Trusted by companies that build the future
+            {t("hero.trustedBy")}
           </p>
           <div className="relative overflow-hidden">
             {/* Gradient Masks */}
             <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
             <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
-            <div className="flex animate-marquee mb-2 p-2">
+            <div className="flex animate-marquee">
               {[...Array(2)].map((_, setIndex) => (
                 <div
                   key={setIndex}
-                  className="flex items-center gap-12 md:gap-16 px-6"
+                  className="flex items-center gap-12 md:gap-16 px-6 py-6"
                 >
                   {[
                     { name: "Microsoft", icon: "⬜" },
@@ -234,8 +318,8 @@ const HeroSection = () => {
               ))}
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   );
 };

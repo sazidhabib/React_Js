@@ -160,13 +160,13 @@ const translations: Record<Language, Record<string, string>> = {
     "pricing.title2": "pricing",
     "pricing.description":
       "Choose the plan that fits your needs. All plans include our core features. Upgrade or downgrade anytime.",
-    "pricing.starter": "Starter",
-    "pricing.professional": "Professional",
-    "pricing.enterprise": "Enterprise",
+    "pricing.starter": "Starter / Small Business Package",
+    "pricing.professional": "Business Growth Package",
+    "pricing.enterprise": "E-Commerce Package",
     "pricing.mostPopular": "Most Popular",
     "pricing.getStarted": "Get Started",
     "pricing.contactSales": "Contact Sales",
-    "pricing.month": "/month",
+    "pricing.month": "/project",
     "pricing.custom": "Custom",
 
     // FAQ

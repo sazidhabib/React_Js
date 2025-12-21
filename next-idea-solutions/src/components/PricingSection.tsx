@@ -6,16 +6,17 @@ import { useLanguage } from "@/hooks/useLanguage";
 const plans = [
   {
     nameKey: "pricing.starter",
-    price: 29,
+    price: "15k-30k",
     descriptionKey: "pricing.starterDesc",
     description: "Perfect for small teams getting started",
     descriptionBn: "শুরু করা ছোট টিমের জন্য নিখুঁত",
     features: [
-      { en: "Up to 5 team members", bn: "৫ জন টিম সদস্য পর্যন্ত" },
-      { en: "10 GB storage", bn: "১০ জিবি স্টোরেজ" },
-      { en: "Basic analytics", bn: "বেসিক অ্যানালিটিক্স" },
-      { en: "Email support", bn: "ইমেইল সাপোর্ট" },
-      { en: "API access", bn: "API অ্যাক্সেস" },
+      { en: "5-page Website (WordPress / Static)", bn: "৫ পেজ ওয়েবসাইট (WordPress/Static)" },
+      { en: "Mobile-Friendly Design", bn: "মোবাইল ফ্রেন্ডলি ডিজাইন" },
+      { en: "Basic UI/UX", bn: "বেসিক UI/UX" },
+      { en: "Facebook Business Page Setup", bn: "ফেসবুক বিজনেস পেজ সেটআপ" },
+      { en: "Google Map Integration & Contact Form", bn: "Google Map + Contact Form" },
+      { en: "1 Month Free Support", bn: "১ মাস ফ্রি সাপোর্ট" },
     ],
     popular: false,
   },
@@ -114,11 +115,10 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <motion.div
               key={index}
-              className={`relative rounded-2xl p-8 transition-all duration-300 ${
-                plan.popular
-                  ? "glass-strong border-primary/50 glow-primary"
-                  : "glass hover:border-primary/30"
-              }`}
+              className={`relative rounded-2xl p-8 transition-all duration-300 ${plan.popular
+                ? "glass-strong border-primary/50 glow-primary"
+                : "glass hover:border-primary/30"
+                }`}
               variants={itemVariants}
               whileHover={{ y: -8, scale: 1.02 }}
             >
@@ -147,7 +147,7 @@ const PricingSection = () => {
                 <div className="flex items-baseline justify-center gap-1">
                   {plan.price ? (
                     <>
-                      <span className="text-4xl font-bold">${plan.price}</span>
+                      <span className="text-4xl font-bold">৳{plan.price}</span>
                       <span className="text-muted-foreground">
                         {t("pricing.month")}
                       </span>
@@ -186,11 +186,10 @@ const PricingSection = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  className={`w-full ${
-                    plan.popular
-                      ? "bg-primary hover:bg-primary/90"
-                      : "bg-muted hover:bg-muted/80 text-foreground"
-                  }`}
+                  className={`w-full ${plan.popular
+                    ? "bg-primary hover:bg-primary/90"
+                    : "bg-muted hover:bg-muted/80 text-foreground"
+                    }`}
                 >
                   {plan.price
                     ? t("pricing.getStarted")

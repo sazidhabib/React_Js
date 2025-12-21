@@ -416,6 +416,7 @@ const getCategories = async (req, res) => {
 // ✅ Get Single News Post
 const getNews = async (req, res) => {
     try {
+        console.log(`=== GET NEWS BY ID: ${req.params.id} ===`);
         const news = await News.findByPk(req.params.id, {
             include: [
                 {
@@ -431,7 +432,7 @@ const getNews = async (req, res) => {
                 },
                 {
                     model: Author,
-                    attributes: ['id', 'name', 'email']
+                    attributes: ['id', 'name']
                 }
             ]
         });

@@ -163,10 +163,14 @@ const translations: Record<Language, Record<string, string>> = {
     "pricing.starter": "Starter / Small Business Package",
     "pricing.professional": "Business Growth Package",
     "pricing.enterprise": "E-Commerce Package",
+    "pricing.digital": "E-Commerce Package",
+    "pricing.premium": "Premium / Corporate Package",
+    "pricing.ai": "AI / Automation Package",
     "pricing.mostPopular": "Most Popular",
     "pricing.getStarted": "Get Started",
     "pricing.contactSales": "Contact Sales",
-    "pricing.month": "/project",
+    "pricing.month": "/month",
+    "pricing.project": "/project",
     "pricing.custom": "Custom",
 
     // FAQ
@@ -368,13 +372,13 @@ const translations: Record<Language, Record<string, string>> = {
     "pricing.title2": "মূল্য নির্ধারণ",
     "pricing.description":
       "আপনার প্রয়োজন অনুযায়ী প্ল্যান বেছে নিন। সব প্ল্যানে মূল বৈশিষ্ট্য অন্তর্ভুক্ত। যেকোনো সময় আপগ্রেড বা ডাউনগ্রেড করুন।",
-    "pricing.starter": "স্টার্টার",
-    "pricing.professional": "প্রফেশনাল",
-    "pricing.enterprise": "এন্টারপ্রাইজ",
+    "pricing.starter": "স্টার্টার / ছোট ব্যবসা প্যাকেজ",
+    "pricing.professional": "ব্যবসা বৃদ্ধির প্যাকেজ",
+    "pricing.enterprise": "ই-কমার্স প্যাকেজ",
     "pricing.mostPopular": "সবচেয়ে জনপ্রিয়",
     "pricing.getStarted": "শুরু করুন",
     "pricing.contactSales": "সেলস-এ যোগাযোগ",
-    "pricing.month": "/মাস",
+    "pricing.month": "/প্রকল্প",
     "pricing.custom": "কাস্টম",
 
     // FAQ

@@ -8,50 +8,130 @@ const plans = [
     nameKey: "pricing.starter",
     price: "15k-30k",
     descriptionKey: "pricing.starterDesc",
-    description: "Perfect for small teams getting started",
-    descriptionBn: "শুরু করা ছোট টিমের জন্য নিখুঁত",
+    description: "Small businesses, local shops, startups",
+    descriptionBn: "ছোট ব্যবসা, দোকান, নতুন উদ্যোক্তা",
     features: [
-      { en: "5-page Website (WordPress / Static)", bn: "৫ পেজ ওয়েবসাইট (WordPress/Static)" },
+      {
+        en: "5-page Website (WordPress / Static)",
+        bn: "৫ পেজ ওয়েবসাইট (WordPress/Static)",
+      },
       { en: "Mobile-Friendly Design", bn: "মোবাইল ফ্রেন্ডলি ডিজাইন" },
       { en: "Basic UI/UX", bn: "বেসিক UI/UX" },
       { en: "Facebook Business Page Setup", bn: "ফেসবুক বিজনেস পেজ সেটআপ" },
-      { en: "Google Map Integration & Contact Form", bn: "Google Map + Contact Form" },
+      {
+        en: "Google Map Integration & Contact Form",
+        bn: "Google Map + Contact Form",
+      },
       { en: "1 Month Free Support", bn: "১ মাস ফ্রি সাপোর্ট" },
     ],
     popular: false,
   },
   {
     nameKey: "pricing.professional",
-    price: 99,
+    price: "35k-70k",
     descriptionKey: "pricing.professionalDesc",
-    description: "For growing teams that need more power",
-    descriptionBn: "বড় হতে থাকা টিমের জন্য যাদের আরো শক্তি প্রয়োজন",
+    description: "SMEs, online businesses, service-based companies",
+    descriptionBn: "SME, অনলাইন বিজনেস, সার্ভিস কোম্পানি",
     features: [
-      { en: "Up to 25 team members", bn: "২৫ জন টিম সদস্য পর্যন্ত" },
-      { en: "100 GB storage", bn: "১০০ জিবি স্টোরেজ" },
-      { en: "Advanced analytics", bn: "অ্যাডভান্সড অ্যানালিটিক্স" },
-      { en: "Priority support", bn: "প্রায়োরিটি সাপোর্ট" },
-      { en: "Full API access", bn: "সম্পূর্ণ API অ্যাক্সেস" },
-      { en: "Custom integrations", bn: "কাস্টম ইন্টিগ্রেশন" },
-      { en: "SSO authentication", bn: "SSO অথেনটিকেশন" },
+      {
+        en: "Dynamic Website (8–12 pages)",
+        bn: "ডায়নামিক ওয়েবসাইট (৮–১২ পেজ)",
+      },
+      { en: "Custom Design", bn: "কাস্টম ডিজাইন" },
+      { en: "SEO (On-page + Basic)", bn: "SEO (On-page + Basic) " },
+      {
+        en: "Facebook & Google Analytics Setup",
+        bn: "Facebook & Google Analytics সেটআপ",
+      },
+      {
+        en: "5 Social Media Post Designs",
+        bn: "৫ সোশ্যাল মিডিয়া পোস্ট ডিজাইন",
+      },
+      { en: "2 Months Support", bn: "২ মাস সাপোর্ট" },
     ],
     popular: true,
   },
   {
     nameKey: "pricing.enterprise",
-    price: null,
+    price: "50k-120k",
     descriptionKey: "pricing.enterpriseDesc",
-    description: "For large organizations with complex needs",
-    descriptionBn: "জটিল প্রয়োজনের বড় প্রতিষ্ঠানের জন্য",
+    description: "Online shops, Facebook / WhatsApp-based businesses",
+    descriptionBn: "অনলাইন শপ, Facebook/WhatsApp ব্যবসা",
     features: [
-      { en: "Unlimited team members", bn: "আনলিমিটেড টিম সদস্য" },
-      { en: "Unlimited storage", bn: "আনলিমিটেড স্টোরেজ" },
+      { en: "E-commerce Website", bn: "ই-কমার্স ওয়েবসাইট" },
+      {
+        en: "Product Upload (20–50 products)",
+        bn: "Product Upload (২০–৫০ টি)",
+      },
       { en: "Enterprise analytics", bn: "এন্টারপ্রাইজ অ্যানালিটিক্স" },
-      { en: "Dedicated support", bn: "ডেডিকেটেড সাপোর্ট" },
-      { en: "Custom development", bn: "কাস্টম ডেভেলপমেন্ট" },
-      { en: "On-premise option", bn: "অন-প্রিমাইজ অপশন" },
-      { en: "SLA guarantee", bn: "SLA গ্যারান্টি" },
-      { en: "Security audit", bn: "সিকিউরিটি অডিট" },
+      { en: "SSL & Payment Gateway Integration", bn: "SSL + Payment Gateway" },
+      { en: "Order Management System", bn: "Order Management" },
+      { en: "Facebook Pixel Setup", bn: "Facebook Pixel সেটআপ" },
+      { en: "Basic SEO", bn: "Basic SEO" },
+      { en: "3 Months Support", bn: "৩ মাস সাপোর্ট" },
+    ],
+    popular: false,
+  },
+  {
+    nameKey: "pricing.enterprise",
+    price: "50k-120k",
+    descriptionKey: "pricing.enterpriseDesc",
+    description: "Online shops, Facebook / WhatsApp-based businesses",
+    descriptionBn: "অনলাইন শপ, Facebook/WhatsApp ব্যবসা",
+    features: [
+      { en: "E-commerce Website", bn: "ই-কমার্স ওয়েবসাইট" },
+      {
+        en: "Product Upload (20–50 products)",
+        bn: "Product Upload (২০–৫০ টি)",
+      },
+      { en: "Enterprise analytics", bn: "এন্টারপ্রাইজ অ্যানালিটিক্স" },
+      { en: "SSL & Payment Gateway Integration", bn: "SSL + Payment Gateway" },
+      { en: "Order Management System", bn: "Order Management" },
+      { en: "Facebook Pixel Setup", bn: "Facebook Pixel সেটআপ" },
+      { en: "Basic SEO", bn: "Basic SEO" },
+      { en: "3 Months Support", bn: "৩ মাস সাপোর্ট" },
+    ],
+    popular: false,
+  },
+  {
+    nameKey: "pricing.enterprise",
+    price: "50k-120k",
+    descriptionKey: "pricing.enterpriseDesc",
+    description: "Online shops, Facebook / WhatsApp-based businesses",
+    descriptionBn: "অনলাইন শপ, Facebook/WhatsApp ব্যবসা",
+    features: [
+      { en: "E-commerce Website", bn: "ই-কমার্স ওয়েবসাইট" },
+      {
+        en: "Product Upload (20–50 products)",
+        bn: "Product Upload (২০–৫০ টি)",
+      },
+      { en: "Enterprise analytics", bn: "এন্টারপ্রাইজ অ্যানালিটিক্স" },
+      { en: "SSL & Payment Gateway Integration", bn: "SSL + Payment Gateway" },
+      { en: "Order Management System", bn: "Order Management" },
+      { en: "Facebook Pixel Setup", bn: "Facebook Pixel সেটআপ" },
+      { en: "Basic SEO", bn: "Basic SEO" },
+      { en: "3 Months Support", bn: "৩ মাস সাপোর্ট" },
+    ],
+    popular: false,
+  },
+  {
+    nameKey: "pricing.premium",
+    price: "150k-500k",
+    descriptionKey: "pricing.enterpriseDesc",
+    description: "Large organizations, schools, hospitals, group of companies",
+    descriptionBn: "অনলাইন শপ, Facebook/WhatsApp ব্যবসা",
+    features: [
+      { en: "E-commerce Website", bn: "ই-কমার্স ওয়েবসাইট" },
+      {
+        en: "Product Upload (20–50 products)",
+        bn: "Product Upload (২০–৫০ টি)",
+      },
+      { en: "Enterprise analytics", bn: "এন্টারপ্রাইজ অ্যানালিটিক্স" },
+      { en: "SSL & Payment Gateway Integration", bn: "SSL + Payment Gateway" },
+      { en: "Order Management System", bn: "Order Management" },
+      { en: "Facebook Pixel Setup", bn: "Facebook Pixel সেটআপ" },
+      { en: "Basic SEO", bn: "Basic SEO" },
+      { en: "3 Months Support", bn: "৩ মাস সাপোর্ট" },
     ],
     popular: false,
   },
@@ -115,10 +195,11 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <motion.div
               key={index}
-              className={`relative rounded-2xl p-8 transition-all duration-300 ${plan.popular
-                ? "glass-strong border-primary/50 glow-primary"
-                : "glass hover:border-primary/30"
-                }`}
+              className={`relative rounded-2xl p-8 transition-all duration-300 ${
+                plan.popular
+                  ? "glass-strong border-primary/50 glow-primary"
+                  : "glass hover:border-primary/30"
+              }`}
               variants={itemVariants}
               whileHover={{ y: -8, scale: 1.02 }}
             >
@@ -147,7 +228,7 @@ const PricingSection = () => {
                 <div className="flex items-baseline justify-center gap-1">
                   {plan.price ? (
                     <>
-                      <span className="text-4xl font-bold">৳{plan.price}</span>
+                      <span className="text-3xl font-bold">৳{plan.price}</span>
                       <span className="text-muted-foreground">
                         {t("pricing.month")}
                       </span>
@@ -186,10 +267,11 @@ const PricingSection = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  className={`w-full ${plan.popular
-                    ? "bg-primary hover:bg-primary/90"
-                    : "bg-muted hover:bg-muted/80 text-foreground"
-                    }`}
+                  className={`w-full ${
+                    plan.popular
+                      ? "bg-primary hover:bg-primary/90"
+                      : "bg-muted hover:bg-muted/80 text-foreground"
+                  }`}
                 >
                   {plan.price
                     ? t("pricing.getStarted")

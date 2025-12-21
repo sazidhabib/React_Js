@@ -1,4 +1,4 @@
-import { Cpu, BarChart3, Puzzle, Zap, Shield, Globe } from "lucide-react";
+import { Cpu, BarChart3, Puzzle, Zap, Shield, Globe, Earth, Handshake, Clapperboard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -39,22 +39,60 @@ const FeaturesSection = () => {
     {
       icon: Puzzle,
       title: t("features.integration.title"),
-      descriptions: [t("features.integration.description")],
+      descriptions: [
+        t("features.integration.description"),
+        t("features.integration.description2"),
+        t("features.integration.description3"),
+        t("features.integration.description4"),
+      ],
     },
     {
       icon: Zap,
       title: t("features.performance.title"),
-      descriptions: [t("features.performance.description")],
+      descriptions: [
+        t("features.performance.description"),
+        t("features.performance.description2"),
+        t("features.performance.description3"),
+        t("features.performance.description4"),
+      ],
     },
     {
       icon: Shield,
       title: t("features.security.title"),
-      descriptions: [t("features.security.description")],
+      descriptions: [
+        t("features.security.description"),
+        t("features.security.description2"),
+        t("features.security.description3"),
+        t("features.security.description4"),
+        t("features.security.description5"),
+      ],
+    },
+    {
+      icon: Clapperboard,
+      title: t("features.global.title"),
+      descriptions: [
+        t("features.global.description"),
+        t("features.global.description2"),
+        t("features.global.description3"),
+      ],
     },
     {
       icon: Globe,
-      title: t("features.global.title"),
-      descriptions: [t("features.global.description")],
+      title: t("features.digital.title"),
+      descriptions: [
+        t("features.digital.description"),
+        t("features.digital.description2"),
+        t("features.digital.description3"),
+      ],
+    },
+    {
+      icon: Handshake,
+      title: t("features.other.title"),
+      descriptions: [
+        t("features.other.description"),
+        t("features.other.description2"),
+        t("features.other.description3"),
+      ],
     },
   ];
 

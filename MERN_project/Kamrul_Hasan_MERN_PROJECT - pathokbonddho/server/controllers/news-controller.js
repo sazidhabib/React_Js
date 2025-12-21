@@ -51,11 +51,6 @@ const createNews = async (req, res) => {
             // Generate UUID and remove hyphens
             const uuid = uuidv4().replace(/-/g, '');
 
-            // Take first 12 characters (or any length you prefer)
-            // You can adjust the length as needed:
-            // - 8 chars: .substring(0, 8)
-            // - 12 chars: .substring(0, 12) (recommended)
-            // - 16 chars: .substring(0, 16)
             return uuid.substring(0, 12);
         };
 
@@ -113,14 +108,14 @@ const createNews = async (req, res) => {
                 }
             } else if (Array.isArray(categoryIds)) {
                 parsedCategoryIds = categoryIds;
-            } else {
-                parsedCategoryIds = [categoryIds];
             }
+            // Convert to numbers
+            parsedCategoryIds = parsedCategoryIds.map(id => parseInt(id)).filter(id => !isNaN(id));
         }
 
         console.log('Final slug:', slug);
         console.log('parsedTagIds:', parsedTagIds);
-        console.log('parsedCategoryIds:', parsedCategoryIds);
+        console.log('Final parsedCategoryIds:', parsedCategoryIds);
 
         // Handle file uploads
         const leadImage = req.files?.leadImage ? `uploads/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
@@ -256,15 +251,35 @@ const createNews = async (req, res) => {
 
 // ✅ Get All News Posts - UPDATED VERSION
 const getAllNews = async (req, res) => {
-    try {
-        console.log('=== GET ALL NEWS CONTROLLER ===');
 
+    console.log('=== DEBUG: Checking News model associations ===');
+    console.log('News model associations:', Object.keys(News.associations || {}));
+
+    try {
+        const testNews = await News.findOne();
+        console.log('Test news ID:', testNews?.id);
+
+        // Try to get categories using different aliases
+        const withMenus = await News.findByPk(testNews?.id, {
+            include: [{ model: Menu, as: 'Menus' }]
+        });
+        console.log('With Menus alias:', withMenus?.Menus?.length || 0);
+
+        const withCategories = await News.findByPk(testNews?.id, {
+            include: [{ model: Menu, as: 'Categories' }]
+        });
+        console.log('With Categories alias:', withCategories?.Categories?.length || 0);
+    } catch (debugErr) {
+        console.log('Association debug error:', debugErr.message);
+    }
+
+    try {
         const {
             page = 1,
             limit = 10,
             search = '',
             status,
-            category,
+            categories,
             tag,
             author
         } = req.query;

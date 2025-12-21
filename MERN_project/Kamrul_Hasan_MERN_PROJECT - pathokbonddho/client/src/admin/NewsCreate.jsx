@@ -535,6 +535,7 @@ const NewsCreate = () => {
         e.preventDefault();
         setLoading(true);
 
+
         try {
             const submitData = new FormData();
 
@@ -569,6 +570,17 @@ const NewsCreate = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
+
+            // In handleSubmit function, before submitting:
+            const categoryIds = formData.categoryIds.map(id => parseInt(id)).filter(id => !isNaN(id));
+
+            // Add to submitData
+            if (categoryIds.length > 0) {
+                // Send as JSON string
+                submitData.append('categoryIds', JSON.stringify(categoryIds));
+            } else {
+                submitData.append('categoryIds', '[]');
+            }
 
             toast.success('News created successfully!');
 

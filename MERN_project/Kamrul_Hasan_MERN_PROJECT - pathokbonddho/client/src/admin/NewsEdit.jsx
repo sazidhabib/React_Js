@@ -20,6 +20,9 @@ const NewsEdit = () => {
     const [selectedAlbum, setSelectedAlbum] = useState('all');
     const [tags, setTags] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [uploading, setUploading] = useState(false);
+    const [uploadFile, setUploadFile] = useState(null);
+    const [uploadAlbumId, setUploadAlbumId] = useState('');
 
     // State for image selection
     const [showImageModal, setShowImageModal] = useState({
@@ -455,6 +458,168 @@ const NewsEdit = () => {
         } catch (error) {
             console.error('Error fetching dropdown data:', error);
             toast.error('Failed to load dropdown data');
+        }
+    };
+
+    // Image handling functions from NewsCreate.jsx
+    const getSourceBadgeClass = (source) => {
+        const classes = {
+            'article': 'bg-info',
+            'blog': 'bg-success',
+            'news': 'bg-warning',
+            'photo': 'bg-primary',
+            'other': 'bg-secondary'
+        };
+        return classes[source] || 'bg-secondary';
+    };
+
+    const getSourceLabel = (source) => {
+        const labels = {
+            'article': 'Article',
+            'blog': 'Blog',
+            'news': 'News',
+            'photo': 'Gallery',
+            'other': 'Other'
+        };
+        return labels[source] || source;
+    };
+
+    // Upload handler
+    const handleUploadImage = async () => {
+        if (!uploadFile) {
+            toast.error('Please select a file to upload');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('images', uploadFile);
+
+            if (uploadAlbumId) {
+                formData.append('albumId', uploadAlbumId);
+            }
+
+            const response = await axios.post(`${API_URL}/api/upload`, formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            toast.success('Image uploaded successfully!');
+
+            // Reset upload state
+            setUploadFile(null);
+            setUploadAlbumId('');
+
+            // Refresh the photos list
+            await fetchAllPhotos();
+
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error(error.response?.data?.message || 'Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Fetch albums
+    const fetchAlbums = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/api/albums`);
+            const albumsData = response.data.albums || response.data || [];
+            setAlbums(albumsData);
+        } catch (error) {
+            console.error('Error fetching albums:', error);
+            toast.error('Failed to load albums');
+        }
+    };
+
+    // Fetch all photos
+    const fetchAllPhotos = async () => {
+        try {
+            // First, get total count
+            const countResponse = await axios.get(`${API_URL}/api/all/images`, {
+                params: { limit: 1 }, // Just to get total count
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const totalCount = countResponse.data.pagination?.totalCount || 0;
+            console.log(`Total images available: ${totalCount}`);
+
+            // Calculate how many pages we need to fetch
+            const limit = 100; // Fetch 100 per request
+            const totalPages = Math.ceil(totalCount / limit);
+
+            // Fetch all pages
+            const allImages = [];
+
+            for (let page = 1; page <= totalPages; page++) {
+                try {
+                    const response = await axios.get(`${API_URL}/api/all/images`, {
+                        params: {
+                            page: page,
+                            limit: limit
+                        },
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+
+                    if (response.data.images && Array.isArray(response.data.images)) {
+                        allImages.push(...response.data.images);
+                    }
+                    console.log(`Fetched page ${page}/${totalPages}: ${response.data.images?.length || 0} images`);
+                } catch (pageError) {
+                    console.error(`Error fetching page ${page}:`, pageError);
+                }
+            }
+
+            console.log(`Total images fetched: ${allImages.length}`);
+
+            // Filter out invalid images
+            const validPhotos = allImages.filter(photo =>
+                photo &&
+                (photo.imageUrl || photo.image) &&
+                photo.filename
+            ).map(photo => ({
+                id: photo.id,
+                filename: photo.filename,
+                imageUrl: photo.imageUrl || photo.image,
+                caption: photo.caption || '',
+                albumId: photo.albumId || null,
+                source: photo.source || 'other',
+                isManaged: photo.isManaged !== undefined ? photo.isManaged : false,
+                createdAt: photo.createdAt
+            }));
+
+            // Sort by creation date (newest first)
+            validPhotos.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            setPhotos(validPhotos);
+            setFilteredPhotos(validPhotos);
+            console.log(`Loaded ${validPhotos.length} valid images`);
+
+        } catch (error) {
+            console.error('Error fetching photos:', error);
+            toast.error('Failed to load photos from centralized registry');
+            setPhotos([]);
+            setFilteredPhotos([]);
+        }
+    };
+
+    // Filter photos by album
+    const filterPhotosByAlbum = () => {
+        if (selectedAlbum === 'all') {
+            setFilteredPhotos(photos);
+        } else if (selectedAlbum === 'filtered') {
+            // Show filtered view by source type
+            const sourceFilter = 'photo'; // Only show gallery photos
+            const filtered = photos.filter(photo => photo.source === sourceFilter);
+            setFilteredPhotos(filtered);
+        } else {
+            const albumId = parseInt(selectedAlbum);
+            const filtered = photos.filter(photo => photo.albumId === albumId);
+            setFilteredPhotos(filtered);
         }
     };
 

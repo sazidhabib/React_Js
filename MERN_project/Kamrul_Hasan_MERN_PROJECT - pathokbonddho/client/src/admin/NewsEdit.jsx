@@ -138,7 +138,13 @@ const NewsEdit = () => {
     useEffect(() => {
         fetchNewsData();
         fetchDropdownData();
+        fetchAlbums();
+        fetchAllPhotos();
     }, [id]);
+
+    useEffect(() => {
+        filterPhotosByAlbum();
+    }, [selectedAlbum, photos]);
 
     // Image handling functions
     const openEditorImageModal = (editorType) => {
@@ -611,14 +617,19 @@ const NewsEdit = () => {
     const filterPhotosByAlbum = () => {
         if (selectedAlbum === 'all') {
             setFilteredPhotos(photos);
-        } else if (selectedAlbum === 'filtered') {
-            // Show filtered view by source type
-            const sourceFilter = 'photo'; // Only show gallery photos
-            const filtered = photos.filter(photo => photo.source === sourceFilter);
+        } else if (['article', 'blog', 'news', 'photo', 'other'].includes(selectedAlbum)) {
+            // Filter by source type
+            const filtered = photos.filter(photo =>
+                photo.source && photo.source.toLowerCase() === selectedAlbum.toLowerCase()
+            );
             setFilteredPhotos(filtered);
         } else {
+            // Filter by album ID
             const albumId = parseInt(selectedAlbum);
-            const filtered = photos.filter(photo => photo.albumId === albumId);
+            const filtered = photos.filter(photo =>
+                photo.albumId === albumId ||
+                (photo.albumId && photo.albumId.toString() === selectedAlbum)
+            );
             setFilteredPhotos(filtered);
         }
     };

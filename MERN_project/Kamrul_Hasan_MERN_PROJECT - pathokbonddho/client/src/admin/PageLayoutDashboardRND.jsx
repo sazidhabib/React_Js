@@ -270,13 +270,29 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
     const fetchVideos = async () => {
         try {
             setLoading(true);
+            console.log('Fetching videos from:', `${API_URL}/api/v1/videos`);
             const response = await axios.get(`${API_URL}/api/v1/videos`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            const videosData = response.data.data || response.data || [];
-            setVideos(Array.isArray(videosData) ? videosData : []);
+            console.log('Video API response:', response.data);
+            
+            // Handle different response structures
+            let videosData = [];
+            if (response.data.success && Array.isArray(response.data.data)) {
+                videosData = response.data.data;
+            } else if (Array.isArray(response.data.data)) {
+                videosData = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                videosData = response.data;
+            } else if (response.data.videos && Array.isArray(response.data.videos)) {
+                videosData = response.data.videos;
+            }
+            
+            console.log('Processed videos:', videosData);
+            setVideos(videosData);
         } catch (error) {
             console.error('Error fetching videos:', error);
+            console.error('Error response:', error.response?.data);
             toast.error('Failed to load videos');
             setVideos([]);
         } finally {
@@ -411,7 +427,7 @@ const AdSelectionModal = ({ show, onClose, onSelect, token }) => {
                                 >
                                     {ad.image && (
                                         <Image
-                                            src={`${API_URL}/${ad.image}`}
+                                            src={`${API_URL}/uploads/${ad.image}`}
                                             className="card-img-top"
                                             style={{ height: '150px', objectFit: 'cover' }}
                                         />
@@ -478,7 +494,9 @@ const GridCell = ({
     colSpan,
     isMasterCell,
     showMergeControls,
-    onContentSelect
+    onContentSelect,
+    onMouseDown,
+    onMouseEnter
 }) => {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -560,11 +578,17 @@ const GridCell = ({
                                         size="sm"
                                         value={cell.contentType || 'text'}
                                         onChange={(e) => {
-                                            onUpdate(rowIndex, colIndex, 'contentType', e.target.value);
-                                            setIsEditing(false);
+                                            const newContentType = e.target.value;
+                                            onUpdate(rowIndex, colIndex, 'contentType', newContentType);
+                                            // Don't close editing mode immediately - let user select content first
                                             // If content type is not text, trigger content selection
-                                            if (e.target.value !== 'text' && onContentSelect) {
-                                                onContentSelect(rowIndex, colIndex, e.target.value);
+                                            if (newContentType !== 'text' && onContentSelect) {
+                                                // Small delay to ensure state is updated
+                                                setTimeout(() => {
+                                                    onContentSelect(rowIndex, colIndex, newContentType);
+                                                }, 100);
+                                            } else {
+                                                setIsEditing(false);
                                             }
                                         }}
                                         onClick={(e) => e.stopPropagation()}
@@ -1013,8 +1037,10 @@ const ExcelGridSection = ({
     const handleContentSelected = (content) => {
         const { rowIndex, colIndex, contentType } = contentModal;
         
-        // Update cell with selected content
-        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentId', content.id);
+        if (!contentType) {
+            console.error('No contentType in contentModal');
+            return;
+        }
         
         // Store content title/name for display
         const titleField = contentType === 'news' ? 'newsHeadline' :
@@ -1022,7 +1048,14 @@ const ExcelGridSection = ({
                           contentType === 'video' ? 'title' :
                           contentType === 'ad' ? 'title' : 'name';
         
-        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentTitle', content[titleField] || content.name || content.title || 'Selected');
+        const contentTitle = content[titleField] || content.name || content.title || 'Selected';
+        
+        // Update contentType first to ensure it's set
+        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentType', contentType);
+        // Then update contentId
+        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentId', content.id);
+        // Finally update contentTitle
+        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentTitle', contentTitle);
         
         // Close modal
         setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null });
@@ -1486,10 +1519,19 @@ const PageLayoutDashboard = () => {
         if (!editPage?.PageSections) return;
 
         const updatedSections = [...editPage.PageSections];
-        const cell = updatedSections[sectionIndex].rows[rowIndex].columns[colIndex];
+        const section = { ...updatedSections[sectionIndex] };
+        const rows = [...(section.rows || [])];
+        const row = { ...rows[rowIndex] };
+        const columns = [...(row.columns || [])];
+        const cell = { ...columns[colIndex] };
 
         if (cell) {
             cell[field] = value;
+            columns[colIndex] = cell;
+            row.columns = columns;
+            rows[rowIndex] = row;
+            section.rows = rows;
+            updatedSections[sectionIndex] = section;
             setEditPage({ ...editPage, PageSections: updatedSections });
         }
     };

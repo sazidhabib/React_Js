@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 
 const HeroSection = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -74,7 +74,7 @@ const HeroSection = () => {
         >
           {t("hero.title1")}
           <br />
-          <span className="gradient-text">{t("hero.title2")}</span>
+          <p className={`gradient-text ${language === "bn" ? "pt-4" : ""}`}>{t("hero.title2")}</p>
         </motion.h1>
 
         {/* Subtext */}

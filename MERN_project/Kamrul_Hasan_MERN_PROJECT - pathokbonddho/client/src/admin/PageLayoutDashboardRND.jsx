@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
     Container, Row, Col, Card, Button, Form, Modal, Alert,
-    Tab, Nav, Spinner, Badge, OverlayTrigger, Tooltip
+    Tab, Nav, Spinner, Badge, OverlayTrigger, Tooltip, Image, InputGroup
 } from 'react-bootstrap';
 import axios from 'axios';
 import { useAuth } from '../store/auth'; // Make sure this path is correct
+import { toast } from 'react-toastify';
 
 // Import DnD Kit components
 import {
@@ -24,6 +25,461 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
+
+// Content Selection Modal Components
+const NewsSelectionModal = ({ show, onClose, onSelect, token }) => {
+    const [news, setNews] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    useEffect(() => {
+        if (show) {
+            fetchNews();
+        }
+    }, [show, currentPage, searchTerm]);
+
+    const fetchNews = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                page: currentPage,
+                limit: 12,
+                ...(searchTerm && { search: searchTerm })
+            };
+            const response = await axios.get(`${API_URL}/api/news`, { params });
+            const newsData = response.data.news || response.data.rows || response.data.data || response.data || [];
+            setNews(Array.isArray(newsData) ? newsData : []);
+            setTotalPages(response.data.totalPages || 1);
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            toast.error('Failed to load news');
+            setNews([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Modal show={show} onHide={onClose} size="xl" className="custom-font-initial">
+            <Modal.Header closeButton>
+                <Modal.Title>Select News</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Search news..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </InputGroup>
+                {loading ? (
+                    <div className="text-center py-4">
+                        <Spinner animation="border" />
+                    </div>
+                ) : (
+                    <div className="row">
+                        {news.map((item) => (
+                            <div key={item.id} className="col-md-6 mb-3">
+                                <Card
+                                    className="h-100 cursor-pointer"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => onSelect(item)}
+                                >
+                                    <Card.Body>
+                                        <h6 className="card-title">{item.newsHeadline}</h6>
+                                        <p className="card-text small text-muted">
+                                            {item.shortDescription?.substring(0, 100)}...
+                                        </p>
+                                        <Badge bg="secondary">{item.status}</Badge>
+                                    </Card.Body>
+                                </Card>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {news.length === 0 && !loading && (
+                    <div className="text-center text-muted py-4">No news found</div>
+                )}
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center mt-3">
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <span className="mx-3 align-self-center">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                )}
+            </Modal.Body>
+        </Modal>
+    );
+};
+
+const ImageSelectionModal = ({ show, onClose, onSelect, token }) => {
+    const [images, setImages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    useEffect(() => {
+        if (show) {
+            fetchImages();
+        }
+    }, [show, currentPage]);
+
+    const fetchImages = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                page: currentPage,
+                limit: 12
+            };
+            const response = await axios.get(`${API_URL}/api/all/images`, {
+                params,
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const imagesData = response.data.images || [];
+            setImages(imagesData);
+            setTotalPages(response.data.pagination?.totalPages || 1);
+        } catch (error) {
+            console.error('Error fetching images:', error);
+            toast.error('Failed to load images');
+            setImages([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredImages = searchTerm
+        ? images.filter(img =>
+            img.filename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            img.caption?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        : images;
+
+    return (
+        <Modal show={show} onHide={onClose} size="xl">
+            <Modal.Header closeButton>
+                <Modal.Title>Select Image</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Search images..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </InputGroup>
+                {loading ? (
+                    <div className="text-center py-4">
+                        <Spinner animation="border" />
+                    </div>
+                ) : (
+                    <div className="row">
+                        {filteredImages.map((img) => (
+                            <div key={img.id} className="col-md-3 mb-3">
+                                <Card
+                                    className="h-100 cursor-pointer"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => onSelect(img)}
+                                >
+                                    <Image
+                                        src={`${API_URL}/${img.imageUrl || img.image}`}
+                                        className="card-img-top"
+                                        style={{ height: '150px', objectFit: 'cover' }}
+                                        onError={(e) => {
+                                            e.target.src = '/placeholder-image.jpg';
+                                        }}
+                                    />
+                                    <Card.Body className="p-2">
+                                        <small className="text-truncate d-block" title={img.filename}>
+                                            {img.filename}
+                                        </small>
+                                        {img.caption && (
+                                            <small className="text-muted d-block text-truncate" title={img.caption}>
+                                                {img.caption}
+                                            </small>
+                                        )}
+                                    </Card.Body>
+                                </Card>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {filteredImages.length === 0 && !loading && (
+                    <div className="text-center text-muted py-4">No images found</div>
+                )}
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center mt-3">
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <span className="mx-3 align-self-center">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                )}
+            </Modal.Body>
+        </Modal>
+    );
+};
+
+const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
+    const [videos, setVideos] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        if (show) {
+            fetchVideos();
+        }
+    }, [show]);
+
+    const fetchVideos = async () => {
+        try {
+            setLoading(true);
+            console.log('Fetching videos from:', `${API_URL}/api/v1/videos`);
+            const response = await axios.get(`${API_URL}/api/v1/videos`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            console.log('Video API response:', response.data);
+            
+            // Handle different response structures
+            let videosData = [];
+            if (response.data.success && Array.isArray(response.data.data)) {
+                videosData = response.data.data;
+            } else if (Array.isArray(response.data.data)) {
+                videosData = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                videosData = response.data;
+            } else if (response.data.videos && Array.isArray(response.data.videos)) {
+                videosData = response.data.videos;
+            }
+            
+            console.log('Processed videos:', videosData);
+            setVideos(videosData);
+        } catch (error) {
+            console.error('Error fetching videos:', error);
+            console.error('Error response:', error.response?.data);
+            toast.error('Failed to load videos');
+            setVideos([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredVideos = searchTerm
+        ? videos.filter(video =>
+            video.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            video.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        : videos;
+
+    return (
+        <Modal show={show} onClose={onClose} size="xl">
+            <Modal.Header closeButton>
+                <Modal.Title>Select Video</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Search videos..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </InputGroup>
+                {loading ? (
+                    <div className="text-center py-4">
+                        <Spinner animation="border" />
+                    </div>
+                ) : (
+                    <div className="row">
+                        {filteredVideos.map((video) => (
+                            <div key={video.id} className="col-md-6 mb-3">
+                                <Card
+                                    className="h-100 cursor-pointer"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => onSelect(video)}
+                                >
+                                    {video.thumbnail && (
+                                        <Image
+                                            src={`${API_URL}/${video.thumbnail}`}
+                                            className="card-img-top"
+                                            style={{ height: '150px', objectFit: 'cover' }}
+                                        />
+                                    )}
+                                    <Card.Body>
+                                        <h6 className="card-title">{video.title}</h6>
+                                        <p className="card-text small text-muted">
+                                            {video.description?.substring(0, 100)}...
+                                        </p>
+                                        <Badge bg="info">Video</Badge>
+                                    </Card.Body>
+                                </Card>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {filteredVideos.length === 0 && !loading && (
+                    <div className="text-center text-muted py-4">No videos found</div>
+                )}
+            </Modal.Body>
+        </Modal>
+    );
+};
+
+const AdSelectionModal = ({ show, onClose, onSelect, token }) => {
+    const [ads, setAds] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    useEffect(() => {
+        if (show) {
+            fetchAds();
+        }
+    }, [show, currentPage, searchTerm]);
+
+    const fetchAds = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                page: currentPage,
+                limit: 12,
+                ...(searchTerm && { search: searchTerm })
+            };
+            const response = await axios.get(`${API_URL}/api/ads`, {
+                params,
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const adsData = response.data.ads || response.data.data || response.data || [];
+            setAds(Array.isArray(adsData) ? adsData : []);
+            setTotalPages(response.data.totalPages || Math.ceil(adsData.length / 12) || 1);
+        } catch (error) {
+            console.error('Error fetching ads:', error);
+            toast.error('Failed to load ads');
+            setAds([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Modal show={show} onHide={onClose} size="xl">
+            <Modal.Header closeButton>
+                <Modal.Title>Select Ad</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <InputGroup className="mb-3">
+                    <Form.Control
+                        type="text"
+                        placeholder="Search ads..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </InputGroup>
+                {loading ? (
+                    <div className="text-center py-4">
+                        <Spinner animation="border" />
+                    </div>
+                ) : (
+                    <div className="row">
+                        {ads.map((ad) => (
+                            <div key={ad.id} className="col-md-6 mb-3">
+                                <Card
+                                    className="h-100 cursor-pointer"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => onSelect(ad)}
+                                >
+                                    {ad.image && (
+                                        <Image
+                                            src={`${API_URL}/uploads/${ad.image}`}
+                                            className="card-img-top"
+                                            style={{ height: '150px', objectFit: 'cover' }}
+                                        />
+                                    )}
+                                    <Card.Body>
+                                        <h6 className="card-title">{ad.title || ad.name}</h6>
+                                        <p className="card-text small text-muted">
+                                            {ad.description?.substring(0, 100)}...
+                                        </p>
+                                        <div>
+                                            <Badge bg={ad.isActive ? 'success' : 'secondary'}>
+                                                {ad.isActive ? 'Active' : 'Inactive'}
+                                            </Badge>
+                                            {ad.type && <Badge bg="info" className="ms-2">{ad.type}</Badge>}
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {ads.length === 0 && !loading && (
+                    <div className="text-center text-muted py-4">No ads found</div>
+                )}
+                {totalPages > 1 && (
+                    <div className="d-flex justify-content-center mt-3">
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <span className="mx-3 align-self-center">
+                            Page {currentPage} of {totalPages}
+                        </span>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                )}
+            </Modal.Body>
+        </Modal>
+    );
+};
+
 // Enhanced Grid Cell Component with Merge Support
 const GridCell = ({
     cell,
@@ -37,7 +493,10 @@ const GridCell = ({
     rowSpan,
     colSpan,
     isMasterCell,
-    showMergeControls
+    showMergeControls,
+    onContentSelect,
+    onMouseDown,
+    onMouseEnter
 }) => {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -119,8 +578,18 @@ const GridCell = ({
                                         size="sm"
                                         value={cell.contentType || 'text'}
                                         onChange={(e) => {
-                                            onUpdate(rowIndex, colIndex, 'contentType', e.target.value);
-                                            setIsEditing(false);
+                                            const newContentType = e.target.value;
+                                            onUpdate(rowIndex, colIndex, 'contentType', newContentType);
+                                            // Don't close editing mode immediately - let user select content first
+                                            // If content type is not text, trigger content selection
+                                            if (newContentType !== 'text' && onContentSelect) {
+                                                // Small delay to ensure state is updated
+                                                setTimeout(() => {
+                                                    onContentSelect(rowIndex, colIndex, newContentType);
+                                                }, 100);
+                                            } else {
+                                                setIsEditing(false);
+                                            }
                                         }}
                                         onClick={(e) => e.stopPropagation()}
                                     >
@@ -139,6 +608,21 @@ const GridCell = ({
                                         onClick={(e) => e.stopPropagation()}
                                         className="mt-1"
                                     />
+                                    {cell.contentType && cell.contentType !== 'text' && (
+                                        <Button
+                                            size="sm"
+                                            variant="outline-primary"
+                                            className="mt-1 w-100"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (onContentSelect) {
+                                                    onContentSelect(rowIndex, colIndex, cell.contentType);
+                                                }
+                                            }}
+                                        >
+                                            {cell.contentId ? 'Change Selection' : 'Select Content'}
+                                        </Button>
+                                    )}
                                 </div>
                             ) : (
                                 <div
@@ -156,6 +640,34 @@ const GridCell = ({
                                         <Badge bg="info" className="small mt-1">
                                             {cell.tag}
                                         </Badge>
+                                    )}
+                                    {cell.contentType && cell.contentType !== 'text' && (
+                                        <div className="mt-1">
+                                            {cell.contentId ? (
+                                                <Badge bg="success" className="small">
+                                                    ✓ Selected
+                                                </Badge>
+                                            ) : (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline-primary"
+                                                    className="w-100 mt-1"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (onContentSelect) {
+                                                            onContentSelect(rowIndex, colIndex, cell.contentType);
+                                                        }
+                                                    }}
+                                                >
+                                                    Select {cell.contentType}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+                                    {cell.contentTitle && (
+                                        <div className="small text-truncate mt-1" title={cell.contentTitle}>
+                                            {cell.contentTitle}
+                                        </div>
                                     )}
                                 </div>
                             )}
@@ -273,11 +785,18 @@ const ExcelGridSection = ({
     onDeleteRow,
     onDeleteColumn,
     onUpdateCell,
-    onMergeCells
+    onMergeCells,
+    token
 }) => {
     const [selectedCells, setSelectedCells] = useState(new Set()); // Store multiple selected cells
     const [selectionStart, setSelectionStart] = useState(null);
     const [isSelecting, setIsSelecting] = useState(false);
+    const [contentModal, setContentModal] = useState({
+        show: false,
+        contentType: null,
+        rowIndex: null,
+        colIndex: null
+    });
 
     const rows = section.rows || [];
     const columns = rows[0]?.columns || [];
@@ -504,6 +1023,45 @@ const ExcelGridSection = ({
         return selectedCells.has(cellKey);
     };
 
+    // Handle content selection
+    const handleContentSelect = (rowIndex, colIndex, contentType) => {
+        setContentModal({
+            show: true,
+            contentType,
+            rowIndex,
+            colIndex
+        });
+    };
+
+    // Handle content selection from modal
+    const handleContentSelected = (content) => {
+        const { rowIndex, colIndex, contentType } = contentModal;
+        
+        if (!contentType) {
+            console.error('No contentType in contentModal');
+            return;
+        }
+        
+        // Store content title/name for display
+        const titleField = contentType === 'news' ? 'newsHeadline' :
+                          contentType === 'image' ? 'filename' :
+                          contentType === 'video' ? 'title' :
+                          contentType === 'ad' ? 'title' : 'name';
+        
+        const contentTitle = content[titleField] || content.name || content.title || 'Selected';
+        
+        // Update contentType first to ensure it's set
+        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentType', contentType);
+        // Then update contentId
+        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentId', content.id);
+        // Finally update contentTitle
+        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentTitle', contentTitle);
+        
+        // Close modal
+        setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null });
+        toast.success(`${contentType} selected successfully!`);
+    };
+
     // Add event listeners
     useEffect(() => {
         document.addEventListener('mouseup', handleMouseUp);
@@ -622,6 +1180,7 @@ const ExcelGridSection = ({
                                                 onCellSelect={handleCellSelect}
                                                 onMouseDown={handleMouseDown}
                                                 onMouseEnter={handleMouseEnter}
+                                                onContentSelect={handleContentSelect}
                                                 {...mergeInfo}
                                             />
                                         );
@@ -656,6 +1215,32 @@ const ExcelGridSection = ({
                     </Button>
                 </div>
             </Card.Body>
+
+            {/* Content Selection Modals */}
+            <NewsSelectionModal
+                show={contentModal.show && contentModal.contentType === 'news'}
+                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                onSelect={handleContentSelected}
+                token={token}
+            />
+            <ImageSelectionModal
+                show={contentModal.show && contentModal.contentType === 'image'}
+                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                onSelect={handleContentSelected}
+                token={token}
+            />
+            <VideoSelectionModal
+                show={contentModal.show && contentModal.contentType === 'video'}
+                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                onSelect={handleContentSelected}
+                token={token}
+            />
+            <AdSelectionModal
+                show={contentModal.show && contentModal.contentType === 'ad'}
+                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                onSelect={handleContentSelected}
+                token={token}
+            />
         </Card>
     );
 };
@@ -934,10 +1519,19 @@ const PageLayoutDashboard = () => {
         if (!editPage?.PageSections) return;
 
         const updatedSections = [...editPage.PageSections];
-        const cell = updatedSections[sectionIndex].rows[rowIndex].columns[colIndex];
+        const section = { ...updatedSections[sectionIndex] };
+        const rows = [...(section.rows || [])];
+        const row = { ...rows[rowIndex] };
+        const columns = [...(row.columns || [])];
+        const cell = { ...columns[colIndex] };
 
         if (cell) {
             cell[field] = value;
+            columns[colIndex] = cell;
+            row.columns = columns;
+            rows[rowIndex] = row;
+            section.rows = rows;
+            updatedSections[sectionIndex] = section;
             setEditPage({ ...editPage, PageSections: updatedSections });
         }
     };
@@ -1030,6 +1624,14 @@ const PageLayoutDashboard = () => {
                                 rowSpan: column.rowSpan || 1,
                                 colSpan: column.colSpan || 1
                             };
+
+                            // Add content selection data
+                            if (column.contentId) {
+                                cellData.contentId = column.contentId;
+                            }
+                            if (column.contentTitle) {
+                                cellData.contentTitle = column.contentTitle;
+                            }
 
                             // Add merge-specific data
                             if (column.merged) {
@@ -1322,6 +1924,7 @@ const PageLayoutDashboard = () => {
                                 onDeleteColumn={deleteGridColumn}
                                 onUpdateCell={updateGridCell}
                                 onMergeCells={mergeGridCells}
+                                token={token}
                             />
                         ))}
 

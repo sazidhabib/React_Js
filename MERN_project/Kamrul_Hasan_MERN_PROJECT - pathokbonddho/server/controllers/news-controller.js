@@ -102,12 +102,22 @@ const createNews = async (req, res) => {
         if (categoryIds) {
             if (typeof categoryIds === 'string') {
                 try {
-                    parsedCategoryIds = JSON.parse(categoryIds);
+                    const parsed = JSON.parse(categoryIds);
+                    if (Array.isArray(parsed)) {
+                        parsedCategoryIds = parsed;
+                    } else if (parsed !== null && parsed !== undefined) {
+                        // Single value (e.g. "10") – wrap into array
+                        parsedCategoryIds = [parsed];
+                    }
                 } catch (error) {
+                    // Fallback: comma-separated string like "1,2,3"
                     parsedCategoryIds = categoryIds.split(',').filter(id => id.trim() !== '');
                 }
             } else if (Array.isArray(categoryIds)) {
                 parsedCategoryIds = categoryIds;
+            } else {
+                // Any other single value (number, etc.)
+                parsedCategoryIds = [categoryIds];
             }
             // Convert to numbers
             parsedCategoryIds = parsedCategoryIds.map(id => parseInt(id)).filter(id => !isNaN(id));

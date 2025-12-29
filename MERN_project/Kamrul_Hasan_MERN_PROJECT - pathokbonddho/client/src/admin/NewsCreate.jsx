@@ -539,16 +539,25 @@ const NewsCreate = () => {
         try {
             const submitData = new FormData();
 
-            // Append form data
+            // Append basic form data (exclude tagIds, categoryIds, and helper display fields)
             Object.keys(formData).forEach(key => {
-                if (key === 'tagIds' || key === 'categoryIds') {
-                    formData[key].forEach(value => {
-                        submitData.append(key, value);
-                    });
-                } else if (key !== 'authorName' && key !== 'tagNames') {
-                    submitData.append(key, formData[key]);
+                if (key === 'tagIds' || key === 'categoryIds' || key === 'authorName' || key === 'tagNames') {
+                    return;
                 }
+                submitData.append(key, formData[key]);
             });
+
+            // Append tagIds as JSON string so backend can parse consistently
+            if (formData.tagIds && formData.tagIds.length > 0) {
+                submitData.append('tagIds', JSON.stringify(formData.tagIds));
+            }
+
+            // Prepare and append categoryIds as JSON array of numbers
+            const categoryIds = (formData.categoryIds || [])
+                .map(id => parseInt(id))
+                .filter(id => !isNaN(id));
+
+            submitData.append('categoryIds', JSON.stringify(categoryIds));
 
             // Append files or selected image paths
             Object.keys(files).forEach(key => {
@@ -570,17 +579,6 @@ const NewsCreate = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-
-            // In handleSubmit function, before submitting:
-            const categoryIds = formData.categoryIds.map(id => parseInt(id)).filter(id => !isNaN(id));
-
-            // Add to submitData
-            if (categoryIds.length > 0) {
-                // Send as JSON string
-                submitData.append('categoryIds', JSON.stringify(categoryIds));
-            } else {
-                submitData.append('categoryIds', '[]');
-            }
 
             toast.success('News created successfully!');
 

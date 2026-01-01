@@ -1088,30 +1088,43 @@ const ExcelGridSection = ({
             return;
         }
 
-        console.log('Content selected:', { contentType, content, rowIndex, colIndex });
+        console.log('Content selected for saving:', {
+            contentType,
+            content,
+            rowIndex,
+            colIndex,
+            contentId: content.id || content._id,
+            contentTitle: content.newsHeadline || content.filename || content.title || content.name
+        });
 
-        // Store content title/name for display
-        const titleField = contentType === 'news' ? 'newsHeadline' :
-            contentType === 'image' ? 'filename' :
-                contentType === 'video' ? 'newsHeadline' :
-                    contentType === 'ad' ? 'title' : 'name';
-
-        const contentTitle = content[titleField] || content.name || content.title || 'Selected';
+        // Extract content ID
         const contentId = content.id || content._id || content.ID;
+        if (!contentId) {
+            console.error('No content ID found:', content);
+            toast.error('Selected content has no ID');
+            return;
+        }
+
+        // Extract content title based on content type
+        const contentTitle = contentType === 'news' ? content.newsHeadline :
+            contentType === 'image' ? content.filename :
+                contentType === 'video' ? content.newsHeadline :
+                    contentType === 'ad' ? content.title : content.name;
 
         console.log('Updating cell with:', { contentType, contentId, contentTitle });
 
-        // Use the batch update function if available, otherwise fall back to individual updates
+        // Call the update function
         if (onUpdateCellContent) {
             onUpdateCellContent(sectionIndex, rowIndex, colIndex, contentType, contentId, contentTitle);
         } else {
+            console.error('onUpdateCellContent function not available');
             // Fallback: update fields individually
             onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentType', contentType);
             onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentId', contentId);
             onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentTitle', contentTitle);
         }
 
-        console.log('Cell updated successfully');
+        console.log('Update call completed');
 
         // Close modal
         setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null });
@@ -1642,6 +1655,9 @@ const PageLayoutDashboard = () => {
             cell.contentId = contentId;
             cell.contentTitle = contentTitle;
 
+            // Add timestamp to track changes
+            cell.updatedAt = new Date().toISOString();
+
             console.log('Cell fully updated:', cell);
 
             // Update the state
@@ -1649,6 +1665,13 @@ const PageLayoutDashboard = () => {
                 ...prev,
                 PageSections: updatedSections
             }));
+
+            // Force immediate re-render
+            setTimeout(() => {
+                console.log('Current cell state after update:',
+                    editPage?.PageSections?.[sectionIndex]?.rows?.[rowIndex]?.columns?.[colIndex]);
+            }, 0);
+
         } else {
             console.error('Cell not found:', { sectionIndex, rowIndex, colIndex });
         }
@@ -1719,6 +1742,8 @@ const PageLayoutDashboard = () => {
     // Enhanced update function to handle merge data
     const updatePage = async () => {
         try {
+            console.log('Starting page update with data:', editPage);
+
             const updateData = {
                 name: editPage.name,
                 PageSections: editPage.PageSections.map((section, sectionIndex) => {
@@ -1743,12 +1768,17 @@ const PageLayoutDashboard = () => {
                                 colSpan: column.colSpan || 1
                             };
 
+                            // Log each cell's content data
+                            console.log(`Cell [${rowIndex},${colIndex}]:`, {
+                                contentType: column.contentType,
+                                contentId: column.contentId,
+                                contentTitle: column.contentTitle
+                            });
+
                             // Add content selection data
                             if (column.contentId) {
                                 cellData.contentId = column.contentId;
-                            }
-                            if (column.contentTitle) {
-                                cellData.contentTitle = column.contentTitle;
+                                cellData.contentTitle = column.contentTitle || '';
                             }
 
                             // Add merge-specific data
@@ -1766,15 +1796,22 @@ const PageLayoutDashboard = () => {
                         })
                     }));
 
+                    console.log(`Processed section ${sectionIndex}:`, processedSection);
                     return processedSection;
                 })
             };
 
+            console.log('Sending update to API:', JSON.stringify(updateData, null, 2));
+
             const response = await api.patch(`/layout/${editPage.id}`, updateData);
+
+            console.log('API Response:', response.data);
+
             showAlert('Page updated successfully!', 'success');
             setShowEditModal(false);
             setEditPage(null);
 
+            // Refresh data
             setTimeout(() => {
                 fetchPages();
                 if (selectedPage?.id === editPage.id) {
@@ -1784,6 +1821,11 @@ const PageLayoutDashboard = () => {
 
         } catch (error) {
             console.error('Error updating page:', error);
+            console.error('Error details:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             showAlert(error.response?.data?.message || 'Error updating page', 'danger');
         }
     };

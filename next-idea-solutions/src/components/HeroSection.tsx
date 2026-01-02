@@ -69,17 +69,19 @@ const HeroSection = () => {
 
         {/* Main Heading */}
         <motion.h1
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+          className="text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
           variants={itemVariants}
         >
           {t("hero.title1")}
           <br />
-          <p className={`gradient-text ${language === "bn" ? "pt-4" : ""}`}>{t("hero.title2")}</p>
+          <p className={`gradient-text ${language === "bn" ? "pt-4" : ""}`}>
+            {t("hero.title2")}
+          </p>
         </motion.h1>
 
         {/* Subtext */}
         <motion.p
-          className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-10"
+          className="md:max-w-2xl max-w-sm mx-auto text-sm md:text-xl text-muted-foreground mb-10 px-1"
           variants={itemVariants}
         >
           {t("hero.subtitle")}
@@ -109,13 +111,13 @@ const HeroSection = () => {
 
         {/* 3D Tech Dashboard Illustration */}
         <motion.div
-          className="relative max-w-4xl mx-auto"
+          className="relative md:max-w-4xl max-w-sm sm:max-w-sm mx-auto"
           variants={itemVariants}
         >
           <div className="relative glass-strong rounded-2xl p-4 md:p-8 glow-primary">
             <div className="aspect-video rounded-xl bg-gradient-to-br from-card via-muted to-card overflow-hidden relative">
               {/* Dashboard Mockup */}
-              <div className="absolute inset-4 md:inset-8">
+              <div className="absolute md:inset-8">
                 {/* Top Bar */}
                 <div className="flex items-center justify-between mb-4 md:mb-6">
                   <div className="flex items-center gap-2">

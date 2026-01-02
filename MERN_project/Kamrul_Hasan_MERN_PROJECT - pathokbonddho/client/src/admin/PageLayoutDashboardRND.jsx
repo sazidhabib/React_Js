@@ -270,30 +270,39 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
     const fetchVideos = async () => {
         try {
             setLoading(true);
-            console.log('Fetching videos from:', `${API_URL}/api/v1/videos`);
-            const response = await axios.get(`${API_URL}/api/v1/videos`, {
-                headers: { Authorization: `Bearer ${token}` }
+            const newsApiUrl = `${API_URL}/api/news`;
+            console.log('Fetching video content from news API:', newsApiUrl);
+            console.log('Token available:', !!token);
+
+            const response = await axios.get(newsApiUrl, {
+                headers: {
+                    Authorization: token ? `Bearer ${token}` : undefined,
+                    'Content-Type': 'application/json'
+                }
             });
-            console.log('Video API response:', response.data);
-            
-            // Handle different response structures
-            let videosData = [];
-            if (response.data.success && Array.isArray(response.data.data)) {
-                videosData = response.data.data;
-            } else if (Array.isArray(response.data.data)) {
-                videosData = response.data.data;
-            } else if (Array.isArray(response.data)) {
-                videosData = response.data;
-            } else if (response.data.videos && Array.isArray(response.data.videos)) {
-                videosData = response.data.videos;
-            }
-            
-            console.log('Processed videos:', videosData);
+
+            console.log('News API response status:', response.status);
+            console.log('News API response data:', response.data);
+
+            // Extract news data from response
+            let newsData = response.data.news || response.data.rows || response.data.data || response.data || [];
+
+            // Filter news items to show only those with video category
+            const videosData = newsData.filter(item => {
+                if (item.Categories && Array.isArray(item.Categories)) {
+                    return item.Categories.some(cat => cat.path === 'video');
+                }
+                return false;
+            });
+
+            console.log('Filtered video content count:', videosData.length);
+            console.log('First video sample:', videosData[0]);
             setVideos(videosData);
         } catch (error) {
-            console.error('Error fetching videos:', error);
+            console.error('Error fetching video content:', error);
             console.error('Error response:', error.response?.data);
-            toast.error('Failed to load videos');
+            console.error('Error status:', error.response?.status);
+            toast.error(`Failed to load video content: ${error.response?.data?.message || error.message}`);
             setVideos([]);
         } finally {
             setLoading(false);
@@ -302,21 +311,21 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
 
     const filteredVideos = searchTerm
         ? videos.filter(video =>
-            video.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            video.description?.toLowerCase().includes(searchTerm.toLowerCase())
+            video.newsHeadline?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            video.shortDescription?.toLowerCase().includes(searchTerm.toLowerCase())
         )
         : videos;
 
     return (
-        <Modal show={show} onClose={onClose} size="xl">
+        <Modal show={show} onHide={onClose} size="xl">
             <Modal.Header closeButton>
-                <Modal.Title>Select Video</Modal.Title>
+                <Modal.Title>Select Video Content</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <InputGroup className="mb-3">
                     <Form.Control
                         type="text"
-                        placeholder="Search videos..."
+                        placeholder="Search video content..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -334,19 +343,25 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
                                     style={{ cursor: 'pointer' }}
                                     onClick={() => onSelect(video)}
                                 >
-                                    {video.thumbnail && (
+                                    {video.image && (
                                         <Image
-                                            src={`${API_URL}/${video.thumbnail}`}
+                                            src={`${API_URL}/${video.image}`}
                                             className="card-img-top"
                                             style={{ height: '150px', objectFit: 'cover' }}
+                                            onError={(e) => {
+                                                e.target.src = '/placeholder-image.jpg';
+                                            }}
                                         />
                                     )}
                                     <Card.Body>
-                                        <h6 className="card-title">{video.title}</h6>
+                                        <h6 className="card-title">{video.newsHeadline}</h6>
                                         <p className="card-text small text-muted">
-                                            {video.description?.substring(0, 100)}...
+                                            {video.shortDescription?.substring(0, 100)}...
                                         </p>
-                                        <Badge bg="info">Video</Badge>
+                                        <div>
+                                            <Badge bg="info" className="me-2">Video</Badge>
+                                            <Badge bg="secondary">{video.status}</Badge>
+                                        </div>
                                     </Card.Body>
                                 </Card>
                             </div>
@@ -354,7 +369,7 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
                     </div>
                 )}
                 {filteredVideos.length === 0 && !loading && (
-                    <div className="text-center text-muted py-4">No videos found</div>
+                    <div className="text-center text-muted py-4">No video content found</div>
                 )}
             </Modal.Body>
         </Modal>
@@ -628,30 +643,63 @@ const GridCell = ({
                                 <div
                                     className="text-center p-1"
                                     onDoubleClick={() => setIsEditing(true)}
+                                    style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}
                                 >
-                                    <div className="small fw-bold">
+                                    {/* Content Type Icon and Name */}
+                                    <div className="small fw-bold" style={{ marginBottom: '4px' }}>
                                         {cell.contentType === 'text' && '📝 Text'}
                                         {cell.contentType === 'news' && '📰 News'}
                                         {cell.contentType === 'image' && '🖼️ Image'}
                                         {cell.contentType === 'video' && '🎥 Video'}
                                         {cell.contentType === 'ad' && '📢 Ad'}
+                                        {!cell.contentType && '📝 Text'}
                                     </div>
+
+                                    {/* Tag */}
                                     {cell.tag && (
-                                        <Badge bg="info" className="small mt-1">
-                                            {cell.tag}
+                                        <Badge bg="info" className="small" style={{ marginBottom: '4px' }}>
+                                            Tag: {cell.tag}
                                         </Badge>
                                     )}
+
+                                    {/* Content Display for Non-Text Types */}
                                     {cell.contentType && cell.contentType !== 'text' && (
-                                        <div className="mt-1">
+                                        <div style={{ marginTop: 'auto' }}>
                                             {cell.contentId ? (
-                                                <Badge bg="success" className="small">
-                                                    ✓ Selected
-                                                </Badge>
+                                                <>
+                                                    <Badge bg="success" className="small d-block mb-1">
+                                                        ✓ {cell.contentType}
+                                                    </Badge>
+                                                    {cell.contentTitle && (
+                                                        <div
+                                                            className="small text-break"
+                                                            style={{
+                                                                fontSize: '0.75rem',
+                                                                backgroundColor: '#f0f0f0',
+                                                                padding: '4px',
+                                                                borderRadius: '3px',
+                                                                marginBottom: '4px',
+                                                                maxHeight: '40px',
+                                                                overflowY: 'auto',
+                                                                lineHeight: '1.2'
+                                                            }}
+                                                            title={cell.contentTitle}
+                                                        >
+                                                            {cell.contentTitle}
+                                                        </div>
+                                                    )}
+                                                    {cell.contentId && (
+                                                        <div className="small text-muted" style={{ fontSize: '0.65rem' }}>
+                                                            ID: {cell.contentId}
+                                                        </div>
+                                                    )}
+                                                </>
                                             ) : (
                                                 <Button
                                                     size="sm"
                                                     variant="outline-primary"
-                                                    className="w-100 mt-1"
+                                                    className="w-100"
+                                                    style={{ fontSize: '0.7rem', padding: '4px 2px' }}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         if (onContentSelect) {
@@ -662,11 +710,6 @@ const GridCell = ({
                                                     Select {cell.contentType}
                                                 </Button>
                                             )}
-                                        </div>
-                                    )}
-                                    {cell.contentTitle && (
-                                        <div className="small text-truncate mt-1" title={cell.contentTitle}>
-                                            {cell.contentTitle}
                                         </div>
                                     )}
                                 </div>
@@ -785,6 +828,7 @@ const ExcelGridSection = ({
     onDeleteRow,
     onDeleteColumn,
     onUpdateCell,
+    onUpdateCellContent,
     onMergeCells,
     token
 }) => {
@@ -1025,6 +1069,7 @@ const ExcelGridSection = ({
 
     // Handle content selection
     const handleContentSelect = (rowIndex, colIndex, contentType) => {
+        console.log('Opening content modal:', { rowIndex, colIndex, contentType });
         setContentModal({
             show: true,
             contentType,
@@ -1033,30 +1078,54 @@ const ExcelGridSection = ({
         });
     };
 
+
     // Handle content selection from modal
     const handleContentSelected = (content) => {
         const { rowIndex, colIndex, contentType } = contentModal;
-        
+
         if (!contentType) {
             console.error('No contentType in contentModal');
             return;
         }
-        
-        // Store content title/name for display
-        const titleField = contentType === 'news' ? 'newsHeadline' :
-                          contentType === 'image' ? 'filename' :
-                          contentType === 'video' ? 'title' :
-                          contentType === 'ad' ? 'title' : 'name';
-        
-        const contentTitle = content[titleField] || content.name || content.title || 'Selected';
-        
-        // Update contentType first to ensure it's set
-        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentType', contentType);
-        // Then update contentId
-        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentId', content.id);
-        // Finally update contentTitle
-        onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentTitle', contentTitle);
-        
+
+        console.log('Content selected for saving:', {
+            contentType,
+            content,
+            rowIndex,
+            colIndex,
+            contentId: content.id || content._id,
+            contentTitle: content.newsHeadline || content.filename || content.title || content.name
+        });
+
+        // Extract content ID
+        const contentId = content.id || content._id || content.ID;
+        if (!contentId) {
+            console.error('No content ID found:', content);
+            toast.error('Selected content has no ID');
+            return;
+        }
+
+        // Extract content title based on content type
+        const contentTitle = contentType === 'news' ? content.newsHeadline :
+            contentType === 'image' ? content.filename :
+                contentType === 'video' ? content.newsHeadline :
+                    contentType === 'ad' ? content.title : content.name;
+
+        console.log('Updating cell with:', { contentType, contentId, contentTitle });
+
+        // Call the update function
+        if (onUpdateCellContent) {
+            onUpdateCellContent(sectionIndex, rowIndex, colIndex, contentType, contentId, contentTitle);
+        } else {
+            console.error('onUpdateCellContent function not available');
+            // Fallback: update fields individually
+            onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentType', contentType);
+            onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentId', contentId);
+            onUpdateCell(sectionIndex, rowIndex, colIndex, 'contentTitle', contentTitle);
+        }
+
+        console.log('Update call completed');
+
         // Close modal
         setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null });
         toast.success(`${contentType} selected successfully!`);
@@ -1217,30 +1286,42 @@ const ExcelGridSection = ({
             </Card.Body>
 
             {/* Content Selection Modals */}
-            <NewsSelectionModal
-                show={contentModal.show && contentModal.contentType === 'news'}
-                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                onSelect={handleContentSelected}
-                token={token}
-            />
-            <ImageSelectionModal
-                show={contentModal.show && contentModal.contentType === 'image'}
-                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                onSelect={handleContentSelected}
-                token={token}
-            />
-            <VideoSelectionModal
-                show={contentModal.show && contentModal.contentType === 'video'}
-                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                onSelect={handleContentSelected}
-                token={token}
-            />
-            <AdSelectionModal
-                show={contentModal.show && contentModal.contentType === 'ad'}
-                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                onSelect={handleContentSelected}
-                token={token}
-            />
+            {contentModal.show && (
+                <>
+                    {contentModal.contentType === 'news' && (
+                        <NewsSelectionModal
+                            show={true}
+                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                            onSelect={handleContentSelected}
+                            token={token}
+                        />
+                    )}
+                    {contentModal.contentType === 'image' && (
+                        <ImageSelectionModal
+                            show={true}
+                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                            onSelect={handleContentSelected}
+                            token={token}
+                        />
+                    )}
+                    {contentModal.contentType === 'video' && (
+                        <VideoSelectionModal
+                            show={true}
+                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                            onSelect={handleContentSelected}
+                            token={token}
+                        />
+                    )}
+                    {contentModal.contentType === 'ad' && (
+                        <AdSelectionModal
+                            show={true}
+                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                            onSelect={handleContentSelected}
+                            token={token}
+                        />
+                    )}
+                </>
+            )}
         </Card>
     );
 };
@@ -1396,6 +1477,10 @@ const PageLayoutDashboard = () => {
                             ...row,
                             columns: (row.Columns || row.columns || []).map(col => ({
                                 ...col,
+                                contentType: col.contentType || 'text',
+                                contentId: col.contentId || null,
+                                contentTitle: col.contentTitle || null,
+                                tag: col.tag || '',
                                 merged: col.merged || false,
                                 rowSpan: col.rowSpan || 1,
                                 colSpan: col.colSpan || 1
@@ -1516,23 +1601,79 @@ const PageLayoutDashboard = () => {
     };
 
     const updateGridCell = (sectionIndex, rowIndex, colIndex, field, value) => {
-        if (!editPage?.PageSections) return;
+        if (!editPage?.PageSections) {
+            console.warn('Cannot update cell: editPage.PageSections is not available');
+            return;
+        }
 
-        const updatedSections = [...editPage.PageSections];
-        const section = { ...updatedSections[sectionIndex] };
-        const rows = [...(section.rows || [])];
-        const row = { ...rows[rowIndex] };
-        const columns = [...(row.columns || [])];
-        const cell = { ...columns[colIndex] };
+        console.log('Updating cell:', { sectionIndex, rowIndex, colIndex, field, value });
+
+        // Create a deep copy of the sections to avoid mutation issues
+        const updatedSections = JSON.parse(JSON.stringify(editPage.PageSections));
+
+        // Navigate to the specific cell
+        const cell = updatedSections[sectionIndex]?.rows?.[rowIndex]?.columns?.[colIndex];
 
         if (cell) {
+            // Update the specific field
             cell[field] = value;
-            columns[colIndex] = cell;
-            row.columns = columns;
-            rows[rowIndex] = row;
-            section.rows = rows;
-            updatedSections[sectionIndex] = section;
-            setEditPage({ ...editPage, PageSections: updatedSections });
+
+            // Log the updated cell for debugging
+            console.log('Cell after update:', cell);
+
+            // Update the state with the new sections
+            setEditPage(prev => ({
+                ...prev,
+                PageSections: updatedSections
+            }));
+        } else {
+            console.error('Cell not found:', { sectionIndex, rowIndex, colIndex });
+        }
+    };
+
+    // Add this function in your main component (PageLayoutDashboard)
+    const updateCellContent = (sectionIndex, rowIndex, colIndex, contentType, contentId, contentTitle) => {
+        if (!editPage?.PageSections) {
+            console.warn('Cannot update cell: editPage.PageSections is not available');
+            return;
+        }
+
+        console.log('Batch updating cell content:', {
+            sectionIndex, rowIndex, colIndex,
+            contentType, contentId, contentTitle
+        });
+
+        // Create a deep copy of the sections
+        const updatedSections = JSON.parse(JSON.stringify(editPage.PageSections));
+
+        // Navigate to the specific cell
+        const cell = updatedSections[sectionIndex]?.rows?.[rowIndex]?.columns?.[colIndex];
+
+        if (cell) {
+            // Update all content-related fields at once
+            cell.contentType = contentType;
+            cell.contentId = contentId;
+            cell.contentTitle = contentTitle;
+
+            // Add timestamp to track changes
+            cell.updatedAt = new Date().toISOString();
+
+            console.log('Cell fully updated:', cell);
+
+            // Update the state
+            setEditPage(prev => ({
+                ...prev,
+                PageSections: updatedSections
+            }));
+
+            // Force immediate re-render
+            setTimeout(() => {
+                console.log('Current cell state after update:',
+                    editPage?.PageSections?.[sectionIndex]?.rows?.[rowIndex]?.columns?.[colIndex]);
+            }, 0);
+
+        } else {
+            console.error('Cell not found:', { sectionIndex, rowIndex, colIndex });
         }
     };
 
@@ -1601,6 +1742,8 @@ const PageLayoutDashboard = () => {
     // Enhanced update function to handle merge data
     const updatePage = async () => {
         try {
+            console.log('Starting page update with data:', editPage);
+
             const updateData = {
                 name: editPage.name,
                 PageSections: editPage.PageSections.map((section, sectionIndex) => {
@@ -1625,12 +1768,17 @@ const PageLayoutDashboard = () => {
                                 colSpan: column.colSpan || 1
                             };
 
+                            // Log each cell's content data
+                            console.log(`Cell [${rowIndex},${colIndex}]:`, {
+                                contentType: column.contentType,
+                                contentId: column.contentId,
+                                contentTitle: column.contentTitle
+                            });
+
                             // Add content selection data
                             if (column.contentId) {
                                 cellData.contentId = column.contentId;
-                            }
-                            if (column.contentTitle) {
-                                cellData.contentTitle = column.contentTitle;
+                                cellData.contentTitle = column.contentTitle || '';
                             }
 
                             // Add merge-specific data
@@ -1648,15 +1796,22 @@ const PageLayoutDashboard = () => {
                         })
                     }));
 
+                    console.log(`Processed section ${sectionIndex}:`, processedSection);
                     return processedSection;
                 })
             };
 
+            console.log('Sending update to API:', JSON.stringify(updateData, null, 2));
+
             const response = await api.patch(`/layout/${editPage.id}`, updateData);
+
+            console.log('API Response:', response.data);
+
             showAlert('Page updated successfully!', 'success');
             setShowEditModal(false);
             setEditPage(null);
 
+            // Refresh data
             setTimeout(() => {
                 fetchPages();
                 if (selectedPage?.id === editPage.id) {
@@ -1666,6 +1821,11 @@ const PageLayoutDashboard = () => {
 
         } catch (error) {
             console.error('Error updating page:', error);
+            console.error('Error details:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             showAlert(error.response?.data?.message || 'Error updating page', 'danger');
         }
     };
@@ -1923,6 +2083,7 @@ const PageLayoutDashboard = () => {
                                 onDeleteRow={deleteGridRow}
                                 onDeleteColumn={deleteGridColumn}
                                 onUpdateCell={updateGridCell}
+                                onUpdateCellContent={updateCellContent}
                                 onMergeCells={mergeGridCells}
                                 token={token}
                             />

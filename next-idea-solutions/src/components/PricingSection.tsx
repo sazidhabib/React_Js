@@ -74,43 +74,38 @@ const plans = [
   },
   {
     nameKey: "pricing.enterprise",
-    price: "50k-120k",
+    price: "10k-30k",
     descriptionKey: "pricing.enterpriseDesc",
-    description: "Online shops, Facebook / WhatsApp-based businesses",
-    descriptionBn: "অনলাইন শপ, Facebook/WhatsApp ব্যবসা",
+    description: "Local Brands, E-commerce Stores, Real Estate",
+    descriptionBn: "লোকাল ব্র্যান্ড, ই-কমার্স, রিয়েল এস্টেট",
     features: [
-      { en: "E-commerce Website", bn: "ই-কমার্স ওয়েবসাইট" },
+      { en: "Facebook & Instagram Marketing", bn: "ফেসবুক ও ইনস্টাগ্রাম মার্কেটিং" },
       {
-        en: "Product Upload (20–50 products)",
-        bn: "Product Upload (২০–৫০ টি)",
+        en: "8-12 Post/Creative Designs",
+        bn: "৮-১২টি পোস্ট/কার্ড ডিজাইন",
       },
-      { en: "Enterprise analytics", bn: "এন্টারপ্রাইজ অ্যানালিটিক্স" },
-      { en: "SSL & Payment Gateway Integration", bn: "SSL + Payment Gateway" },
-      { en: "Order Management System", bn: "Order Management" },
-      { en: "Facebook Pixel Setup", bn: "Facebook Pixel সেটআপ" },
-      { en: "Basic SEO", bn: "Basic SEO" },
-      { en: "3 Months Support", bn: "৩ মাস সাপোর্ট" },
+      { en: "Ad Campaign Management (Ad Budget Separate)", bn: "বিজ্ঞাপন ক্যাম্পেইন ম্যানেজমেন্ট (বিজ্ঞাপন বাজেট আলাদা)" },
+      { en: "Basic SEO/Content Posting", bn: "বেসিক এসইও/কন্টেন্ট পোস্টিং" },
+      { en: "Monthly Performance Report", bn: "মাসিক রিপোর্ট" },
+
     ],
     popular: false,
   },
   {
     nameKey: "pricing.enterprise",
-    price: "50k-120k",
+    price: "80k-300k",
     descriptionKey: "pricing.enterpriseDesc",
     description: "Online shops, Facebook / WhatsApp-based businesses",
-    descriptionBn: "অনলাইন শপ, Facebook/WhatsApp ব্যবসা",
+    descriptionBn: "আধুনিক ব্যবসা, SaaS, অনলাইন সার্ভিস প্রদানকারী",
     features: [
-      { en: "E-commerce Website", bn: "ই-কমার্স ওয়েবসাইট" },
+      { en: "E-commerce Website", bn: "AI চ্যাটবট (ওয়েবসাইট/ফেসবুক)" },
       {
         en: "Product Upload (20–50 products)",
-        bn: "Product Upload (২০–৫০ টি)",
+        bn: "বিজনেস প্রক্রিয়া অটোমেশন",
       },
-      { en: "Enterprise analytics", bn: "এন্টারপ্রাইজ অ্যানালিটিক্স" },
-      { en: "SSL & Payment Gateway Integration", bn: "SSL + Payment Gateway" },
-      { en: "Order Management System", bn: "Order Management" },
-      { en: "Facebook Pixel Setup", bn: "Facebook Pixel সেটআপ" },
-      { en: "Basic SEO", bn: "Basic SEO" },
-      { en: "3 Months Support", bn: "৩ মাস সাপোর্ট" },
+      { en: "Enterprise analytics", bn: "API ইন্টিগ্রেশন" },
+      { en: "SSL & Payment Gateway Integration", bn: "অ্যানালিটিক্স ড্যাশবোর্ড" },
+
     ],
     popular: false,
   },
@@ -195,11 +190,10 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <motion.div
               key={index}
-              className={`relative rounded-2xl p-8 transition-all duration-300 ${
-                plan.popular
-                  ? "glass-strong border-primary/50 glow-primary"
-                  : "glass hover:border-primary/30"
-              }`}
+              className={`relative rounded-2xl p-8 transition-all duration-300 ${plan.popular
+                ? "glass-strong border-primary/50 glow-primary"
+                : "glass hover:border-primary/30"
+                }`}
               variants={itemVariants}
               whileHover={{ y: -8, scale: 1.02 }}
             >
@@ -267,11 +261,10 @@ const PricingSection = () => {
                 whileTap={{ scale: 0.98 }}
               >
                 <Button
-                  className={`w-full ${
-                    plan.popular
-                      ? "bg-primary hover:bg-primary/90"
-                      : "bg-muted hover:bg-muted/80 text-foreground"
-                  }`}
+                  className={`w-full ${plan.popular
+                    ? "bg-primary hover:bg-primary/90"
+                    : "bg-muted hover:bg-muted/80 text-foreground"
+                    }`}
                 >
                   {plan.price
                     ? t("pricing.getStarted")

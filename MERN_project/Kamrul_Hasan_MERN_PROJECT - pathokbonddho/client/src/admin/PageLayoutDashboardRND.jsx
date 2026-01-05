@@ -1739,6 +1739,55 @@ const PageLayoutDashboard = () => {
         setEditPage({ ...editPage, PageSections: updatedSections });
     };
 
+    const debugPageData = () => {
+        console.log('=== DEBUG PAGE DATA ===');
+        console.log('Current editPage:', editPage);
+
+        if (editPage?.PageSections) {
+            editPage.PageSections.forEach((section, sIdx) => {
+                console.log(`Section ${sIdx}: ${section.name}`);
+
+                section.rows?.forEach((row, rIdx) => {
+                    row.columns?.forEach((col, cIdx) => {
+                        if (col.contentType && col.contentType !== 'text') {
+                            console.log(`  Cell [${rIdx},${cIdx}]:`, {
+                                contentType: col.contentType,
+                                contentId: col.contentId,
+                                contentTitle: col.contentTitle,
+                                tag: col.tag
+                            });
+                        }
+                    });
+                });
+            });
+        }
+        console.log('=== END DEBUG ===');
+    };
+
+    const verifySavedData = async (pageId) => {
+        try {
+            const response = await api.get(`/layout/${pageId}`);
+            console.log('Saved data from server:', response.data);
+
+            // Check content IDs
+            response.data.PageSections?.forEach((section, sIdx) => {
+                console.log(`\nSection ${sIdx}: ${section.name}`);
+                section.Rows?.forEach((row, rIdx) => {
+                    row.Columns?.forEach((col, cIdx) => {
+                        if (col.contentId) {
+                            console.log(`  Cell [${rIdx},${cIdx}] - ${col.contentType}:`, {
+                                id: col.contentId,
+                                title: col.contentTitle
+                            });
+                        }
+                    });
+                });
+            });
+        } catch (error) {
+            console.error('Error verifying saved data:', error);
+        }
+    };
+
     // Enhanced update function to handle merge data
     const updatePage = async () => {
         try {
@@ -2112,6 +2161,14 @@ const PageLayoutDashboard = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <Button
+                variant="outline-warning"
+                onClick={debugPageData}
+                className="me-2"
+            >
+                Debug Data
+            </Button>
         </Container>
     );
 };

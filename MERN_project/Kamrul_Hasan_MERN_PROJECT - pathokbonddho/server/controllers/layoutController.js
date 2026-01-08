@@ -118,20 +118,27 @@ exports.updatePageLayout = async (req, res) => {
                     pageId: page.id,
                     Rows: rows.map((row, rowIndex) => ({
                         rowOrder: row.rowOrder || index + 1,
-                        Columns: (row.columns || []).map((column, colIndex) => ({
-                            colOrder: column.colOrder || colIndex + 1,
-                            width: column.width || 12,
-                            contentType: column.contentType || 'text',
-                            tag: column.tag || `col-${colIndex + 1}`,
-                            contentId: column.contentId || null,
-                            contentTitle: column.contentTitle || null,
-                            merged: column.merged || false,
-                            masterCell: column.masterCell || false,
-                            rowSpan: column.rowSpan || 1,
-                            colSpan: column.colSpan || 1,
-                            masterCellKey: column.masterCellKey || null,
-                            mergedCells: column.mergedCells || null,
-                        }))
+                        Columns: (row.columns || []).map((column, colIndex) => {
+                            // Debug log for tag
+                            if (column.tag) {
+                                console.log(`📌 Saving Column [${rowIndex},${colIndex}] Tag: "${column.tag}"`);
+                            }
+
+                            return {
+                                colOrder: column.colOrder || colIndex + 1,
+                                width: column.width || 12,
+                                contentType: column.contentType || 'text',
+                                tag: column.tag || `col-${colIndex + 1}`,
+                                contentId: column.contentId || null,
+                                contentTitle: column.contentTitle || null,
+                                merged: column.merged || false,
+                                masterCell: column.masterCell || false,
+                                rowSpan: column.rowSpan || 1,
+                                colSpan: column.colSpan || 1,
+                                masterCellKey: column.masterCellKey || null,
+                                mergedCells: column.mergedCells || null,
+                            };
+                        })
                     }))
                 }, {
                     include: [{

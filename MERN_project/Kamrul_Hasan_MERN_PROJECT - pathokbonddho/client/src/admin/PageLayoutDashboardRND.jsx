@@ -512,7 +512,8 @@ const GridCell = ({
     showMergeControls,
     onContentSelect,
     onMouseDown,
-    onMouseEnter
+    onMouseEnter,
+    availableTags = []
 }) => {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -629,15 +630,25 @@ const GridCell = ({
                                         <option value="video">🎥 Video</option>
                                         <option value="ad">📢 Ad</option>
                                     </Form.Select>
+
+                                    {/* Tag Input with Datalist */}
                                     <Form.Control
                                         size="sm"
                                         type="text"
                                         placeholder="Tag"
                                         value={cell.tag || ''}
+                                        list={`tag-list-${rowIndex}-${colIndex}`}
                                         onChange={(e) => onUpdate(rowIndex, colIndex, 'tag', e.target.value)}
                                         onClick={(e) => e.stopPropagation()}
                                         className="mt-1"
+                                        autoComplete="off"
                                     />
+                                    {/* Datalist for tags */}
+                                    <datalist id={`tag-list-${rowIndex}-${colIndex}`}>
+                                        {availableTags.map((tag) => (
+                                            <option key={tag.id} value={tag.name} />
+                                        ))}
+                                    </datalist>
                                     {cell.contentType && cell.contentType !== 'text' && (
                                         <>
                                             <Button
@@ -888,7 +899,8 @@ const ExcelGridSection = ({
     onUpdateCell,
     onUpdateCellContent,
     onMergeCells,
-    token
+    token,
+    availableTags
 }) => {
     const [selectedCells, setSelectedCells] = useState(new Set()); // Store multiple selected cells
     const [selectionStart, setSelectionStart] = useState(null);
@@ -1311,13 +1323,14 @@ const ExcelGridSection = ({
                                                 cell={cell}
                                                 rowIndex={rowIndex}
                                                 colIndex={colIndex}
-                                                onUpdate={onUpdateCell}
+                                                onUpdate={(r, c, f, v) => onUpdateCell(sectionIndex, r, c, f, v)}
                                                 onMerge={handleMerge}
                                                 isSelected={isCellSelected(rowIndex, colIndex)}
                                                 onCellSelect={handleCellSelect}
                                                 onMouseDown={handleMouseDown}
                                                 onMouseEnter={handleMouseEnter}
                                                 onContentSelect={handleContentSelect}
+                                                availableTags={availableTags}
                                                 {...mergeInfo}
                                             />
                                         );
@@ -1442,6 +1455,34 @@ const PageLayoutDashboard = () => {
     });
 
     const [editPage, setEditPage] = useState(null);
+    const [availableTags, setAvailableTags] = useState([]);
+
+    // Import tag service functions (assuming they are exported)
+    // import { getTags } from './tagService'; 
+    // Since we can't easily add imports at the top without replacing the whole file,
+    // we'll assume the user will sort out imports or we can add it if we view the top again.
+    // For now, let's just use the api instance to fetch tags directly or rely on the imported service if we mistakenly didn't import it yet.
+    // Actually, I should check if I imported it. I didn't in the previous steps.
+    // I will add the import in a separate step or just use axios here since I have the `api` instance.
+    // Using `api` instance is safer if I don't want to mess up top imports.
+
+    const fetchUniqueTags = async () => {
+        try {
+            const response = await api.get('/tags');
+            const tagsData = response.data.tags || response.data.data || response.data || [];
+            if (Array.isArray(tagsData)) {
+                setAvailableTags(tagsData);
+            }
+        } catch (error) {
+            console.error('Error fetching tags:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            fetchUniqueTags();
+        }
+    }, [isLoggedIn]);
 
     // Axios configuration
     const api = axios.create({
@@ -2391,6 +2432,7 @@ const PageLayoutDashboard = () => {
                                 onUpdateCellContent={updateCellContent}
                                 onMergeCells={mergeGridCells}
                                 token={token}
+                                availableTags={availableTags}
                             />
                         ))}
 

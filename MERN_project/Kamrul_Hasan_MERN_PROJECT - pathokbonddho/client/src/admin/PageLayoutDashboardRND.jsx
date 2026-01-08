@@ -373,7 +373,7 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
                 )}
             </Modal.Body>
         </Modal>
-    );
+    ); AdSelectionModal
 };
 
 const AdSelectionModal = ({ show, onClose, onSelect, token }) => {
@@ -448,7 +448,8 @@ const AdSelectionModal = ({ show, onClose, onSelect, token }) => {
                                         />
                                     )}
                                     <Card.Body>
-                                        <h6 className="card-title">{ad.title || ad.name}</h6>
+                                        {/* Try multiple possible title fields */}
+                                        <h6 className="card-title">{ad.title || ad.name || ad.description?.substring(0, 50) || `Ad ${ad.id}`}</h6>
                                         <p className="card-text small text-muted">
                                             {ad.description?.substring(0, 100)}...
                                         </p>
@@ -545,6 +546,31 @@ const GridCell = ({
         }
     };
 
+    const handleContentTypeChange = (newContentType) => {
+        // If switching from non-text to text, clear content data
+        if (cell.contentType && cell.contentType !== 'text' && newContentType === 'text') {
+            onUpdate(rowIndex, colIndex, 'contentId', null);
+            onUpdate(rowIndex, colIndex, 'contentTitle', null);
+        }
+        // If switching from one non-text type to another non-text type, clear content data
+        else if (cell.contentType && cell.contentType !== 'text' && newContentType !== 'text' && cell.contentType !== newContentType) {
+            onUpdate(rowIndex, colIndex, 'contentId', null);
+            onUpdate(rowIndex, colIndex, 'contentTitle', null);
+        }
+
+        // Update content type
+        onUpdate(rowIndex, colIndex, 'contentType', newContentType);
+
+        // If new type is not text, trigger content selection
+        if (newContentType !== 'text' && onContentSelect) {
+            setTimeout(() => {
+                onContentSelect(rowIndex, colIndex, newContentType);
+            }, 100);
+        } else {
+            setIsEditing(false);
+        }
+    };
+
     const cellStyle = {
         minWidth: '120px',
         height: '80px',
@@ -593,18 +619,7 @@ const GridCell = ({
                                         size="sm"
                                         value={cell.contentType || 'text'}
                                         onChange={(e) => {
-                                            const newContentType = e.target.value;
-                                            onUpdate(rowIndex, colIndex, 'contentType', newContentType);
-                                            // Don't close editing mode immediately - let user select content first
-                                            // If content type is not text, trigger content selection
-                                            if (newContentType !== 'text' && onContentSelect) {
-                                                // Small delay to ensure state is updated
-                                                setTimeout(() => {
-                                                    onContentSelect(rowIndex, colIndex, newContentType);
-                                                }, 100);
-                                            } else {
-                                                setIsEditing(false);
-                                            }
+                                            handleContentTypeChange(e.target.value);
                                         }}
                                         onClick={(e) => e.stopPropagation()}
                                     >
@@ -624,26 +639,46 @@ const GridCell = ({
                                         className="mt-1"
                                     />
                                     {cell.contentType && cell.contentType !== 'text' && (
-                                        <Button
-                                            size="sm"
-                                            variant="outline-primary"
-                                            className="mt-1 w-100"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                if (onContentSelect) {
-                                                    onContentSelect(rowIndex, colIndex, cell.contentType);
-                                                }
-                                            }}
-                                        >
-                                            {cell.contentId ? 'Change Selection' : 'Select Content'}
-                                        </Button>
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                variant="outline-primary"
+                                                className="mt-1 w-100"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (onContentSelect) {
+                                                        onContentSelect(rowIndex, colIndex, cell.contentType);
+                                                    }
+                                                }}
+                                            >
+                                                {cell.contentId ? 'Change Selection' : 'Select Content'}
+                                            </Button>
+
+                                            {/* Preview selected content in edit mode */}
+                                            {cell.contentId && (
+                                                <div className="mt-1 p-1 bg-light border rounded small">
+                                                    <div className="fw-bold text-success" style={{ fontSize: '0.7rem' }}>
+                                                        ✓ Selected:
+                                                    </div>
+                                                    <div className="text-truncate" style={{ fontSize: '0.7rem' }} title={cell.contentTitle}>
+                                                        {cell.contentTitle || `ID: ${String(cell.contentId).substring(0, 8)}...`}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             ) : (
                                 <div
                                     className="text-center p-1"
                                     onDoubleClick={() => setIsEditing(true)}
-                                    style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'space-between',
+                                        height: '100%',
+                                        overflow: 'hidden'
+                                    }}
                                 >
                                     {/* Content Type Icon and Name */}
                                     <div className="small fw-bold" style={{ marginBottom: '4px' }}>
@@ -664,33 +699,52 @@ const GridCell = ({
 
                                     {/* Content Display for Non-Text Types */}
                                     {cell.contentType && cell.contentType !== 'text' && (
-                                        <div style={{ marginTop: 'auto' }}>
+                                        <div style={{
+                                            marginTop: 'auto',
+                                            overflow: 'hidden',
+                                            maxHeight: '50px'
+                                        }}>
                                             {cell.contentId ? (
                                                 <>
                                                     <Badge bg="success" className="small d-block mb-1">
                                                         ✓ {cell.contentType}
                                                     </Badge>
-                                                    {cell.contentTitle && (
-                                                        <div
-                                                            className="small text-break"
-                                                            style={{
-                                                                fontSize: '0.75rem',
-                                                                backgroundColor: '#f0f0f0',
-                                                                padding: '4px',
-                                                                borderRadius: '3px',
-                                                                marginBottom: '4px',
-                                                                maxHeight: '40px',
-                                                                overflowY: 'auto',
-                                                                lineHeight: '1.2'
-                                                            }}
-                                                            title={cell.contentTitle}
-                                                        >
-                                                            {cell.contentTitle}
-                                                        </div>
-                                                    )}
+
+                                                    {/* Content Title Display */}
+                                                    <div
+                                                        className="small text-break"
+                                                        style={{
+                                                            fontSize: '0.7rem',
+                                                            backgroundColor: '#e8f4f8',
+                                                            padding: '3px',
+                                                            borderRadius: '3px',
+                                                            marginBottom: '3px',
+                                                            maxHeight: '35px',
+                                                            overflow: 'hidden',
+                                                            lineHeight: '1.1',
+                                                            whiteSpace: 'nowrap',
+                                                            textOverflow: 'ellipsis'
+                                                        }}
+                                                        title={cell.contentTitle || `Selected ${cell.contentType} - ID: ${cell.contentId}`}
+                                                    >
+                                                        <strong>{cell.contentType}: </strong>
+                                                        {cell.contentTitle
+                                                            ? (typeof cell.contentTitle === 'string'
+                                                                ? cell.contentTitle.substring(0, 40) + (cell.contentTitle.length > 40 ? '...' : '')
+                                                                : String(cell.contentTitle))
+                                                            : `ID: ${String(cell.contentId).substring(0, 8)}...`
+                                                        }
+                                                    </div>
+
+                                                    {/* Content ID */}
                                                     {cell.contentId && (
-                                                        <div className="small text-muted" style={{ fontSize: '0.65rem' }}>
-                                                            ID: {cell.contentId}
+                                                        <div className="small text-muted" style={{
+                                                            fontSize: '0.6rem',
+                                                            overflow: 'hidden',
+                                                            whiteSpace: 'nowrap',
+                                                            textOverflow: 'ellipsis'
+                                                        }}>
+                                                            ID: {String(cell.contentId).substring(0, 12)}...
                                                         </div>
                                                     )}
                                                 </>
@@ -699,7 +753,11 @@ const GridCell = ({
                                                     size="sm"
                                                     variant="outline-primary"
                                                     className="w-100"
-                                                    style={{ fontSize: '0.7rem', padding: '4px 2px' }}
+                                                    style={{
+                                                        fontSize: '0.7rem',
+                                                        padding: '4px 2px',
+                                                        marginTop: '5px'
+                                                    }}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         if (onContentSelect) {
@@ -1079,6 +1137,7 @@ const ExcelGridSection = ({
     };
 
 
+
     // Handle content selection from modal
     const handleContentSelected = (content) => {
         const { rowIndex, colIndex, contentType } = contentModal;
@@ -1106,10 +1165,19 @@ const ExcelGridSection = ({
         }
 
         // Extract content title based on content type
-        const contentTitle = contentType === 'news' ? content.newsHeadline :
-            contentType === 'image' ? content.filename :
-                contentType === 'video' ? content.newsHeadline :
-                    contentType === 'ad' ? content.title : content.name;
+        let contentTitle;
+        if (contentType === 'news') {
+            contentTitle = content.newsHeadline || content.title || `News ${contentId}`;
+        } else if (contentType === 'image') {
+            contentTitle = content.filename || content.name || `Image ${contentId}`;
+        } else if (contentType === 'video') {
+            contentTitle = content.newsHeadline || content.title || `Video ${contentId}`;
+        } else if (contentType === 'ad') {
+            // For ads, check multiple possible fields
+            contentTitle = content.title || content.name || content.description || `Ad ${contentId}`;
+        } else {
+            contentTitle = `Selected ${contentType} ${contentId}`;
+        }
 
         console.log('Updating cell with:', { contentType, contentId, contentTitle });
 
@@ -1459,37 +1527,115 @@ const PageLayoutDashboard = () => {
         }
     };
 
+    const checkDataIntegrity = () => {
+        if (!editPage?.PageSections) return { valid: false, issues: [] };
+
+        const issues = [];
+
+        editPage.PageSections.forEach((section, sIdx) => {
+            section.rows?.forEach((row, rIdx) => {
+                row.columns?.forEach((col, cIdx) => {
+                    if (col.contentType && col.contentType !== 'text') {
+                        // Check 1: contentId exists
+                        if (!col.contentId) {
+                            issues.push(`Cell [${sIdx},${rIdx},${cIdx}] has contentType "${col.contentType}" but no contentId`);
+                        }
+                        // Check 2: contentTitle exists if contentId exists
+                        if (col.contentId && !col.contentTitle) {
+                            issues.push(`Cell [${sIdx},${rIdx},${cIdx}] has contentId but no contentTitle`);
+                        }
+                        // Check 3: contentId is valid
+                        if (col.contentId && (col.contentId === 'undefined' || col.contentId === 'null')) {
+                            issues.push(`Cell [${sIdx},${rIdx},${cIdx}] has invalid contentId: ${col.contentId}`);
+                        }
+                    }
+                });
+            });
+        });
+
+        return {
+            valid: issues.length === 0,
+            issues,
+            summary: `Found ${issues.length} data integrity issues`
+        };
+    };
+
+
     // Fetch page layout for editing
     const fetchPageForEdit = async (pageId) => {
         try {
             const response = await api.get(`/layout/${pageId}`);
             const pageData = response.data;
 
+            console.log("=== FETCHED PAGE DATA ===");
+            console.log("Full API Response:", pageData);
+
             // Normalize data structure for grid
             if (pageData.PageSections) {
                 pageData.PageSections = pageData.PageSections.map((section, index) => {
+                    // Use Rows (capitalized) if available, otherwise use rows
                     const rows = section.Rows || section.rows || [];
+
+                    console.log(`Section ${index}:`, {
+                        name: section.name,
+                        rowCount: rows.length,
+                        hasRows: !!rows.length,
+                        sectionId: section.id
+                    });
 
                     return {
                         ...section,
                         id: section.id || `section-${index}`,
-                        rows: rows.map(row => ({
-                            ...row,
-                            columns: (row.Columns || row.columns || []).map(col => ({
-                                ...col,
-                                contentType: col.contentType || 'text',
-                                contentId: col.contentId || null,
-                                contentTitle: col.contentTitle || null,
-                                tag: col.tag || '',
-                                merged: col.merged || false,
-                                rowSpan: col.rowSpan || 1,
-                                colSpan: col.colSpan || 1
-                            }))
-                        }))
+                        name: section.name || `Section ${index + 1}`,
+                        rows: rows.map((row, rowIndex) => {
+                            // Use Columns (capitalized) if available, otherwise use columns
+                            const columns = row.Columns || row.columns || [];
+
+                            console.log(`Row ${rowIndex} has ${columns.length} columns`);
+
+                            return {
+                                ...row,
+                                columns: columns.map((col, colIndex) => {
+                                    // IMPORTANT: Check all possible field names for contentId
+                                    const contentId = col.contentId || col.content_id || col.contentID;
+                                    const contentTitle = col.contentTitle || col.content_title || col.title;
+
+                                    // Debug column data
+                                    console.log(`Column [${rowIndex},${colIndex}] loaded:`, {
+                                        id: col.id,
+                                        contentType: col.contentType,
+                                        contentId: contentId,
+                                        contentTitle: contentTitle,
+                                        hasTitle: !!contentTitle,
+                                        allFields: Object.keys(col) // Show all available fields
+                                    });
+
+                                    return {
+                                        ...col,
+                                        id: col.id,
+                                        contentType: col.contentType || 'text',
+                                        // Use the found contentId or null
+                                        contentId: contentId || null,
+                                        // Use the found contentTitle or null
+                                        contentTitle: contentTitle || null,
+                                        tag: col.tag || '',
+                                        merged: col.merged || false,
+                                        rowSpan: col.rowSpan || 1,
+                                        colSpan: col.colSpan || 1,
+                                        width: col.width || Math.floor(12 / columns.length),
+                                        // Preserve other properties
+                                        ...(col.masterCell !== undefined && { masterCell: col.masterCell }),
+                                        ...(col.masterCellKey && { masterCellKey: col.masterCellKey }),
+                                        ...(col.mergedCells && { mergedCells: col.mergedCells })
+                                    };
+                                })
+                            };
+                        })
                     };
                 });
             }
 
+            console.log("Processed page data for editing:", pageData);
             setEditPage(pageData);
             setShowEditModal(true);
         } catch (error) {
@@ -1631,7 +1777,8 @@ const PageLayoutDashboard = () => {
         }
     };
 
-    // Add this function in your main component (PageLayoutDashboard)
+
+    // Update cell content function
     const updateCellContent = (sectionIndex, rowIndex, colIndex, contentType, contentId, contentTitle) => {
         if (!editPage?.PageSections) {
             console.warn('Cannot update cell: editPage.PageSections is not available');
@@ -1655,10 +1802,16 @@ const PageLayoutDashboard = () => {
             cell.contentId = contentId;
             cell.contentTitle = contentTitle;
 
-            // Add timestamp to track changes
-            cell.updatedAt = new Date().toISOString();
+            // If contentId is null/undefined, clear contentTitle too
+            if (!contentId) {
+                cell.contentTitle = null;
+            }
 
-            console.log('Cell fully updated:', cell);
+            console.log('Cell fully updated:', {
+                contentType: cell.contentType,
+                contentId: cell.contentId,
+                contentTitle: cell.contentTitle
+            });
 
             // Update the state
             setEditPage(prev => ({
@@ -1666,11 +1819,8 @@ const PageLayoutDashboard = () => {
                 PageSections: updatedSections
             }));
 
-            // Force immediate re-render
-            setTimeout(() => {
-                console.log('Current cell state after update:',
-                    editPage?.PageSections?.[sectionIndex]?.rows?.[rowIndex]?.columns?.[colIndex]);
-            }, 0);
+            // Log for debugging
+            console.log('State updated for cell:', { sectionIndex, rowIndex, colIndex });
 
         } else {
             console.error('Cell not found:', { sectionIndex, rowIndex, colIndex });
@@ -1744,22 +1894,41 @@ const PageLayoutDashboard = () => {
         console.log('Current editPage:', editPage);
 
         if (editPage?.PageSections) {
+            let totalContentCells = 0;
+            let cellsWithTitle = 0;
+
             editPage.PageSections.forEach((section, sIdx) => {
-                console.log(`Section ${sIdx}: ${section.name}`);
+                console.log(`\n=== Section ${sIdx}: ${section.name} ===`);
+                console.log('Section object:', section);
 
                 section.rows?.forEach((row, rIdx) => {
+                    console.log(`\nRow ${rIdx}:`);
                     row.columns?.forEach((col, cIdx) => {
                         if (col.contentType && col.contentType !== 'text') {
+                            totalContentCells++;
+                            const hasTitle = !!col.contentTitle;
+                            if (hasTitle) cellsWithTitle++;
+
                             console.log(`  Cell [${rIdx},${cIdx}]:`, {
                                 contentType: col.contentType,
                                 contentId: col.contentId,
                                 contentTitle: col.contentTitle,
+                                hasTitle: hasTitle,
                                 tag: col.tag
                             });
+                        } else {
+                            console.log(`  Cell [${rIdx},${cIdx}]: Text content`);
                         }
                     });
                 });
             });
+
+            console.log(`\n=== SUMMARY ===`);
+            console.log(`Total non-text content cells: ${totalContentCells}`);
+            console.log(`Cells with title: ${cellsWithTitle}`);
+            console.log(`Cells missing title: ${totalContentCells - cellsWithTitle}`);
+        } else {
+            console.log('No PageSections found');
         }
         console.log('=== END DEBUG ===');
     };
@@ -1788,10 +1957,17 @@ const PageLayoutDashboard = () => {
         }
     };
 
+
     // Enhanced update function to handle merge data
     const updatePage = async () => {
         try {
             console.log('Starting page update with data:', editPage);
+
+            // Validate data before sending
+            if (!editPage || !editPage.PageSections) {
+                showAlert('Invalid page data', 'danger');
+                return;
+            }
 
             const updateData = {
                 name: editPage.name,
@@ -1817,17 +1993,21 @@ const PageLayoutDashboard = () => {
                                 colSpan: column.colSpan || 1
                             };
 
-                            // Log each cell's content data
-                            console.log(`Cell [${rowIndex},${colIndex}]:`, {
-                                contentType: column.contentType,
-                                contentId: column.contentId,
-                                contentTitle: column.contentTitle
-                            });
+                            // Log each cell's content data for debugging
+                            if (column.contentType && column.contentType !== 'text') {
+                                console.log(`Cell [${rowIndex},${colIndex}] saving:`, {
+                                    contentType: column.contentType,
+                                    contentId: column.contentId,
+                                    contentTitle: column.contentTitle,
+                                    hasTitle: !!column.contentTitle
+                                });
+                            }
 
                             // Add content selection data
                             if (column.contentId) {
                                 cellData.contentId = column.contentId;
-                                cellData.contentTitle = column.contentTitle || '';
+                                // Ensure contentTitle is always a string if contentId exists
+                                cellData.contentTitle = column.contentTitle || `Selected ${column.contentType}`;
                             }
 
                             // Add merge-specific data
@@ -1845,28 +2025,72 @@ const PageLayoutDashboard = () => {
                         })
                     }));
 
-                    console.log(`Processed section ${sectionIndex}:`, processedSection);
                     return processedSection;
                 })
             };
 
             console.log('Sending update to API:', JSON.stringify(updateData, null, 2));
 
+            // Validate the data being sent
+            let contentCells = 0;
+            let cellsWithTitle = 0;
+            updateData.PageSections.forEach((section, sIdx) => {
+                section.rows.forEach((row, rIdx) => {
+                    row.columns.forEach((col, cIdx) => {
+                        if (col.contentId) {
+                            contentCells++;
+                            if (col.contentTitle) cellsWithTitle++;
+                            if (!col.contentTitle) {
+                                console.warn(`⚠️ Cell [${sIdx},${rIdx},${cIdx}] has contentId but no contentTitle!`);
+                            }
+                        }
+                    });
+                });
+            });
+
+            console.log(`Saving ${contentCells} content cells, ${cellsWithTitle} with titles`);
+
             const response = await api.patch(`/layout/${editPage.id}`, updateData);
 
             console.log('API Response:', response.data);
+
+            // Check what was actually saved
+            if (response.data.PageSections) {
+                let savedWithTitles = 0;
+                let savedWithoutTitles = 0;
+
+                response.data.PageSections.forEach((section, sIdx) => {
+                    section.Rows?.forEach((row, rIdx) => {
+                        row.Columns?.forEach((col, cIdx) => {
+                            if (col.contentId) {
+                                if (col.contentTitle) {
+                                    savedWithTitles++;
+                                } else {
+                                    savedWithoutTitles++;
+                                    console.warn(`⚠️ Cell [${sIdx},${rIdx},${cIdx}] saved without contentTitle!`, {
+                                        contentType: col.contentType,
+                                        contentId: col.contentId
+                                    });
+                                }
+                            }
+                        });
+                    });
+                });
+
+                console.log(`Saved: ${savedWithTitles} with titles, ${savedWithoutTitles} without titles`);
+            }
 
             showAlert('Page updated successfully!', 'success');
             setShowEditModal(false);
             setEditPage(null);
 
-            // Refresh data
+            // Refresh data immediately
             setTimeout(() => {
                 fetchPages();
                 if (selectedPage?.id === editPage.id) {
                     fetchPageLayout(editPage.id);
                 }
-            }, 1000);
+            }, 500);
 
         } catch (error) {
             console.error('Error updating page:', error);
@@ -2107,6 +2331,38 @@ const PageLayoutDashboard = () => {
                     <Modal.Title>Edit Page: {editPage?.name}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                    {/* Add Debug Info Button */}
+                    <div className="d-flex justify-content-end mb-3">
+                        <Button
+                            variant="outline-info"
+                            size="sm"
+                            onClick={() => {
+                                console.log("=== EDIT PAGE DEBUG INFO ===");
+                                console.log("Full editPage object:", editPage);
+                                if (editPage?.PageSections) {
+                                    editPage.PageSections.forEach((section, sIdx) => {
+                                        console.log(`\nSection ${sIdx} (${section.name}):`);
+                                        section.rows?.forEach((row, rIdx) => {
+                                            row.columns?.forEach((col, cIdx) => {
+                                                if (col.contentType && col.contentType !== 'text') {
+                                                    console.log(`  Cell [${rIdx},${cIdx}]:`, {
+                                                        contentType: col.contentType,
+                                                        contentId: col.contentId,
+                                                        contentTitle: col.contentTitle,
+                                                        fullData: col
+                                                    });
+                                                }
+                                            });
+                                        });
+                                    });
+                                }
+                                console.log("=== END DEBUG ===");
+                            }}
+                        >
+                            Debug Cell Data
+                        </Button>
+                    </div>
+
                     <Form>
                         <Form.Group className="mb-3">
                             <Form.Label>Page Name</Form.Label>
@@ -2153,12 +2409,32 @@ const PageLayoutDashboard = () => {
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-                        Cancel
-                    </Button>
-                    <Button variant="primary" onClick={updatePage}>
-                        Save Changes
-                    </Button>
+                    <div className="d-flex justify-content-between w-100">
+                        <div>
+                            <Button
+                                variant="outline-warning"
+                                onClick={debugPageData}
+                                className="me-2"
+                            >
+                                Debug Full Data
+                            </Button>
+                            <Button
+                                variant="outline-info"
+                                onClick={() => verifySavedData(editPage?.id)}
+                                disabled={!editPage?.id}
+                            >
+                                Verify Saved Data
+                            </Button>
+                        </div>
+                        <div>
+                            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+                                Cancel
+                            </Button>
+                            <Button variant="primary" onClick={updatePage} className="ms-2">
+                                Save Changes
+                            </Button>
+                        </div>
+                    </div>
                 </Modal.Footer>
             </Modal>
 

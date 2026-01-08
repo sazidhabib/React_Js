@@ -20,6 +20,38 @@ const Column = sequelize.define("Column", {
     tag: {
         type: DataTypes.STRING,
     },
+    contentId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    contentTitle: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    merged: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    masterCell: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
+    rowSpan: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+    },
+    colSpan: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+    },
+    masterCellKey: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    mergedCells: {
+        type: DataTypes.JSON,
+        allowNull: true,
+    },
 }, {
     tableName: "columns",
     //timestamps: false,

@@ -122,7 +122,15 @@ exports.updatePageLayout = async (req, res) => {
                             colOrder: column.colOrder || colIndex + 1,
                             width: column.width || 12,
                             contentType: column.contentType || 'text',
-                            tag: column.tag || `col-${colIndex + 1}`
+                            tag: column.tag || `col-${colIndex + 1}`,
+                            contentId: column.contentId || null,
+                            contentTitle: column.contentTitle || null,
+                            merged: column.merged || false,
+                            masterCell: column.masterCell || false,
+                            rowSpan: column.rowSpan || 1,
+                            colSpan: column.colSpan || 1,
+                            masterCellKey: column.masterCellKey || null,
+                            mergedCells: column.mergedCells || null,
                         }))
                     }))
                 }, {

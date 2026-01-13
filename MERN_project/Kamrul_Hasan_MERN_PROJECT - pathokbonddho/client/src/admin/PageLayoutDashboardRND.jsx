@@ -513,7 +513,8 @@ const GridCell = ({
     onContentSelect,
     onMouseDown,
     onMouseEnter,
-    availableTags = []
+    availableTags = [],
+    availableDesigns = [] // Accept availableDesigns
 }) => {
     const [isEditing, setIsEditing] = useState(false);
 
@@ -525,7 +526,7 @@ const GridCell = ({
 
     const handleMouseDown = (e) => {
         if (onMouseDown) {
-            onMouseDown(rowIndex, colIndex);
+            onMouseDown(rowIndex, colIndex, e);
         }
     };
 
@@ -649,6 +650,25 @@ const GridCell = ({
                                             <option key={tag.id} value={tag.name} />
                                         ))}
                                     </datalist>
+
+                                    {/* Design Input with Datalist */}
+                                    <Form.Control
+                                        size="sm"
+                                        type="text"
+                                        placeholder="Design"
+                                        value={cell.design || ''}
+                                        list={`design-list-${rowIndex}-${colIndex}`}
+                                        onChange={(e) => onUpdate(rowIndex, colIndex, 'design', e.target.value)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="mt-1"
+                                        autoComplete="off"
+                                    />
+                                    {/* Datalist for designs */}
+                                    <datalist id={`design-list-${rowIndex}-${colIndex}`}>
+                                        {availableDesigns.map((design) => (
+                                            <option key={design.id} value={design.slug} />
+                                        ))}
+                                    </datalist>
                                     {cell.contentType && cell.contentType !== 'text' && (
                                         <>
                                             <Button
@@ -705,6 +725,13 @@ const GridCell = ({
                                     {cell.tag && (
                                         <Badge bg="info" className="small" style={{ marginBottom: '4px' }}>
                                             Tag: {cell.tag}
+                                        </Badge>
+                                    )}
+
+                                    {/* Design */}
+                                    {cell.design && (
+                                        <Badge bg="warning" text="dark" className="small" style={{ marginBottom: '4px' }}>
+                                            Design: {cell.design}
                                         </Badge>
                                     )}
 
@@ -900,7 +927,8 @@ const ExcelGridSection = ({
     onUpdateCellContent,
     onMergeCells,
     token,
-    availableTags
+    availableTags,
+    availableDesigns // Accept availableDesigns prop
 }) => {
     const [selectedCells, setSelectedCells] = useState(new Set()); // Store multiple selected cells
     const [selectionStart, setSelectionStart] = useState(null);
@@ -996,8 +1024,27 @@ const ExcelGridSection = ({
     };
 
     // Mouse drag selection
-    const handleMouseDown = (rowIndex, colIndex) => {
+    const handleMouseDown = (rowIndex, colIndex, event) => {
         const cellKey = `${rowIndex}-${colIndex}`;
+
+        // Check modifiers
+        if (event && event.shiftKey && selectionStart) {
+            // Shift+Click: Range selection
+            handleRangeSelection(rowIndex, colIndex);
+            // Do NOT reset selectionStart here to allow continuous range adjustments
+            return;
+        }
+
+        if (event && (event.ctrlKey || event.metaKey)) {
+            // Ctrl+Click: Toggle selection or start new multi-selection
+            handleMultiSelection(cellKey);
+            // Update selectionStart for potential subsequent range selection from this point
+            setSelectionStart({ row: rowIndex, col: colIndex });
+            setIsSelecting(true);
+            return;
+        }
+
+        // Normal Click: Start new selection
         setSelectionStart({ row: rowIndex, col: colIndex });
         setIsSelecting(true);
         setSelectedCells(new Set([cellKey]));
@@ -1260,6 +1307,7 @@ const ExcelGridSection = ({
                     selectedRange={getSelectedRange()}
                     onMerge={handleMerge}
                     onClearSelection={clearSelection}
+                    availableDesigns={availableDesigns} // Pass availableDesigns
                 />
 
                 {/* Selection Instructions */}
@@ -1331,6 +1379,7 @@ const ExcelGridSection = ({
                                                 onMouseEnter={handleMouseEnter}
                                                 onContentSelect={handleContentSelect}
                                                 availableTags={availableTags}
+                                                availableDesigns={availableDesigns} // Pass availableDesigns
                                                 {...mergeInfo}
                                             />
                                         );
@@ -1456,6 +1505,7 @@ const PageLayoutDashboard = () => {
 
     const [editPage, setEditPage] = useState(null);
     const [availableTags, setAvailableTags] = useState([]);
+    const [availableDesigns, setAvailableDesigns] = useState([]);
 
     // Import tag service functions (assuming they are exported)
     // import { getTags } from './tagService'; 
@@ -1478,9 +1528,22 @@ const PageLayoutDashboard = () => {
         }
     };
 
+    const fetchDesigns = async () => {
+        try {
+            const response = await api.get('/designs');
+            const designsData = response.data.designs || response.data.data || response.data || [];
+            if (Array.isArray(designsData)) {
+                setAvailableDesigns(designsData);
+            }
+        } catch (error) {
+            console.error('Error fetching designs:', error);
+        }
+    };
+
     useEffect(() => {
         if (isLoggedIn) {
             fetchUniqueTags();
+            fetchDesigns();
         }
     }, [isLoggedIn]);
 
@@ -2029,6 +2092,7 @@ const PageLayoutDashboard = () => {
                                 width: column.width || Math.floor(12 / (row.columns?.length || 3)),
                                 contentType: column.contentType || 'text',
                                 tag: column.tag || '',
+                                design: column.design || null, // Add design field
                                 merged: column.merged || false,
                                 rowSpan: column.rowSpan || 1,
                                 colSpan: column.colSpan || 1
@@ -2261,22 +2325,32 @@ const PageLayoutDashboard = () => {
                                                             <tbody>
                                                                 {section.Rows?.map((row, rowIndex) => (
                                                                     <tr key={rowIndex}>
-                                                                        {row.Columns?.map((column, colIndex) => (
-                                                                            <td
-                                                                                key={colIndex}
-                                                                                className="p-3"
-                                                                                rowSpan={column.rowSpan || 1}
-                                                                                colSpan={column.colSpan || 1}
-                                                                            >
-                                                                                <div className="d-flex justify-content-between">
-                                                                                    <strong>{column.contentType}</strong>
-                                                                                    {column.tag && <Badge bg="info">{column.tag}</Badge>}
-                                                                                </div>
-                                                                                <small className="text-muted">
-                                                                                    Size: {column.width}/12
-                                                                                </small>
-                                                                            </td>
-                                                                        ))}
+                                                                        {row.Columns?.map((column, colIndex) => {
+                                                                            // Skip rendering if this cell is part of a merge but not the master
+                                                                            if (column.merged && !column.masterCell) {
+                                                                                return null;
+                                                                            }
+
+                                                                            return (
+                                                                                <td
+                                                                                    key={colIndex}
+                                                                                    className="p-3"
+                                                                                    rowSpan={column.rowSpan || 1}
+                                                                                    colSpan={column.colSpan || 1}
+                                                                                >
+                                                                                    <div className="d-flex justify-content-between">
+                                                                                        <strong>{column.contentType}</strong>
+                                                                                        <div>
+                                                                                            {column.tag && <Badge bg="info" className="me-1">{column.tag}</Badge>}
+                                                                                            {column.design && <Badge bg="warning" text="dark">{column.design}</Badge>}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <small className="text-muted">
+                                                                                        Size: {column.width}/12
+                                                                                    </small>
+                                                                                </td>
+                                                                            );
+                                                                        })}
                                                                     </tr>
                                                                 ))}
                                                             </tbody>
@@ -2433,6 +2507,7 @@ const PageLayoutDashboard = () => {
                                 onMergeCells={mergeGridCells}
                                 token={token}
                                 availableTags={availableTags}
+                                availableDesigns={availableDesigns}
                             />
                         ))}
 

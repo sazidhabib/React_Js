@@ -44,13 +44,22 @@ exports.getPageLayout = async (req, res) => {
         const { pageId } = req.params;
 
         const page = await Page.findByPk(pageId, {
-            include: {
-                model: PageSection,
-                include: {
-                    model: Row,
-                    include: Column,
-                },
-            },
+            include: [
+                {
+                    model: PageSection,
+                    include: [
+                        {
+                            model: Row,
+                            include: [Column]
+                        }
+                    ]
+                }
+            ],
+            order: [
+                [PageSection, 'id', 'ASC'],
+                [PageSection, Row, 'rowOrder', 'ASC'],
+                [PageSection, Row, Column, 'colOrder', 'ASC']
+            ]
         });
 
         if (!page) return res.status(404).json({ message: "Page not found" });
@@ -129,6 +138,7 @@ exports.updatePageLayout = async (req, res) => {
                                 width: column.width || 12,
                                 contentType: column.contentType || 'text',
                                 tag: column.tag || `col-${colIndex + 1}`,
+                                design: column.design || null,
                                 contentId: column.contentId || null,
                                 contentTitle: column.contentTitle || null,
                                 merged: column.merged || false,
@@ -151,13 +161,22 @@ exports.updatePageLayout = async (req, res) => {
 
         // Return the updated page with all associations
         const updatedPage = await Page.findByPk(pageId, {
-            include: [{
-                model: PageSection,
-                include: [{
-                    model: Row,
-                    include: [Column]
-                }]
-            }]
+            include: [
+                {
+                    model: PageSection,
+                    include: [
+                        {
+                            model: Row,
+                            include: [Column]
+                        }
+                    ]
+                }
+            ],
+            order: [
+                [PageSection, 'id', 'ASC'],
+                [PageSection, Row, 'rowOrder', 'ASC'],
+                [PageSection, Row, Column, 'colOrder', 'ASC']
+            ]
         });
 
         console.log(`✅ Update completed. Returning page with ${updatedPage.PageSections?.length} sections`);

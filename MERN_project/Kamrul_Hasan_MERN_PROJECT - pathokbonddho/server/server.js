@@ -61,6 +61,8 @@ app.use('/api/image-registry', imageRegistryRoutes);
 app.get("/", (req, res) => res.send("Database is connected successfully"));
 app.get("/register", (req, res) => res.send("Hello World this is register page"));
 
+// Trigger restart for DB sync
+
 app.use(errorMiddleware);
 
 

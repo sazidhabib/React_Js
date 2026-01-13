@@ -20,6 +20,10 @@ const Column = sequelize.define("Column", {
     tag: {
         type: DataTypes.STRING,
     },
+    design: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     contentId: {
         type: DataTypes.STRING,
         allowNull: true,

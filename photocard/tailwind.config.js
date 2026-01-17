@@ -8,16 +8,16 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#22c55e', // lush green
-          dark: '#16a34a',
-          light: '#86efac',
+          DEFAULT: '#2355e7', // lush green
+          dark: '#48caf9',
+          light: '#8ddefb',
         },
         background: {
-          DEFAULT: '#f0fdf4', // very light green tint
+          DEFAULT: '#f0f6fdff', // very light green tint
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // decent default, can swap for Hind Siliguri for Bengali if needed later
+        sans: ['"Hind Siliguri"', 'sans-serif'],
       }
     },
   },

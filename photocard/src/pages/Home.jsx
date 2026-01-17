@@ -20,14 +20,14 @@ const Home = () => {
     ];
 
     return (
-        <div className="space-y-16 pb-20">
+        <div className="space-y-16 ">
             {/* Hero Section */}
             <section className="bg-gradient-to-b from-green-50 to-white pt-10 md:pt-20 pb-16">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col md:flex-row items-center gap-12">
                         {/* Left Content */}
                         <div className="flex-1 text-center md:text-left space-y-6">
-                            <span className="inline-block px-4 py-1.5 rounded-full bg-green-100 text-green-700 text-sm font-semibold mb-2">
+                            <span className="inline-block px-4 py-1.5 rounded-full bg-background text-primary text-sm font-semibold mb-2">
                                 ✨ ২০০০+ ডিজিটাল ফ্রেম
                             </span>
                             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
@@ -111,7 +111,7 @@ const Home = () => {
             </section>
 
             {/* CTA Section */}
-            <section className="relative overflow-hidden bg-[#1a4d2e] py-20">
+            <section className="relative overflow-hidden bg-[#163285] py-20">
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-white blur-3xl"></div>

@@ -205,6 +205,20 @@ const NewsList = () => {
         return newsItem.Tags || newsItem.tags || [];
     };
 
+    const getPaginationItems = (current, total) => {
+        if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+        const pages = [];
+        if (current <= 4) {
+            pages.push(1, 2, 3, 4, 5, '...', total);
+        } else if (current >= total - 3) {
+            pages.push(1, '...', total - 4, total - 3, total - 2, total - 1, total);
+        } else {
+            pages.push(1, '...', current - 1, current, current + 1, '...', total);
+        }
+        return pages;
+    };
+
     return (
         <div className="container-fluid custom-font-initial">
             <div className="row">
@@ -389,7 +403,7 @@ const NewsList = () => {
                             {/* Pagination */}
                             {totalPages > 1 && (
                                 <nav>
-                                    <ul className="pagination justify-content-center">
+                                    <ul className="pagination justify-content-center flex-wrap">
                                         <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                                             <button
                                                 className="page-link"
@@ -400,13 +414,17 @@ const NewsList = () => {
                                             </button>
                                         </li>
 
-                                        {[...Array(totalPages)].map((_, index) => (
-                                            <li key={index + 1} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                                        {getPaginationItems(currentPage, totalPages).map((item, index) => (
+                                            <li
+                                                key={index}
+                                                className={`page-item ${item === currentPage ? 'active' : ''} ${item === '...' ? 'disabled' : ''}`}
+                                            >
                                                 <button
                                                     className="page-link"
-                                                    onClick={() => setCurrentPage(index + 1)}
+                                                    onClick={() => typeof item === 'number' && setCurrentPage(item)}
+                                                    disabled={item === '...'}
                                                 >
-                                                    {index + 1}
+                                                    {item}
                                                 </button>
                                             </li>
                                         ))}

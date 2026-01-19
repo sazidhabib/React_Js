@@ -443,7 +443,7 @@ const NewsEdit = () => {
     const fetchDropdownData = async () => {
         try {
             const [authorsRes, tagsRes, categoriesRes] = await Promise.all([
-                axios.get(`${API_URL}/api/authors`),
+                axios.get(`${API_URL}/api/authors`, { params: { limit: 1000 } }),
                 axios.get(`${API_URL}/api/tags`),
                 axios.get(`${API_URL}/api/menus`)
             ]);

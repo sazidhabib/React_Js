@@ -209,7 +209,7 @@ const NewsCreate = () => {
 
             // Fetch authors
             console.log('Fetching authors...');
-            const authorsRes = await axios.get(`${API_URL}/api/authors`);
+            const authorsRes = await axios.get(`${API_URL}/api/authors`, { params: { limit: 1000 } });
             console.log('Authors API full response:', authorsRes);
 
             // Extract authors data

@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, Bell, Plus, User } from 'lucide-react';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, Bell, Plus, User, LogOut } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // Temporary state for demo
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -29,14 +36,14 @@ const Navbar = () => {
 
                         {/* Right Side Actions */}
                         <div className="flex items-center gap-4 ml-4">
-                            {!isLoggedIn ? (
-                                <button
-                                    onClick={() => setIsLoggedIn(true)}
+                            {!user ? (
+                                <Link
+                                    to="/login"
                                     className="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold transition-colors shadow-lg shadow-blue-200"
                                 >
                                     <User size={18} />
                                     লগইন
-                                </button>
+                                </Link>
                             ) : (
                                 <>
                                     <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full relative">
@@ -47,10 +54,19 @@ const Navbar = () => {
                                         <Plus size={18} />
                                         যুক্ত করুন
                                     </Link>
-                                    <Link to="/dashboard" className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-full font-medium border border-green-200 hover:bg-green-100">
-                                        <User size={18} />
-                                        xyz
-                                    </Link>
+                                    <div className="flex items-center gap-2">
+                                        <Link to="/dashboard" className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-full font-medium border border-green-200 hover:bg-green-100">
+                                            <User size={18} />
+                                            {user.username || 'User'}
+                                        </Link>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                            title="লগআউট"
+                                        >
+                                            <LogOut size={20} />
+                                        </button>
+                                    </div>
                                 </>
                             )}
                         </div>
@@ -76,9 +92,21 @@ const Navbar = () => {
                         <Link to="/popular-frames" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-green-50">জনপ্রিয় ফ্রেম</Link>
                         <Link to="/text-frames" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-green-50">টেক্সট ফ্রেম</Link>
                         <Link to="/all-frames" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-green-50">সকল ফ্রেম</Link>
-                        <Link to="/add-frame" className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-green-50 mt-4">
-                            Dashboard
-                        </Link>
+
+                        {!user ? (
+                            <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-green-50 mt-4">
+                                লগইন
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-green-50">
+                                    ড্যাশবোর্ড ({user.username})
+                                </Link>
+                                <button onClick={handleLogout} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50">
+                                    লগআউট
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

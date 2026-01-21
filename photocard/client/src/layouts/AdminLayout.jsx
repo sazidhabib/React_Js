@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, Image as ImageIcon, Settings, LogOut } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 const AdminLayout = () => {
     const location = useLocation();
+    const { logout, user } = useContext(AuthContext);
 
     return (
         <div className="min-h-screen bg-gray-100 flex">
@@ -45,7 +47,10 @@ const AdminLayout = () => {
                 </div>
 
                 <div className="p-4 border-t border-gray-100">
-                    <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-red-500 hover:bg-red-50 transition-colors">
+                    <button
+                        onClick={logout}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-red-500 hover:bg-red-50 transition-colors"
+                    >
                         <LogOut size={20} />
                         লগআউট
                     </button>
@@ -59,9 +64,9 @@ const AdminLayout = () => {
                     <h2 className="text-lg font-bold text-gray-700">অ্যাডমিন প্যানেল</h2>
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
-                            A
+                            {user?.username ? user.username.charAt(0).toUpperCase() : 'A'}
                         </div>
-                        <span className="text-sm font-medium text-gray-600">Admin User</span>
+                        <span className="text-sm font-medium text-gray-600">{user?.username || 'Admin User'}</span>
                     </div>
                 </header>
 

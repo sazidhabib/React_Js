@@ -95,8 +95,19 @@ const NewsEdit = () => {
         }
     };
 
+    const getImageUrl = (imageUrl) => {
+        if (!imageUrl) {
+            console.log('getImageUrl: No image URL provided');
+            return '';
+        }
+        const cleanUrl = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+        const finalUrl = `${API_URL}/${cleanUrl}`;
+        console.log(`getImageUrl input: "${imageUrl}", cleaned: "${cleanUrl}", final: "${finalUrl}"`);
+        return finalUrl;
+    };
+
     const handleEditorImageSelect = (photo) => {
-        const imageUrl = `${API_URL}/${photo.imageUrl}`;
+        const imageUrl = getImageUrl(photo.imageUrl);
         let currentEditorField = '';
 
         switch (currentEditor) {
@@ -322,7 +333,7 @@ const NewsEdit = () => {
                                             >
                                                 <div className="position-relative">
                                                     <img
-                                                        src={`${API_URL}/${photo.imageUrl}`}
+                                                        src={getImageUrl(photo.imageUrl)}
                                                         className="card-img-top"
                                                         alt={photo.caption || 'Photo'}
                                                         style={{ height: '150px', objectFit: 'cover' }}
@@ -794,7 +805,7 @@ const NewsEdit = () => {
             return (
                 <div className="mt-2">
                     <img
-                        src={`${API_URL}/${selectedImage.imageUrl}`}
+                        src={getImageUrl(selectedImage.imageUrl)}
                         alt="Selected"
                         className="img-thumbnail"
                         style={{ maxHeight: '100px' }}
@@ -811,7 +822,7 @@ const NewsEdit = () => {
             return (
                 <div className="mt-2">
                     <img
-                        src={`${API_URL}/${currentImage}`}
+                        src={getImageUrl(currentImage)}
                         alt="Current"
                         className="img-thumbnail"
                         style={{ maxHeight: '100px' }}

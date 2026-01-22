@@ -39,11 +39,54 @@ const initDb = async () => {
 
         console.log('Initializing database...');
 
+        // Pre-Migration: Fix ph_settings column name BEFORE running schema
+        try {
+            const [settingsCols] = await pool.query("SHOW COLUMNS FROM ph_settings LIKE 'site_title'");
+            if (settingsCols.length > 0) {
+                console.log('Migrating: Renaming site_title to site_name in ph_settings...');
+                await pool.query("ALTER TABLE ph_settings CHANGE site_title site_name VARCHAR(255) DEFAULT 'Photo Card BD'");
+            }
+        } catch (e) {
+            // Table doesn't exist yet, which is fine
+        }
+
         for (const query of queries) {
             await pool.query(query);
         }
 
         console.log('Database initialized successfully.');
+
+        // Simple Migration to add columns if they don't exist (since CREATE TABLE IF NOT EXISTS won't do it)
+        try {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS ph_categories (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL UNIQUE,
+                    slug VARCHAR(255) NOT NULL UNIQUE,
+                    description TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+
+            // Check if 'status' column exists in ph_frames
+            const [columns] = await pool.query("SHOW COLUMNS FROM ph_frames LIKE 'status'");
+            if (columns.length === 0) {
+                console.log('Migrating: Adding status column to ph_frames...');
+                await pool.query("ALTER TABLE ph_frames ADD COLUMN status ENUM('active', 'inactive') DEFAULT 'active'");
+            }
+
+            // Check if 'category_id' column exists in ph_frames
+            const [catCols] = await pool.query("SHOW COLUMNS FROM ph_frames LIKE 'category_id'");
+            if (catCols.length === 0) {
+                console.log('Migrating: Adding category_id column to ph_frames...');
+                await pool.query("ALTER TABLE ph_frames ADD COLUMN category_id INT");
+                // Optional: Add FK constraint if consistent
+                // await pool.query("ALTER TABLE ph_frames ADD CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES ph_categories(id) ON DELETE SET NULL");
+            }
+
+        } catch (migError) {
+            console.error('Migration error:', migError);
+        }
 
         // Seed Admin
         await seedAdmin();

@@ -1,7 +1,15 @@
-import React, { useContext } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Image as ImageIcon, Settings, LogOut } from 'lucide-react';
-import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
+import { useLocation, Link, Outlet } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { AuthContext } from '../context/AuthContext'; // Adjust path as needed
+import {
+    LayoutDashboard,
+    Users,
+    ImageIcon,
+    Grid,
+    Settings,
+    LogOut
+} from 'lucide-react'; // Import icons
 
 const AdminLayout = () => {
     const location = useLocation();
@@ -9,6 +17,7 @@ const AdminLayout = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 flex">
+            <Toaster position="top-right" reverseOrder={false} />
             {/* Sidebar */}
             <aside className="w-64 bg-white shadow-xl hidden md:flex flex-col z-10">
                 <div className="h-16 flex items-center justify-center border-b border-gray-100">
@@ -18,28 +27,35 @@ const AdminLayout = () => {
                 <div className="flex-grow p-4 space-y-2">
                     <Link
                         to="/admin"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname === '/admin' ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname === '/admin' || location.pathname === '/admin/' ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <LayoutDashboard size={20} />
                         ড্যাশবোর্ড
                     </Link>
                     <Link
                         to="/admin/users"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname === '/admin/users' ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname.startsWith('/admin/users') ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <Users size={20} />
                         ব্যবহারকারী
                     </Link>
                     <Link
                         to="/admin/frames"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname === '/admin/frames' ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname.startsWith('/admin/frames') ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <ImageIcon size={20} />
                         ফ্রেম ম্যানেজমেন্ট
                     </Link>
                     <Link
+                        to="/admin/categories"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname.startsWith('/admin/categories') ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
+                    >
+                        <Grid size={20} />
+                        ক্যাটাগরি
+                    </Link>
+                    <Link
                         to="/admin/settings"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname === '/admin/settings' ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${location.pathname.startsWith('/admin/settings') ? 'bg-primary text-white shadow-lg shadow-blue-200' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <Settings size={20} />
                         সেটিংস

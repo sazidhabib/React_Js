@@ -17,8 +17,9 @@ import Register from './pages/auth/Register';
 import AdminLayout from './layouts/AdminLayout';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
-import Users from './pages/admin/Users';
+import UsersPage from './pages/admin/Users'; // Rename import to avoid collision
 import Frames from './pages/admin/Frames';
+import Categories from './pages/admin/Categories';
 import Settings from './pages/admin/Settings';
 
 import { AuthProvider } from './context/AuthContext';
@@ -51,8 +52,9 @@ function App() {
               <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<AdminDashboard />} />
-                  <Route path="users" element={<Users />} />
+                  <Route path="users" element={<UsersPage />} />
                   <Route path="frames" element={<Frames />} />
+                  <Route path="categories" element={<Categories />} />
                   <Route path="settings" element={<Settings />} />
                 </Route>
               </Route>

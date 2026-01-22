@@ -15,7 +15,11 @@ const authMiddleware = async (req, res, next) => {
     // Find user by primary key (id)
     const user = await User.findByPk(decoded.userId);
 
-    if (!user || !user.isAdmin) {
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized: User not found" });
+    }
+
+    if (!user.isAdmin) {
       return res.status(403).json({ message: "Unauthorized: Not an Admin" });
     }
 

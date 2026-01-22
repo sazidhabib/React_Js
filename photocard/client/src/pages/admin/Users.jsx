@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MoreVertical, Trash2, Eye, Plus, UserPlus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Search, Trash2, Plus, UserPlus, Edit2 } from 'lucide-react';
 import Modal from '../../components/Modal';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // New User State
-    const [newUser, setNewUser] = useState({
-        username: '',
-        email: '',
-        password: '',
-        role: 'user'
-    });
+    const [editingId, setEditingId] = useState(null);
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [role, setRole] = useState('user');
 
     const fetchUsers = async () => {
         try {
@@ -23,9 +22,7 @@ const Users = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
-            if (response.ok) {
-                setUsers(data);
-            }
+            if (response.ok) setUsers(data);
         } catch (error) {
             console.error('Error fetching users:', error);
         } finally {
@@ -40,48 +37,78 @@ const Users = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
 
+        const loadingToast = toast.loading('Deleting user...');
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(`http://localhost:5000/api/users/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-
             if (response.ok) {
+                toast.success('User deleted successfully', { id: loadingToast });
                 setUsers(users.filter(user => user.id !== id));
             } else {
-                alert('Failed to delete user');
+                toast.error('Failed to delete user', { id: loadingToast });
             }
         } catch (error) {
-            console.error('Error deleting user:', error);
+            console.error(error);
+            toast.error('Error deleting user', { id: loadingToast });
         }
     };
 
-    const handleAddUser = async (e) => {
+    const handleSaveUser = async (e) => {
         e.preventDefault();
+        const loadingToast = toast.loading(editingId ? 'Updating user...' : 'Adding user...');
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/users', {
-                method: 'POST',
+            const url = editingId
+                ? `http://localhost:5000/api/users/${editingId}`
+                : 'http://localhost:5000/api/users';
+
+            const method = editingId ? 'PUT' : 'POST';
+
+            const bodyData = { username, email, role };
+            if (password) bodyData.password = password; // Only send password if provided
+
+            const response = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(newUser)
+                body: JSON.stringify(bodyData)
             });
 
             if (response.ok) {
-                setIsAddModalOpen(false);
-                setNewUser({ username: '', email: '', password: '', role: 'user' });
+                toast.success(editingId ? 'User updated successfully' : 'User added successfully', { id: loadingToast });
+                setIsModalOpen(false);
+                resetForm();
                 fetchUsers();
-                alert('User added successfully');
             } else {
                 const data = await response.json();
-                alert(data.message || 'Failed to add user');
+                toast.error(data.message || 'Failed to save user', { id: loadingToast });
             }
         } catch (error) {
-            console.error('Error adding user:', error);
+            console.error(error);
+            toast.error('Error saving user', { id: loadingToast });
         }
+    };
+
+    const resetForm = () => {
+        setEditingId(null);
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setRole('user');
+    };
+
+    const openEdit = (user) => {
+        setEditingId(user.id);
+        setUsername(user.username);
+        setEmail(user.email);
+        setPassword(''); // Don't fill password
+        setRole(user.role);
+        setIsModalOpen(true);
     };
 
     const filteredUsers = users.filter(user =>
@@ -93,9 +120,7 @@ const Users = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <h1 className="text-2xl font-bold text-gray-800">ব্যবহারকারী ব্যবস্থাপনা</h1>
-
                 <div className="flex gap-3">
-                    {/* Search Bar */}
                     <div className="relative w-full md:w-72">
                         <input
                             type="text"
@@ -106,25 +131,22 @@ const Users = () => {
                         />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     </div>
-
                     <button
-                        onClick={() => setIsAddModalOpen(true)}
+                        onClick={() => { resetForm(); setIsModalOpen(true); }}
                         className="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg transition-colors font-medium text-sm whitespace-nowrap"
                     >
-                        <Plus size={18} />
-                        অ্যাড ইউজার
+                        <Plus size={18} /> অ্যাড ইউজার
                     </button>
                 </div>
             </div>
 
-            {/* Users Table */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                                 <th className="p-4 font-semibold">নাম</th>
-                                <th className="p-4 font-semibold">ইমেইল / একাউন্ট</th>
+                                <th className="p-4 font-semibold">ইমেইল</th>
                                 <th className="p-4 font-semibold">জয়েনিং তারিখ</th>
                                 <th className="p-4 font-semibold">রোল</th>
                                 <th className="p-4 font-semibold text-right">অ্যাকশন</th>
@@ -142,38 +164,23 @@ const Users = () => {
                             ) : (
                                 filteredUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold">
-                                                    {user.username.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-gray-800">{user.username}</p>
-                                                    <p className="text-xs text-gray-500">ID: #{user.id}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <p className="text-sm text-gray-800">{user.email}</p>
-                                        </td>
+                                        <td className="p-4 font-medium text-gray-800">{user.username}</td>
+                                        <td className="p-4 text-sm text-gray-800">{user.email}</td>
                                         <td className="p-4 text-sm text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
                                         <td className="p-4">
                                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-bold ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
                                                 {user.role}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                {user.role !== 'admin' && (
-                                                    <button
-                                                        onClick={() => handleDelete(user.id)}
-                                                        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="মুছে ফেলুন"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                )}
-                                            </div>
+                                        <td className="p-4 text-right space-x-2">
+                                            <button onClick={() => openEdit(user)} className="text-blue-500 hover:text-blue-700 p-2 hover:bg-blue-50 rounded">
+                                                <Edit2 size={16} />
+                                            </button>
+                                            {user.role !== 'admin' && (
+                                                <button onClick={() => handleDelete(user.id)} className="text-gray-500 hover:text-red-600 p-2 hover:bg-red-50 rounded">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))
@@ -183,21 +190,20 @@ const Users = () => {
                 </div>
             </div>
 
-            {/* Add User Modal */}
             <Modal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
-                title="নতুন ব্যবহারকারী যোগ করুন"
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={editingId ? "Edit User" : "Add New User"}
             >
-                <form onSubmit={handleAddUser} className="space-y-4">
+                <form onSubmit={handleSaveUser} className="space-y-4">
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">নাম</label>
                         <input
                             type="text"
                             required
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-primary"
-                            value={newUser.username}
-                            onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
                     <div className="space-y-2">
@@ -206,26 +212,26 @@ const Users = () => {
                             type="email"
                             required
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-primary"
-                            value={newUser.email}
-                            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                        <label className="text-sm font-medium text-gray-700">পাসওয়ার্ড {editingId ? '(Leave blank to keep same)' : ''}</label>
                         <input
                             type="password"
-                            required
+                            required={!editingId}
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-primary"
-                            value={newUser.password}
-                            onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">রোল</label>
                         <select
                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-primary"
-                            value={newUser.role}
-                            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
                         >
                             <option value="user">User</option>
                             <option value="admin">Admin</option>
@@ -236,7 +242,7 @@ const Users = () => {
                         className="w-full py-2 bg-primary hover:bg-blue-600 text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 mt-4"
                     >
                         <UserPlus size={18} />
-                        যোগ করুন
+                        {editingId ? 'Update User' : 'Add User'}
                     </button>
                 </form>
             </Modal>

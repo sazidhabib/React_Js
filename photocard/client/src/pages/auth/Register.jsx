@@ -10,7 +10,7 @@ const Register = () => {
         username: '',
         email: '',
         password: '',
-        phone: '' // Note: API might not accept phone yet, check schema if needed, skipping for now or adding if schema supports
+        phone: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -26,13 +26,14 @@ const Register = () => {
 
         try {
             // 1. Register User
-            const response = await fetch('http://localhost:5000/api/users', { // Using create user endpoint
+            const response = await fetch('http://localhost:5000/api/users/register', { // Using public register endpoint
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username: formData.username,
                     email: formData.email,
                     password: formData.password,
+                    phone: formData.phone,
                     role: 'user'
                 })
             });
@@ -47,7 +48,7 @@ const Register = () => {
             await login(formData.email, formData.password);
 
             // 3. Redirect to Dashboard
-            navigate('/dashboard');
+            navigate('/login');
 
         } catch (err) {
             setError(err.message);

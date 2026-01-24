@@ -6,7 +6,7 @@ const fs = require('fs');
 // Get all frames
 exports.getAllFrames = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT f.*, c.name as category_name FROM ph_frames f LEFT JOIN ph_categories c ON f.category_id = c.id ORDER BY f.created_at DESC');
+        const [rows] = await pool.query('SELECT f.*, c.name as category_name FROM ph_frames f LEFT JOIN ph_categories c ON f.category_id = c.id WHERE f.status = "active" ORDER BY f.created_at DESC');
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -54,10 +54,10 @@ exports.createFrame = async (req, res) => {
         }
 
         const [result] = await pool.query(
-            'INSERT INTO ph_frames (title, image_url, category_id, description, is_popular, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [title, image_url, category_id, description, is_popular === 'true' || is_popular === true, status || 'active']
+            'INSERT INTO ph_frames (title, image_url, category_id, description, is_popular, status, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [title, image_url, category_id || null, description, is_popular === 'true' || is_popular === true, status || 'pending', req.user ? req.user.id : null]
         );
-        res.status(201).json({ id: result.insertId, title, image_url, category_id, description, is_popular, status });
+        res.status(201).json({ id: result.insertId, title, image_url, category_id, description, is_popular, status: status || 'pending', user_id: req.user ? req.user.id : null });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });
@@ -67,9 +67,38 @@ exports.createFrame = async (req, res) => {
 // Update frame
 exports.updateFrame = async (req, res) => {
     const { title, category_id, description, is_popular, status } = req.body;
+    const userId = req.user.id;
+    const userRole = req.user.role;
 
     try {
-        let image_url = req.body.image_url;
+        // 1. Fetch existing frame to check ownership
+        const [existing] = await pool.query('SELECT * FROM ph_frames WHERE id = ?', [req.params.id]);
+        if (existing.length === 0) return res.status(404).json({ message: 'Frame not found' });
+
+        const frame = existing[0];
+
+        // 2. Permission Check
+        const isOwner = frame.user_id === userId;
+        const isAdmin = userRole === 'admin';
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Access Denied: You can only edit your own frames.' });
+        }
+
+        // 3. Status Change Restriction
+        // If status is being changed, ONLY Admin can do it.
+        // If User tries to change status, we ignore it or error. Let's ignore it and keep old status.
+        let newStatus = status;
+        if (status && status !== frame.status && !isAdmin) {
+            // User trying to change status -> Force keep old status
+            newStatus = frame.status;
+            // distinct warning could be sent, but let's just sanitize
+        }
+
+        // If no status provided, keep old
+        if (!newStatus) newStatus = frame.status;
+
+        let image_url = req.body.image_url || frame.image_url; // Default to existing
         if (req.file) {
             const outputFilename = await processImage(req.file);
             const serverUrl = process.env.SERVER_URL || `${req.protocol}://${req.get('host')}`;
@@ -78,11 +107,10 @@ exports.updateFrame = async (req, res) => {
 
         const [result] = await pool.query(
             'UPDATE ph_frames SET title = ?, image_url = ?, category_id = ?, description = ?, is_popular = ?, status = ? WHERE id = ?',
-            [title, image_url, category_id, description, is_popular === 'true' || is_popular === true, status, req.params.id]
+            [title, image_url, category_id || null, description, is_popular === 'true' || is_popular === true, newStatus, req.params.id]
         );
 
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Frame not found' });
-        res.status(200).json({ message: 'Frame updated successfully', image_url });
+        res.status(200).json({ message: 'Frame updated successfully', image_url, status: newStatus });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -90,10 +118,68 @@ exports.updateFrame = async (req, res) => {
 
 // Delete frame
 exports.deleteFrame = async (req, res) => {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
     try {
+        // 1. Fetch existing frame
+        const [existing] = await pool.query('SELECT * FROM ph_frames WHERE id = ?', [req.params.id]);
+        if (existing.length === 0) return res.status(404).json({ message: 'Frame not found' });
+
+        const frame = existing[0];
+
+        // 2. Permission Check
+        const isOwner = frame.user_id === userId;
+        const isAdmin = userRole === 'admin';
+
+        if (!isOwner && !isAdmin) {
+            return res.status(403).json({ message: 'Access Denied: You can only delete your own frames.' });
+        }
+
         const [result] = await pool.query('DELETE FROM ph_frames WHERE id = ?', [req.params.id]);
-        if (result.affectedRows === 0) return res.status(404).json({ message: 'Frame not found' });
         res.status(200).json({ message: 'Frame deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get frames by logged in user
+exports.getMyFrames = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const [rows] = await pool.query('SELECT f.*, c.name as category_name FROM ph_frames f LEFT JOIN ph_categories c ON f.category_id = c.id WHERE f.user_id = ? ORDER BY f.created_at DESC', [userId]);
+        res.status(200).json(rows);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Get User Stats
+exports.getUserStats = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Total Frames
+        const [totalRows] = await pool.query('SELECT COUNT(*) as count FROM ph_frames WHERE user_id = ?', [userId]);
+        const total = totalRows[0].count;
+
+        // Live Frames (active)
+        const [liveRows] = await pool.query('SELECT COUNT(*) as count FROM ph_frames WHERE user_id = ? AND status = "active"', [userId]);
+        const live = liveRows[0].count;
+
+        // Pending Frames
+        const [pendingRows] = await pool.query('SELECT COUNT(*) as count FROM ph_frames WHERE user_id = ? AND status = "pending"', [userId]);
+        const pending = pendingRows[0].count;
+
+        // Rejected Frames
+        const [rejectedRows] = await pool.query('SELECT COUNT(*) as count FROM ph_frames WHERE user_id = ? AND status = "rejected"', [userId]);
+        const rejected = rejectedRows[0].count;
+
+        // Trash Frames
+        const [trashRows] = await pool.query('SELECT COUNT(*) as count FROM ph_frames WHERE user_id = ? AND status = "trash"', [userId]);
+        const trash = trashRows[0].count;
+
+        res.status(200).json({ total, live, pending, rejected, trash });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

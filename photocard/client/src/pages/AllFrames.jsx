@@ -1,16 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import SectionHeader from '../components/SectionHeader';
 import FrameCard from '../components/FrameCard';
 import { Search, Filter } from 'lucide-react';
 
 const AllFrames = () => {
-    // Mock Data
-    const allFrames = Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        title: `ফ্রেম ডিজাইন ${i + 1}`,
-        subtitle: 'ক্যাটাগরি',
-        image: null
-    }));
+    const [frames, setFrames] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        const fetchFrames = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/frames');
+                const data = await response.json();
+                if (response.ok) {
+                    setFrames(data);
+                }
+            } catch (error) {
+                console.error('Error fetching frames:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchCategories = async () => {
+            try {
+                const response = await fetch('http://localhost:5000/api/categories');
+                if (response.ok) {
+                    const data = await response.json();
+                    setCategories(['All', ...data.map(c => c.name)]);
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchFrames();
+        fetchCategories();
+    }, []);
+
+    const filteredFrames = frames.filter(frame => {
+        const matchesSearch = frame.title.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = activeCategory === 'All' || frame.category_name === activeCategory;
+        return matchesSearch && matchesCategory;
+    });
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 pb-20">
@@ -24,15 +59,18 @@ const AllFrames = () => {
                             type="text"
                             placeholder="ফ্রেম খুঁজুন..."
                             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     </div>
 
                     <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
-                        {['সব', 'রাজনৈতিক', 'উৎসব', 'ইসলামিক', 'অন্যান্য'].map((cat, idx) => (
+                        {categories.map((cat, idx) => (
                             <button
                                 key={idx}
-                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${idx === 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${activeCategory === cat ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                             >
                                 {cat}
                             </button>
@@ -40,23 +78,17 @@ const AllFrames = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {allFrames.map(frame => (
-                        <FrameCard key={frame.id} {...frame} />
-                    ))}
-                </div>
-
-                {/* Pagination Placeholder */}
-                <div className="mt-12 flex justify-center gap-2">
-                    {[1, 2, 3, 4, 5].map(page => (
-                        <button
-                            key={page}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${page === 1 ? 'bg-primary text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}`}
-                        >
-                            {page}
-                        </button>
-                    ))}
-                </div>
+                {loading ? (
+                    <div className="text-center py-20 text-gray-500">লোড হচ্ছে...</div>
+                ) : filteredFrames.length === 0 ? (
+                    <div className="text-center py-20 text-gray-500">কোনো ফ্রেম পাওয়া যায়নি</div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredFrames.map(frame => (
+                            <FrameCard key={frame.id} id={frame.id} title={frame.title} subtitle={frame.category_name || 'General'} image={frame.image_url} />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

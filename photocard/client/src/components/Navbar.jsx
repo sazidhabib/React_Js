@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Bell, Plus, User, LogOut } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
@@ -8,10 +8,47 @@ const Navbar = () => {
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
 
+    const location = useLocation();
+
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
+
+    // Hide Navbar on Admin Routes
+    if (location.pathname.startsWith('/admin')) {
+        return null;
+    }
+
+    // Dashboard Navbar
+    if (location.pathname === '/dashboard') {
+        return (
+            <nav className="bg-white shadow-sm sticky top-0 z-50">
+                <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-green-700 flex items-center gap-2">
+                            <span className="text-2xl">📷</span> ফটো কার্ড বিডি
+                        </span>
+                    </Link>
+
+                    {/* Right Side */}
+                    <div className="flex items-center gap-6">
+                        <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full relative">
+                            <Bell size={20} />
+                        </button>
+                        <Link to="/" className="text-gray-600 hover:text-primary font-medium">
+                            হোম
+                        </Link>
+                        <Link to="/add-frame" className="flex items-center gap-2 bg-primary hover:bg-green-700 text-white px-5 py-2.5 rounded-full font-bold transition-colors shadow-lg shadow-green-200">
+                            <Plus size={18} />
+                            ফ্রেম যুক্ত করুন
+                        </Link>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
 
     return (
         <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -36,7 +73,7 @@ const Navbar = () => {
 
                         {/* Right Side Actions */}
                         <div className="flex items-center gap-4 ml-4">
-                            {!user ? (
+                            {!user || user.role === 'admin' ? (
                                 <Link
                                     to="/login"
                                     className="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-6 py-2.5 rounded-full font-bold transition-colors shadow-lg shadow-blue-200"
@@ -93,7 +130,7 @@ const Navbar = () => {
                         <Link to="/text-frames" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-green-50">টেক্সট ফ্রেম</Link>
                         <Link to="/all-frames" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-green-50">সকল ফ্রেম</Link>
 
-                        {!user ? (
+                        {!user || user.role === 'admin' ? (
                             <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-primary hover:bg-green-50 mt-4">
                                 লগইন
                             </Link>

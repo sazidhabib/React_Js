@@ -68,11 +68,21 @@ const initDb = async () => {
                 )
             `);
 
-            // Check if 'status' column exists in ph_frames
+            // Check if 'status' column exists in ph_frames and has correct ENUM
             const [columns] = await pool.query("SHOW COLUMNS FROM ph_frames LIKE 'status'");
             if (columns.length === 0) {
                 console.log('Migrating: Adding status column to ph_frames...');
-                await pool.query("ALTER TABLE ph_frames ADD COLUMN status ENUM('active', 'inactive') DEFAULT 'active'");
+                await pool.query("ALTER TABLE ph_frames ADD COLUMN status ENUM('active', 'pending', 'inactive', 'rejected', 'trash') DEFAULT 'pending'");
+            } else {
+                // Check if ENUM needs updating (simplified check, just run ALTER to be safe if you want to expand it)
+                // Note: Modifying ENUM can be tricky. This command blindly updates it to include new values.
+                // Assuming 'active' and 'inactive' were old values. New default is 'pending'.
+                try {
+                    await pool.query("ALTER TABLE ph_frames MODIFY COLUMN status ENUM('active', 'pending', 'inactive', 'rejected', 'trash') DEFAULT 'pending'");
+                    console.log('Migrating: Updated status column ENUM values to include pending, rejected, trash');
+                } catch (e) {
+                    console.log('Status column update skipped or failed (might already match): ' + e.message);
+                }
             }
 
             // Check if 'category_id' column exists in ph_frames
@@ -82,6 +92,20 @@ const initDb = async () => {
                 await pool.query("ALTER TABLE ph_frames ADD COLUMN category_id INT");
                 // Optional: Add FK constraint if consistent
                 // await pool.query("ALTER TABLE ph_frames ADD CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES ph_categories(id) ON DELETE SET NULL");
+            }
+
+            // Check if 'user_id' column exists in ph_frames
+            const [userCols] = await pool.query("SHOW COLUMNS FROM ph_frames LIKE 'user_id'");
+            if (userCols.length === 0) {
+                console.log('Migrating: Adding user_id column to ph_frames...');
+                await pool.query("ALTER TABLE ph_frames ADD COLUMN user_id INT");
+            }
+
+            // Check if 'phone_number' column exists in ph_users
+            const [phoneCols] = await pool.query("SHOW COLUMNS FROM ph_users LIKE 'phone_number'");
+            if (phoneCols.length === 0) {
+                console.log('Migrating: Adding phone_number column to ph_users...');
+                await pool.query("ALTER TABLE ph_users ADD COLUMN phone_number VARCHAR(20)");
             }
 
         } catch (migError) {

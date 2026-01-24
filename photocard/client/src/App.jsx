@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import PopularFrames from './pages/PopularFrames';
 import TextFrames from './pages/TextFrames';
+import FrameDetails from './pages/FrameDetails';
 import AllFrames from './pages/AllFrames';
 import AddFrame from './pages/AddFrame';
 
@@ -34,12 +35,13 @@ function App() {
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route element={<ProtectedRoute />}>
+              <Route element={<ProtectedRoute allowedRoles={['user']} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
               </Route>
               <Route path="/popular-frames" element={<PopularFrames />} />
               <Route path="/text-frames" element={<TextFrames />} />
               <Route path="/all-frames" element={<AllFrames />} />
+              <Route path="/frame/:id" element={<FrameDetails />} />
               <Route path="/add-frame" element={<AddFrame />} />
 
               {/* Auth Routes */}

@@ -1,7 +1,9 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const FrameCard = ({
+    id,
     title,
     subtitle,
     image,
@@ -32,10 +34,13 @@ const FrameCard = ({
                 <h3 className="font-bold text-gray-800 text-lg mb-1">{title}</h3>
                 {subtitle && <p className="text-xs text-gray-500 mb-3">{subtitle}</p>}
 
-                <button className="w-full mt-2 py-2 px-4 rounded-lg bg-white border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white">
+                <Link
+                    to={`/frame/${id}`}
+                    className="w-full mt-2 py-2 px-4 rounded-lg bg-white border border-green-600 text-green-700 font-medium hover:bg-green-50 transition-colors flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-white"
+                >
                     ফ্রেম তৈরি করুন
                     <ArrowRight size={16} />
-                </button>
+                </Link>
             </div>
         </div>
     );

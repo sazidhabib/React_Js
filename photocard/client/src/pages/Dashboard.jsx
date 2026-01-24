@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import {
-    Mail, Edit, LogOut,
+    Mail, Edit, LogOut, Phone,
     Image as ImageIcon, CheckCircle, Clock,
     List, Headphones, MessageCircle, Trash2, Edit2, Download, Eye, XCircle
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { API_URL } from '../config';
 
 const Dashboard = () => {
     const { user, logout } = useContext(AuthContext);
@@ -33,12 +34,12 @@ const Dashboard = () => {
                 const headers = { 'Authorization': `Bearer ${token}` };
 
                 // Fetch Stats
-                const statsRes = await fetch('http://localhost:5000/api/frames/stats', { headers });
+                const statsRes = await fetch(`${API_URL}/frames/stats`, { headers });
                 const statsData = await statsRes.json();
                 if (statsRes.ok) setStats(statsData);
 
                 // Fetch Frames
-                const framesRes = await fetch('http://localhost:5000/api/frames/my-frames', { headers });
+                const framesRes = await fetch(`${API_URL}/frames/my-frames`, { headers });
                 const framesData = await framesRes.json();
                 if (framesRes.ok) setFrames(framesData);
 
@@ -72,7 +73,7 @@ const Dashboard = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/frames/${id}`, {
+            const response = await fetch(`${API_URL}/frames/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -118,7 +119,7 @@ const Dashboard = () => {
                                 {user?.email || 'No Email Provided'}
                             </div>
                             <div className="flex items-center gap-2 text-gray-500 text-sm justify-center md:justify-start">
-                                <Mail size={14} />
+                                <Phone size={14} />
                                 {user?.phone_number || 'No Phone Number Provided'}
                             </div>
 
@@ -280,11 +281,11 @@ const Dashboard = () => {
                                             </td>
                                             <td className="py-4 px-6 text-center text-gray-600 font-medium">
                                                 {/* Placeholder for Views */}
-                                                0
+                                                {frame.view_count || 0}
                                             </td>
                                             <td className="py-4 px-6 text-center text-gray-600 font-medium">
                                                 {/* Placeholder for Downloads */}
-                                                0
+                                                {frame.use_count || 0}
                                             </td>
                                             <td className="py-4 px-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">

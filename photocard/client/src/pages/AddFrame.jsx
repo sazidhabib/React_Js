@@ -4,6 +4,7 @@ import { Upload, Image as ImageIcon, Check, Loader } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
+import { API_URL } from '../config';
 
 const AddFrame = () => {
     const { user, loading: authLoading } = useContext(AuthContext);
@@ -84,11 +85,11 @@ const AddFrame = () => {
         data.append('description', formData.description);
         // category_id is no longer appended
         data.append('image', formData.image);
-        data.append('status', 'active');
+        // Status will be handled by backend (default pending for users)
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/frames', {
+            const response = await fetch(`${API_URL}/frames`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

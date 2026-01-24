@@ -6,7 +6,7 @@ const fs = require('fs');
 // Get all frames
 exports.getAllFrames = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT f.*, c.name as category_name FROM ph_frames f LEFT JOIN ph_categories c ON f.category_id = c.id WHERE f.status = "active" ORDER BY f.created_at DESC');
+        const [rows] = await pool.query('SELECT f.*, c.name as category_name FROM ph_frames f LEFT JOIN ph_categories c ON f.category_id = c.id ORDER BY f.created_at DESC');
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -18,7 +18,32 @@ exports.getFrameById = async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM ph_frames WHERE id = ?', [req.params.id]);
         if (rows.length === 0) return res.status(404).json({ message: 'Frame not found' });
+
+        // Increment view count
+        await pool.query('UPDATE ph_frames SET view_count = view_count + 1 WHERE id = ?', [req.params.id]);
+
+        // Return updated frame (or the one we fetched, doesn't matter much for display)
+        // Ideally we should return the fetched one, the view count update is a side effect.
+        // If we want to show strict consistency we'd fetch again, but for view counters it's fine.
+        rows[0].view_count += 1;
+
         res.status(200).json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Increment Use/Download Count
+exports.incrementUseCount = async (req, res) => {
+    try {
+        const frameId = req.params.id;
+        const [result] = await pool.query('UPDATE ph_frames SET use_count = use_count + 1 WHERE id = ?', [frameId]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Frame not found' });
+        }
+
+        res.status(200).json({ message: 'Use count incremented' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -53,11 +78,15 @@ exports.createFrame = async (req, res) => {
             image_url = `${serverUrl}/uploads/frames/${outputFilename}`;
         }
 
+        // Enforce pending status for non-admins regardless of input
+        const userRole = req.user ? req.user.role : 'user';
+        const initialStatus = userRole === 'admin' ? (status || 'active') : 'pending';
+
         const [result] = await pool.query(
             'INSERT INTO ph_frames (title, image_url, category_id, description, is_popular, status, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [title, image_url, category_id || null, description, is_popular === 'true' || is_popular === true, status || 'pending', req.user ? req.user.id : null]
+            [title, image_url, category_id || null, description, is_popular === 'true' || is_popular === true, initialStatus, req.user ? req.user.id : null]
         );
-        res.status(201).json({ id: result.insertId, title, image_url, category_id, description, is_popular, status: status || 'pending', user_id: req.user ? req.user.id : null });
+        res.status(201).json({ id: result.insertId, title, image_url, category_id, description, is_popular, status: initialStatus, user_id: req.user ? req.user.id : null });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });

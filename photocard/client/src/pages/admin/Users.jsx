@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Search, Trash2, Plus, UserPlus, Edit2 } from 'lucide-react';
 import Modal from '../../components/Modal';
+import { API_URL } from '../../config';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -18,7 +19,7 @@ const Users = () => {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/users', {
+            const response = await fetch(`${API_URL}/users`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -40,7 +41,7 @@ const Users = () => {
         const loadingToast = toast.loading('Deleting user...');
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/users/${id}`, {
+            const response = await fetch(`${API_URL}/users/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -62,8 +63,8 @@ const Users = () => {
         try {
             const token = localStorage.getItem('token');
             const url = editingId
-                ? `http://localhost:5000/api/users/${editingId}`
-                : 'http://localhost:5000/api/users';
+                ? `${API_URL}/users/${editingId}`
+                : `${API_URL}/users`;
 
             const method = editingId ? 'PUT' : 'POST';
 
@@ -147,6 +148,7 @@ const Users = () => {
                             <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                                 <th className="p-4 font-semibold">নাম</th>
                                 <th className="p-4 font-semibold">ইমেইল</th>
+                                <th className="p-4 font-semibold">মোবাইল</th>
                                 <th className="p-4 font-semibold">জয়েনিং তারিখ</th>
                                 <th className="p-4 font-semibold">রোল</th>
                                 <th className="p-4 font-semibold text-right">অ্যাকশন</th>
@@ -166,6 +168,7 @@ const Users = () => {
                                     <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="p-4 font-medium text-gray-800">{user.username}</td>
                                         <td className="p-4 text-sm text-gray-800">{user.email}</td>
+                                        <td className="p-4 text-sm text-gray-800">{user.phone_number || '-'}</td>
                                         <td className="p-4 text-sm text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
                                         <td className="p-4">
                                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-bold ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>

@@ -11,6 +11,7 @@ router.get('/my-frames', verifyToken, frameController.getMyFrames);
 router.get('/stats', verifyToken, frameController.getUserStats);
 router.get('/:id', frameController.getFrameById);
 router.post('/', verifyToken, upload.single('image'), frameController.createFrame);
+router.post('/:id/use', frameController.incrementUseCount);
 router.put('/:id', verifyToken, upload.single('image'), frameController.updateFrame);
 router.delete('/:id', verifyToken, frameController.deleteFrame);
 

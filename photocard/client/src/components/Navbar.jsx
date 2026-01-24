@@ -2,11 +2,13 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, Bell, Plus, User, LogOut } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
+import { useSettings } from '../hooks/useSettings';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { user, logout } = useContext(AuthContext);
     const navigate = useNavigate();
+    const { settings } = useSettings();
 
     const location = useLocation();
 
@@ -27,9 +29,13 @@ const Navbar = () => {
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
-                        <span className="text-xl font-bold text-green-700 flex items-center gap-2">
-                            <span className="text-2xl">📷</span> ফটো কার্ড বিডি
-                        </span>
+                        {settings.logo_url ? (
+                            <img src={settings.logo_url} alt={settings.site_name} className="h-10 w-auto" />
+                        ) : (
+                            <span className="text-xl font-bold text-green-700 flex items-center gap-2">
+                                <span className="text-2xl">📷</span> {settings.site_name}
+                            </span>
+                        )}
                     </Link>
 
                     {/* Right Side */}
@@ -56,10 +62,16 @@ const Navbar = () => {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary rounded lg:hidden"></div> {/* Placeholder icon */}
-                        <span className="text-xl font-bold text-green-700 flex items-center gap-2">
-                            <span className="text-2xl">📷</span> ফটো কার্ড বিডি
-                        </span>
+                        {settings.logo_url ? (
+                            <img src={settings.logo_url} alt={settings.site_name} className="h-10 w-auto" />
+                        ) : (
+                            <>
+                                <div className="w-8 h-8 bg-primary rounded lg:hidden"></div>
+                                <span className="text-xl font-bold text-green-700 flex items-center gap-2">
+                                    <span className="text-2xl">📷</span> {settings.site_name}
+                                </span>
+                            </>
+                        )}
                     </Link>
 
                     {/* Desktop Menu */}

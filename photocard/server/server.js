@@ -10,8 +10,19 @@ const initDb = require('./config/initDb');
 initDb();
 
 
+// CORS Configuration - ADD THIS
+const corsOptions = {
+    origin: [
+        'https://photocard.nextideasolution.com',
+        'http://localhost:5173' // for local development
+    ],
+    credentials: true, // important for cookies/sessions
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.get('/uploads', express.static('uploads'));
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));

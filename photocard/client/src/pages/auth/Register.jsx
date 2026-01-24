@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
+import { API_URL } from '../../config';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ const Register = () => {
 
         try {
             // 1. Register User
-            const response = await fetch('http://localhost:5000/api/users/register', { // Using public register endpoint
+            const response = await fetch(`${API_URL}/users/register`, { // Using public register endpoint
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

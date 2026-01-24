@@ -101,6 +101,20 @@ const initDb = async () => {
                 await pool.query("ALTER TABLE ph_frames ADD COLUMN user_id INT");
             }
 
+            // Check if 'view_count' column exists in ph_frames
+            const [viewCols] = await pool.query("SHOW COLUMNS FROM ph_frames LIKE 'view_count'");
+            if (viewCols.length === 0) {
+                console.log('Migrating: Adding view_count column to ph_frames...');
+                await pool.query("ALTER TABLE ph_frames ADD COLUMN view_count INT DEFAULT 0");
+            }
+
+            // Check if 'use_count' column exists in ph_frames
+            const [useCols] = await pool.query("SHOW COLUMNS FROM ph_frames LIKE 'use_count'");
+            if (useCols.length === 0) {
+                console.log('Migrating: Adding use_count column to ph_frames...');
+                await pool.query("ALTER TABLE ph_frames ADD COLUMN use_count INT DEFAULT 0");
+            }
+
             // Check if 'phone_number' column exists in ph_users
             const [phoneCols] = await pool.query("SHOW COLUMNS FROM ph_users LIKE 'phone_number'");
             if (phoneCols.length === 0) {

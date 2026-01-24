@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Search, Plus, Trash2, Edit2 } from 'lucide-react';
 import Modal from '../../components/Modal';
+import { API_URL } from '../../config';
 
 const Categories = () => {
     const [categories, setCategories] = useState([]);
@@ -15,7 +16,7 @@ const Categories = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/categories');
+            const response = await fetch(`${API_URL}/categories`);
             const data = await response.json();
             if (response.ok) setCategories(data);
         } catch (error) {
@@ -35,8 +36,8 @@ const Categories = () => {
         try {
             const token = localStorage.getItem('token');
             const url = editingId
-                ? `http://localhost:5000/api/categories/${editingId}`
-                : 'http://localhost:5000/api/categories';
+                ? `${API_URL}/categories/${editingId}`
+                : `${API_URL}/categories`;
 
             const method = editingId ? 'PUT' : 'POST';
 
@@ -71,7 +72,7 @@ const Categories = () => {
         const loadingToast = toast.loading('Deleting category...');
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/categories/${id}`, {
+            const response = await fetch(`${API_URL}/categories/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

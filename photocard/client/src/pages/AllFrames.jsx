@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SectionHeader from '../components/SectionHeader';
 import FrameCard from '../components/FrameCard';
 import { Search, Filter } from 'lucide-react';
+import { API_URL } from '../config';
 
 const AllFrames = () => {
     const [frames, setFrames] = useState([]);
@@ -13,7 +14,7 @@ const AllFrames = () => {
     useEffect(() => {
         const fetchFrames = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/frames');
+                const response = await fetch(`${API_URL}/frames`);
                 const data = await response.json();
                 if (response.ok) {
                     setFrames(data);
@@ -27,7 +28,7 @@ const AllFrames = () => {
 
         const fetchCategories = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/categories');
+                const response = await fetch(`${API_URL}/categories`);
                 if (response.ok) {
                     const data = await response.json();
                     setCategories(['All', ...data.map(c => c.name)]);
@@ -85,7 +86,7 @@ const AllFrames = () => {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredFrames.map(frame => (
-                            <FrameCard key={frame.id} id={frame.id} title={frame.title} subtitle={frame.category_name || 'General'} image={frame.image_url} />
+                            <FrameCard key={frame.id} id={frame.id} title={frame.title} subtitle={frame.category_name || 'General'} image={frame.image_url} viewCount={frame.view_count} useCount={frame.use_count} />
                         ))}
                     </div>
                 )}

@@ -3,6 +3,7 @@ import SectionHeader from '../components/SectionHeader';
 import FrameCard from '../components/FrameCard';
 import { PlayCircle, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const Home = () => {
     // Mock Data for "Recent Frames"
@@ -18,6 +19,29 @@ const Home = () => {
         { id: 5, title: '২১শে ফেব্রুয়ারি', subtitle: '', image: null },
         { id: 6, title: 'ঈদুল ফিতর', subtitle: '', image: null },
     ];
+
+    const [settings, setSettings] = React.useState({
+        helpline_number: '01880578893',
+        support_email: 'contact@photocardbd.com'
+    });
+
+    React.useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const response = await fetch(`${API_URL}/settings`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setSettings({
+                        helpline_number: data.helpline_number || '01880578893',
+                        support_email: data.support_email || 'contact@photocardbd.com'
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching settings:', error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     return (
         <div className="space-y-16 ">
@@ -129,10 +153,10 @@ const Home = () => {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                         <div className="flex items-center gap-2 text-white bg-white/10 px-6 py-3 rounded-lg backdrop-blur-sm">
-                            <span className="font-bold">📞 01880578893</span>
+                            <span className="font-bold">📞 {settings.helpline_number}</span>
                         </div>
-                        <a href="mailto:contact@photocardbd.com" className="flex items-center gap-2 text-white bg-white/10 px-6 py-3 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-colors">
-                            <span>📧 contact@photocardbd.com</span>
+                        <a href={`mailto:${settings.support_email}`} className="flex items-center gap-2 text-white bg-white/10 px-6 py-3 rounded-lg backdrop-blur-sm hover:bg-white/20 transition-colors">
+                            <span>📧 {settings.support_email}</span>
                         </a>
                     </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, Upload, ZoomIn, ZoomOut, Move, Image as ImageIcon, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../config';
 
 const FrameDetails = () => {
     const { id } = useParams();
@@ -28,7 +29,7 @@ const FrameDetails = () => {
     useEffect(() => {
         const fetchFrame = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/frames/${id}`);
+                const response = await fetch(`${API_URL}/frames/${id}`);
                 if (response.ok) {
                     const data = await response.json();
                     setFrame(data);
@@ -167,6 +168,11 @@ const FrameDetails = () => {
             link.click();
             document.body.removeChild(link);
             toast.success('ডাউনলোড সফল হয়েছে!');
+
+            // Increment Use Count
+            fetch(`${API_URL}/frames/${frame.id}/use`, { method: 'POST' })
+                .catch(err => console.error('Failed to increment use count', err));
+
         } catch (err) {
             console.error(err);
             toast.error('ডাউনলোড ব্যর্থ হয়েছে. দয়া করে আবার চেষ্টা করুন');
@@ -230,6 +236,15 @@ const FrameDetails = () => {
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800 mb-2">{frame.title}</h1>
                             <p className="text-gray-500 text-sm">ক্যাটাগরি: <span className="text-primary font-medium">{frame.category_name || 'General'}</span></p>
+
+                            <div className="flex gap-4 mt-2">
+                                <div className="flex items-center gap-1 text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded">
+                                    <span>👁️</span> {frame.view_count || 0}
+                                </div>
+                                <div className="flex items-center gap-1 text-gray-500 text-sm bg-gray-100 px-2 py-1 rounded">
+                                    <span>⬇️</span> {frame.use_count || 0}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-4 items-start">

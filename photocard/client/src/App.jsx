@@ -35,14 +35,15 @@ function App() {
           <main className="flex-grow">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+              <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/add-frame" element={<AddFrame />} />
               </Route>
+
               <Route path="/popular-frames" element={<PopularFrames />} />
               <Route path="/text-frames" element={<TextFrames />} />
               <Route path="/all-frames" element={<AllFrames />} />
               <Route path="/frame/:id" element={<FrameDetails />} />
-              <Route path="/add-frame" element={<AddFrame />} />
 
               {/* Auth Routes */}
               <Route path="/login" element={<Login />} />

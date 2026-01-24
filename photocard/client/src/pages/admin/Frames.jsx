@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Search, Trash2, Plus, Edit2, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react';
 import Modal from '../../components/Modal';
+import { API_URL } from '../../config';
 
 const Frames = () => {
     const [frames, setFrames] = useState([]);
@@ -24,8 +25,8 @@ const Frames = () => {
     const fetchAll = async () => {
         try {
             const [framesRes, catsRes] = await Promise.all([
-                fetch('http://localhost:5000/api/frames'),
-                fetch('http://localhost:5000/api/categories')
+                fetch(`${API_URL}/frames`),
+                fetch(`${API_URL}/categories`)
             ]);
 
             if (framesRes.ok) setFrames(await framesRes.json());
@@ -62,7 +63,7 @@ const Frames = () => {
             formData.append('is_popular', frame.is_popular);
             formData.append('status', newStatus);
 
-            const response = await fetch(`http://localhost:5000/api/frames/${id}`, {
+            const response = await fetch(`${API_URL}/frames/${id}`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -86,7 +87,7 @@ const Frames = () => {
         const loadingToast = toast.loading('Deleting frame...');
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/frames/${id}`, {
+            const response = await fetch(`${API_URL}/frames/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -125,8 +126,8 @@ const Frames = () => {
         try {
             const token = localStorage.getItem('token');
             const url = editingId
-                ? `http://localhost:5000/api/frames/${editingId}`
-                : 'http://localhost:5000/api/frames';
+                ? `${API_URL}/frames/${editingId}`
+                : `${API_URL}/frames`;
 
             const method = editingId ? 'PUT' : 'POST';
 
@@ -179,11 +180,11 @@ const Frames = () => {
     });
 
     const statusTabs = [
-        { id: 'all', label: 'All' },
-        { id: 'active', label: 'Active (Live)' },
-        { id: 'pending', label: 'Pending' },
-        { id: 'rejected', label: 'Rejected' },
-        { id: 'trash', label: 'Trash' },
+        { id: 'all', label: 'All', count: frames.length },
+        { id: 'active', label: 'Active (Live)', count: frames.filter(f => f.status === 'active').length },
+        { id: 'pending', label: 'Pending', count: frames.filter(f => f.status === 'pending').length },
+        { id: 'rejected', label: 'Rejected', count: frames.filter(f => f.status === 'rejected').length },
+        { id: 'trash', label: 'Trash', count: frames.filter(f => f.status === 'trash').length },
     ];
 
     return (
@@ -214,11 +215,16 @@ const Frames = () => {
                         key={tab.id}
                         onClick={() => setStatusFilter(tab.id)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${statusFilter === tab.id
-                                ? 'bg-gray-800 text-white'
-                                : 'bg-white text-gray-600 border hover:bg-gray-50'
+                            ? 'bg-gray-800 text-white'
+                            : 'bg-white text-gray-600 border hover:bg-gray-50'
                             }`}
                     >
                         {tab.label}
+                        <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${statusFilter === tab.id
+                            ? 'bg-white text-gray-800'
+                            : 'bg-gray-100 text-gray-600 border border-gray-200'}`}>
+                            {tab.count}
+                        </span>
                     </button>
                 ))}
             </div>
@@ -229,6 +235,7 @@ const Frames = () => {
                         <tr>
                             <th className="p-4">Preview</th>
                             <th className="p-4">Title</th>
+                            <th className="p-4">Stats</th>
                             <th className="p-4">Category</th>
                             <th className="p-4">Status</th>
                             <th className="p-4 text-right">Actions</th>
@@ -254,6 +261,12 @@ const Frames = () => {
                                     <td className="p-4 font-medium">
                                         {frame.title}
                                         {frame.is_popular === 1 && <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">Popular</span>}
+                                    </td>
+                                    <td className="p-4 text-sm text-gray-600">
+                                        <div className="flex flex-col gap-1">
+                                            <span title="Views">👁️ {frame.view_count || 0}</span>
+                                            <span title="Downloads/Uses">⬇️ {frame.use_count || 0}</span>
+                                        </div>
                                     </td>
                                     <td className="p-4 text-sm text-gray-600">{frame.category_name || '-'}</td>
                                     <td className="p-4">

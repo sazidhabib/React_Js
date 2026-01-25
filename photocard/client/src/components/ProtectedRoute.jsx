@@ -5,6 +5,8 @@ import { AuthContext } from '../context/AuthContext';
 const ProtectedRoute = ({ allowedRoles }) => {
     const { user, loading } = useContext(AuthContext);
 
+    // console.log('ProtectedRoute Debug:', { path: window.location.pathname, user, loading, allowedRoles });
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -23,7 +25,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
         if (allowedRoles.includes('admin')) {
             return <Navigate to="/admin/login" replace />;
         }
-        return <Navigate to="/" replace />; // Unauthorized for other reasons
+        return <Navigate to="/login" replace />; // Unauthorized for other reasons
     }
 
     return <Outlet />;

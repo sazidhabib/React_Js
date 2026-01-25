@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Proxy API requests to Node.js server running on port 5000
+    # Adjust port 5000 if your server runs on a different port
+    RewriteRule ^api/(.*)$ http://localhost:5000/api/$1 [P,L]
+
+    # React Router rules
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-l
+    RewriteRule . /index.html [L]
+</IfModule>

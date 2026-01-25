@@ -37,6 +37,9 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route element={<ProtectedRoute allowedRoles={['user', 'admin']} />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+              </Route>
+
+              <Route element={<ProtectedRoute allowedRoles={['user']} />}>
                 <Route path="/add-frame" element={<AddFrame />} />
               </Route>
 

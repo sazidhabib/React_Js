@@ -9,8 +9,7 @@ const initDb = require('./config/initDb');
 // Initialize Database
 initDb();
 
-
-// CORS Configuration - ADD THIS
+// CORS Configuration - MUST BE AT THE TOP
 const corsOptions = {
     origin: [
         'https://photocard.nextideasolution.com',
@@ -21,8 +20,13 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// Middleware
+// CORS Middleware - MUST BE BEFORE ANY OTHER MIDDLEWARE
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions)); // This handles all OPTIONS requests
+
+// Other Middleware
 app.use(express.json());
 app.get('/uploads', express.static('uploads'));
 app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));

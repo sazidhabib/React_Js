@@ -2,11 +2,16 @@
     RewriteEngine On
     RewriteBase /
 
-    # Proxy API requests to Node.js server running on port 5000
-    # Adjust port 5000 if your server runs on a different port
+    # 1. First, handle image requests - serve from photoc_sever/uploads
+    # Try to serve actual files from photoc_sever first
+    RewriteCond %{REQUEST_URI} ^/uploads/(.*)$
+    RewriteCond /home/[YOUR_USERNAME]/photoc_sever/uploads/$1 -f
+    RewriteRule ^uploads/(.*)$ /home/[YOUR_USERNAME]/photoc_sever/uploads/$1 [L]
+
+    # 2. Proxy API requests to Node.js server
     RewriteRule ^api/(.*)$ http://localhost:5000/api/$1 [P,L]
 
-    # React Router rules
+    # 3. React Router rules
     RewriteRule ^index\.html$ - [L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

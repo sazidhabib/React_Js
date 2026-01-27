@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -9,28 +10,29 @@ const initDb = require('./config/initDb');
 // Initialize Database
 initDb();
 
-// CORS Configuration - MUST BE AT THE TOP
+// CORS Configuration
 const corsOptions = {
     origin: [
         'https://photocard.nextideasolution.com',
         'http://localhost:5173' // for local development
     ],
-    credentials: true, // important for cookies/sessions
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-// CORS Middleware - MUST BE BEFORE ANY OTHER MIDDLEWARE
+// Apply CORS middleware - This handles preflight automatically
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions)); // This handles all OPTIONS requests
+// Remove the problematic app.options line entirely
+// app.options('/*', cors(corsOptions)); // ← REMOVE or COMMENT OUT THIS LINE
 
 // Other Middleware
 app.use(express.json());
-app.get('/uploads', express.static('uploads'));
-app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true }));
+
+// Static file serving
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Test Route
 app.get('/', (req, res) => {

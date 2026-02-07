@@ -1267,11 +1267,19 @@ const ExcelGridSection = ({
     return (
         <Card className="mb-4">
             <Card.Header className="d-flex justify-content-between align-items-center">
-                <h6 className="mb-0">
+                <h6 className="mb-0 d-flex align-items-center">
                     {section.name || `Section ${sectionIndex + 1}`}
                     <Badge bg="secondary" className="ms-2">
                         {rows.length} × {columns.length}
                     </Badge>
+                    <Form.Check
+                        type="switch"
+                        id={`auto-news-switch-${sectionIndex}`}
+                        label="Auto news selection"
+                        checked={section.autoNewsSelection || false}
+                        onChange={(e) => onUpdateSection(sectionIndex, 'autoNewsSelection', e.target.checked)}
+                        className="ms-3 custom-switch"
+                    />
                 </h6>
                 <div>
                     <Button
@@ -1321,7 +1329,19 @@ const ExcelGridSection = ({
                     </ul>
                 </div>
 
-                <div className="table-responsive">
+                {section.autoNewsSelection && (
+                    <Alert variant="warning" className="py-2">
+                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                        Auto news selection is <strong>ON</strong>. Manual grid editing is disabled for this section.
+                    </Alert>
+                )}
+
+                <div className="table-responsive" style={{
+                    opacity: section.autoNewsSelection ? 0.6 : 1,
+                    pointerEvents: section.autoNewsSelection ? 'none' : 'auto',
+                    filter: section.autoNewsSelection ? 'grayscale(0.5)' : 'none',
+                    transition: 'all 0.3s ease'
+                }}>
                     <table className="table table-bordered">
                         <thead>
                             <tr>
@@ -1390,7 +1410,12 @@ const ExcelGridSection = ({
                     </table>
                 </div>
 
-                <div className="d-flex gap-2 mt-3">
+
+
+                <div className="d-flex gap-2 mt-3" style={{
+                    opacity: section.autoNewsSelection ? 0.5 : 1,
+                    pointerEvents: section.autoNewsSelection ? 'none' : 'auto'
+                }}>
                     <Button
                         variant="outline-secondary"
                         size="sm"
@@ -1416,43 +1441,45 @@ const ExcelGridSection = ({
             </Card.Body>
 
             {/* Content Selection Modals */}
-            {contentModal.show && (
-                <>
-                    {contentModal.contentType === 'news' && (
-                        <NewsSelectionModal
-                            show={true}
-                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                            onSelect={handleContentSelected}
-                            token={token}
-                        />
-                    )}
-                    {contentModal.contentType === 'image' && (
-                        <ImageSelectionModal
-                            show={true}
-                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                            onSelect={handleContentSelected}
-                            token={token}
-                        />
-                    )}
-                    {contentModal.contentType === 'video' && (
-                        <VideoSelectionModal
-                            show={true}
-                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                            onSelect={handleContentSelected}
-                            token={token}
-                        />
-                    )}
-                    {contentModal.contentType === 'ad' && (
-                        <AdSelectionModal
-                            show={true}
-                            onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
-                            onSelect={handleContentSelected}
-                            token={token}
-                        />
-                    )}
-                </>
-            )}
-        </Card>
+            {
+                contentModal.show && (
+                    <>
+                        {contentModal.contentType === 'news' && (
+                            <NewsSelectionModal
+                                show={true}
+                                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                                onSelect={handleContentSelected}
+                                token={token}
+                            />
+                        )}
+                        {contentModal.contentType === 'image' && (
+                            <ImageSelectionModal
+                                show={true}
+                                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                                onSelect={handleContentSelected}
+                                token={token}
+                            />
+                        )}
+                        {contentModal.contentType === 'video' && (
+                            <VideoSelectionModal
+                                show={true}
+                                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                                onSelect={handleContentSelected}
+                                token={token}
+                            />
+                        )}
+                        {contentModal.contentType === 'ad' && (
+                            <AdSelectionModal
+                                show={true}
+                                onClose={() => setContentModal({ show: false, contentType: null, rowIndex: null, colIndex: null })}
+                                onSelect={handleContentSelected}
+                                token={token}
+                            />
+                        )}
+                    </>
+                )
+            }
+        </Card >
     );
 };
 
@@ -1484,6 +1511,7 @@ function createNewSection(rows = 3, columns = 3) {
     return {
         layoutType: 'grid',
         name: `Section ${Date.now()}`,
+        autoNewsSelection: false,
         rows: sectionRows
     };
 }
@@ -1691,6 +1719,7 @@ const PageLayoutDashboard = () => {
                         ...section,
                         id: section.id || `section-${index}`,
                         name: section.name || `Section ${index + 1}`,
+                        autoNewsSelection: section.autoNewsSelection || false,
                         rows: rows.map((row, rowIndex) => {
                             // Use Columns (capitalized) if available, otherwise use columns
                             const columns = row.Columns || row.columns || [];
@@ -2079,6 +2108,7 @@ const PageLayoutDashboard = () => {
                     const processedSection = {
                         layoutType: section.layoutType || 'grid',
                         name: section.name || `Section ${sectionIndex + 1}`,
+                        autoNewsSelection: section.autoNewsSelection || false,
                         rows: []
                     };
 

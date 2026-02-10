@@ -2,13 +2,14 @@ const { Page, PageSection, Row, Column } = require("../models");
 
 exports.createPage = async (req, res) => {
     try {
-        const { name, sections } = req.body;
+        const { name, sections, autoNewsSelection } = req.body;
 
-        console.log("📝 Creating page with data:", JSON.stringify({ name, sections }, null, 2));
+        console.log("📝 Creating page with data:", JSON.stringify({ name, sections, autoNewsSelection }, null, 2));
 
         const page = await Page.create(
             {
                 name,
+                autoNewsSelection: autoNewsSelection || false,
                 PageSections: sections.map((section) => ({
                     layoutType: section.layoutType,
                     autoNewsSelection: section.autoNewsSelection || false,
@@ -73,11 +74,12 @@ exports.getPageLayout = async (req, res) => {
 exports.updatePageLayout = async (req, res) => {
     try {
         const { pageId } = req.params;
-        const { name, PageSections } = req.body;
+        const { name, PageSections, autoNewsSelection } = req.body;
 
         console.log("🔄 Update request received:", {
             pageId,
             name,
+            autoNewsSelection,
             PageSectionsCount: PageSections?.length,
             PageSections: PageSections // Log the actual sections data
         });
@@ -88,9 +90,13 @@ exports.updatePageLayout = async (req, res) => {
             return res.status(404).json({ message: "Page not found" });
         }
 
-        // Update page name
-        if (name !== undefined) {
-            await page.update({ name });
+        // Update page fields
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (autoNewsSelection !== undefined) updateData.autoNewsSelection = autoNewsSelection;
+
+        if (Object.keys(updateData).length > 0) {
+            await page.update(updateData);
         }
 
         // If PageSections are provided, update them

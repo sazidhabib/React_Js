@@ -514,9 +514,13 @@ const GridCell = ({
     onMouseDown,
     onMouseEnter,
     availableTags = [],
-    availableDesigns = [] // Accept availableDesigns
+    availableDesigns = [], // Accept availableDesigns
+    isAutoNewsMode = false, // Accept auto news mode flag
+    autoNewsItem = null // Accept specific news item for this cell
 }) => {
     const [isEditing, setIsEditing] = useState(false);
+    // Removed internal fetching logic
+
 
     const handleClick = (e) => {
         if (onCellSelect) {
@@ -702,116 +706,160 @@ const GridCell = ({
                             ) : (
                                 <div
                                     className="text-center p-1"
-                                    onDoubleClick={() => setIsEditing(true)}
+                                    onDoubleClick={() => !isAutoNewsMode && setIsEditing(true)}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'column',
                                         justifyContent: 'space-between',
                                         height: '100%',
-                                        overflow: 'hidden'
+                                        overflow: 'hidden',
+                                        opacity: isAutoNewsMode && !cell.tag ? 0.5 : 1
                                     }}
                                 >
-                                    {/* Content Type Icon and Name */}
-                                    <div className="small fw-bold" style={{ marginBottom: '4px' }}>
-                                        {cell.contentType === 'text' && '📝 Text'}
-                                        {cell.contentType === 'news' && '📰 News'}
-                                        {cell.contentType === 'image' && '🖼️ Image'}
-                                        {cell.contentType === 'video' && '🎥 Video'}
-                                        {cell.contentType === 'ad' && '📢 Ad'}
-                                        {!cell.contentType && '📝 Text'}
-                                    </div>
+                                    {isAutoNewsMode ? (
+                                        // Auto News Mode Display
+                                        <>
+                                            <div className="small fw-bold border-bottom mb-1 pb-1">
+                                                {cell.tag ? (
+                                                    <Badge bg="info" className="text-truncate" style={{ maxWidth: '100%' }}>{cell.tag}</Badge>
+                                                ) : (
+                                                    <Badge bg="danger">MISSING TAG</Badge>
+                                                )}
+                                            </div>
 
-                                    {/* Tag */}
-                                    {cell.tag && (
-                                        <Badge bg="info" className="small" style={{ marginBottom: '4px' }}>
-                                            Tag: {cell.tag}
-                                        </Badge>
-                                    )}
-
-                                    {/* Design */}
-                                    {cell.design && (
-                                        <Badge bg="warning" text="dark" className="small" style={{ marginBottom: '4px' }}>
-                                            Design: {cell.design}
-                                        </Badge>
-                                    )}
-
-                                    {/* Content Display for Non-Text Types */}
-                                    {cell.contentType && cell.contentType !== 'text' && (
-                                        <div style={{
-                                            marginTop: 'auto',
-                                            overflow: 'hidden',
-                                            maxHeight: '50px'
-                                        }}>
-                                            {cell.contentId ? (
-                                                <>
-                                                    <Badge bg="success" className="small d-block mb-1">
-                                                        ✓ {cell.contentType}
-                                                    </Badge>
-
-                                                    {/* Content Title Display */}
-                                                    <div
-                                                        className="small text-break"
-                                                        style={{
-                                                            fontSize: '0.7rem',
-                                                            backgroundColor: '#e8f4f8',
-                                                            padding: '3px',
-                                                            borderRadius: '3px',
-                                                            marginBottom: '3px',
-                                                            maxHeight: '35px',
-                                                            overflow: 'hidden',
-                                                            lineHeight: '1.1',
-                                                            whiteSpace: 'nowrap',
-                                                            textOverflow: 'ellipsis'
-                                                        }}
-                                                        title={cell.contentTitle || `Selected ${cell.contentType} - ID: ${cell.contentId}`}
-                                                    >
-                                                        <strong>{cell.contentType}: </strong>
-                                                        {cell.contentTitle
-                                                            ? (typeof cell.contentTitle === 'string'
-                                                                ? cell.contentTitle.substring(0, 40) + (cell.contentTitle.length > 40 ? '...' : '')
-                                                                : String(cell.contentTitle))
-                                                            : `ID: ${String(cell.contentId).substring(0, 8)}...`
-                                                        }
+                                            <div className="flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden">
+                                                {!cell.tag ? (
+                                                    <div className="text-danger small" style={{ fontSize: '0.7rem' }}>
+                                                        ⚠️ Select Tag
                                                     </div>
-
-                                                    {/* Content ID */}
-                                                    {cell.contentId && (
-                                                        <div className="small text-muted" style={{
-                                                            fontSize: '0.6rem',
-                                                            overflow: 'hidden',
-                                                            whiteSpace: 'nowrap',
-                                                            textOverflow: 'ellipsis'
-                                                        }}>
-                                                            ID: {String(cell.contentId).substring(0, 12)}...
+                                                ) : autoNewsItem ? (
+                                                    <div className="w-100">
+                                                        {autoNewsItem.thumbImage && (
+                                                            <div className="mb-1" style={{ height: '30px', overflow: 'hidden' }}>
+                                                                <img
+                                                                    src={`${API_URL}/${autoNewsItem.thumbImage}`}
+                                                                    alt=""
+                                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                    onError={(e) => e.target.style.display = 'none'}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className="text-truncate small" style={{ fontSize: '0.65rem' }} title={autoNewsItem.newsHeadline}>
+                                                            {autoNewsItem.newsHeadline}
                                                         </div>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline-primary"
-                                                    className="w-100"
-                                                    style={{
-                                                        fontSize: '0.7rem',
-                                                        padding: '4px 2px',
-                                                        marginTop: '5px'
-                                                    }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        if (onContentSelect) {
-                                                            onContentSelect(rowIndex, colIndex, cell.contentType);
-                                                        }
-                                                    }}
-                                                >
-                                                    Select {cell.contentType}
-                                                </Button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-muted small" style={{ fontSize: '0.7rem' }}>No news found</div>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        // Standard Editing Mode Display
+                                        <>
+                                            {/* Content Type Icon and Name */}
+                                            <div className="small fw-bold" style={{ marginBottom: '4px' }}>
+                                                {cell.contentType === 'text' && '📝 Text'}
+                                                {cell.contentType === 'news' && '📰 News'}
+                                                {cell.contentType === 'image' && '🖼️ Image'}
+                                                {cell.contentType === 'video' && '🎥 Video'}
+                                                {cell.contentType === 'ad' && '📢 Ad'}
+                                                {!cell.contentType && '📝 Text'}
+                                            </div>
+
+                                            {/* Tag */}
+                                            {cell.tag && (
+                                                <Badge bg="info" className="small" style={{ marginBottom: '4px' }}>
+                                                    Tag: {cell.tag}
+                                                </Badge>
                                             )}
-                                        </div>
+
+                                            {/* Design */}
+                                            {cell.design && (
+                                                <Badge bg="warning" text="dark" className="small" style={{ marginBottom: '4px' }}>
+                                                    Design: {cell.design}
+                                                </Badge>
+                                            )}
+
+                                            {/* Content Display for Non-Text Types */}
+                                            {cell.contentType && cell.contentType !== 'text' && (
+                                                <div style={{
+                                                    marginTop: 'auto',
+                                                    overflow: 'hidden',
+                                                    maxHeight: '50px'
+                                                }}>
+                                                    {cell.contentId ? (
+                                                        <>
+                                                            <Badge bg="success" className="small d-block mb-1">
+                                                                ✓ {cell.contentType}
+                                                            </Badge>
+
+                                                            {/* Content Title Display */}
+                                                            <div
+                                                                className="small text-break"
+                                                                style={{
+                                                                    fontSize: '0.7rem',
+                                                                    backgroundColor: '#e8f4f8',
+                                                                    padding: '3px',
+                                                                    borderRadius: '3px',
+                                                                    marginBottom: '3px',
+                                                                    maxHeight: '35px',
+                                                                    overflow: 'hidden',
+                                                                    lineHeight: '1.1',
+                                                                    whiteSpace: 'nowrap',
+                                                                    textOverflow: 'ellipsis'
+                                                                }}
+                                                                title={cell.contentTitle || `Selected ${cell.contentType} - ID: ${cell.contentId}`}
+                                                            >
+                                                                <strong>{cell.contentType}: </strong>
+                                                                {cell.contentTitle
+                                                                    ? (typeof cell.contentTitle === 'string'
+                                                                        ? cell.contentTitle.substring(0, 40) + (cell.contentTitle.length > 40 ? '...' : '')
+                                                                        : String(cell.contentTitle))
+                                                                    : `ID: ${String(cell.contentId).substring(0, 8)}...`
+                                                                }
+                                                            </div>
+
+                                                            {/* Content ID */}
+                                                            {cell.contentId && (
+                                                                <div className="small text-muted" style={{
+                                                                    fontSize: '0.6rem',
+                                                                    overflow: 'hidden',
+                                                                    whiteSpace: 'nowrap',
+                                                                    textOverflow: 'ellipsis'
+                                                                }}>
+                                                                    ID: {String(cell.contentId).substring(0, 12)}...
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline-primary"
+                                                            className="w-100"
+                                                            style={{
+                                                                fontSize: '0.7rem',
+                                                                padding: '4px 2px',
+                                                                marginTop: '5px'
+                                                            }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (onContentSelect) {
+                                                                    onContentSelect(rowIndex, colIndex, cell.contentType);
+                                                                }
+                                                            }}
+                                                        >
+                                                            Select {cell.contentType}
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             )}
                         </div>
                     </div>
+
 
                     {/* Merge Controls */}
                     {showMergeControls && (
@@ -846,15 +894,18 @@ const GridCell = ({
                         </div>
                     )}
                 </>
-            ) : null}
+            ) : null
+            }
 
             {/* Selection Indicator */}
-            {isSelected && (
-                <div className="position-absolute top-0 end-0 p-1">
-                    <Badge bg="success">✓</Badge>
-                </div>
-            )}
-        </td>
+            {
+                isSelected && (
+                    <div className="position-absolute top-0 end-0 p-1">
+                        <Badge bg="success">✓</Badge>
+                    </div>
+                )
+            }
+        </td >
     );
 };
 
@@ -928,7 +979,9 @@ const ExcelGridSection = ({
     onMergeCells,
     token,
     availableTags,
-    availableDesigns // Accept availableDesigns prop
+    availableDesigns, // Accept availableDesigns prop
+    globalAutoNewsSelection = false, // Accept global auto news flag
+    sectionAutoNewsData = {} // Accept auto news data for this section
 }) => {
     const [selectedCells, setSelectedCells] = useState(new Set()); // Store multiple selected cells
     const [selectionStart, setSelectionStart] = useState(null);
@@ -1398,8 +1451,11 @@ const ExcelGridSection = ({
                                                 onMouseDown={handleMouseDown}
                                                 onMouseEnter={handleMouseEnter}
                                                 onContentSelect={handleContentSelect}
+                                                onContentSelect={handleContentSelect}
                                                 availableTags={availableTags}
                                                 availableDesigns={availableDesigns} // Pass availableDesigns
+                                                isAutoNewsMode={globalAutoNewsSelection || section.autoNewsSelection} // Check both flags
+                                                autoNewsItem={sectionAutoNewsData[`${rowIndex}-${colIndex}`]} // Use correct key format (row-col)
                                                 {...mergeInfo}
                                             />
                                         );
@@ -1528,12 +1584,12 @@ const PageLayoutDashboard = () => {
 
     const [newPage, setNewPage] = useState({
         name: '',
+        autoNewsSelection: false,
         sections: [createNewSection(3, 3)] // Start with 3x3 grid
     });
 
     const [editPage, setEditPage] = useState(null);
     const [availableTags, setAvailableTags] = useState([]);
-    const [availableDesigns, setAvailableDesigns] = useState([]);
 
     // Import tag service functions (assuming they are exported)
     // import { getTags } from './tagService'; 
@@ -1555,6 +1611,9 @@ const PageLayoutDashboard = () => {
             console.error('Error fetching tags:', error);
         }
     };
+
+    const [availableDesigns, setAvailableDesigns] = useState([]);
+    const [autoNewsData, setAutoNewsData] = useState({}); // State to store fetched news for auto mode
 
     const fetchDesigns = async () => {
         try {
@@ -1650,6 +1709,7 @@ const PageLayoutDashboard = () => {
             setShowCreateModal(false);
             setNewPage({
                 name: '',
+                autoNewsSelection: false,
                 sections: [createNewSection(3, 3)]
             });
             fetchPages();
@@ -1693,17 +1753,16 @@ const PageLayoutDashboard = () => {
     };
 
 
-    // Fetch page layout for editing
     const fetchPageForEdit = async (pageId) => {
         try {
             const response = await api.get(`/layout/${pageId}`);
             const pageData = response.data;
 
-            console.log("=== FETCHED PAGE DATA ===");
-            console.log("Full API Response:", pageData);
+            // ... normalization logic (kept same)
 
             // Normalize data structure for grid
             if (pageData.PageSections) {
+                // ... (existing normalization code)
                 pageData.PageSections = pageData.PageSections.map((section, index) => {
                     // Use Rows (capitalized) if available, otherwise use rows
                     const rows = section.Rows || section.rows || [];
@@ -1724,24 +1783,12 @@ const PageLayoutDashboard = () => {
                             // Use Columns (capitalized) if available, otherwise use columns
                             const columns = row.Columns || row.columns || [];
 
-                            console.log(`Row ${rowIndex} has ${columns.length} columns`);
-
                             return {
                                 ...row,
                                 columns: columns.map((col, colIndex) => {
                                     // IMPORTANT: Check all possible field names for contentId
                                     const contentId = col.contentId || col.content_id || col.contentID;
                                     const contentTitle = col.contentTitle || col.content_title || col.title;
-
-                                    // Debug column data
-                                    console.log(`Column [${rowIndex},${colIndex}] loaded:`, {
-                                        id: col.id,
-                                        contentType: col.contentType,
-                                        contentId: contentId,
-                                        contentTitle: contentTitle,
-                                        hasTitle: !!contentTitle,
-                                        allFields: Object.keys(col) // Show all available fields
-                                    });
 
                                     return {
                                         ...col,
@@ -1770,10 +1817,82 @@ const PageLayoutDashboard = () => {
 
             console.log("Processed page data for editing:", pageData);
             setEditPage(pageData);
+
+            // If auto news is enabled, fetch data immediately
+            if (pageData.autoNewsSelection) {
+                fetchAutoNewsForPage(pageData);
+            }
+
             setShowEditModal(true);
         } catch (error) {
             console.error('Error fetching page for edit:', error);
             showAlert('Error loading page for editing', 'danger');
+        }
+    };
+
+    // Sequential Auto News Fetching Logic
+    const fetchAutoNewsForPage = async (pageData) => {
+        if (!pageData?.PageSections) return;
+
+        console.log("🔄 Starting sequential auto news fetch...");
+
+        // Step 1: Analyze tags and counts
+        const tagCounts = {};
+        const cellMap = []; // Store cell info to map back later: { sIdx, rIdx, cIdx, tag }
+
+        pageData.PageSections.forEach((section, sIdx) => {
+            section.rows?.forEach((row, rIdx) => {
+                row.columns?.forEach((col, cIdx) => {
+                    const tag = col.tag;
+                    if (tag) {
+                        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                        cellMap.push({ sIdx, rIdx, cIdx, tag });
+                    }
+                });
+            });
+        });
+
+        console.log("📊 Tag Counts:", tagCounts);
+
+        // Step 2: Fetch news for each tag
+        const fetchedNewsByTag = {};
+
+        try {
+            await Promise.all(Object.keys(tagCounts).map(async (tag) => {
+                const count = tagCounts[tag];
+                // Fetch a few more than needed just in case
+                const response = await axios.get(`${API_URL}/api/news?tag=${tag}&limit=${count}`);
+                const newsItems = response.data.news || response.data.rows || [];
+                fetchedNewsByTag[tag] = newsItems;
+            }));
+
+            console.log("📰 Fetched News By Tag:", fetchedNewsByTag);
+
+            // Step 3: Distribute news sequentially
+            const newAutoNewsData = {};
+            const tagUsageCounter = {}; // Track how many times we've used items for this tag
+
+            cellMap.forEach(({ sIdx, rIdx, cIdx, tag }) => {
+                const availableNews = fetchedNewsByTag[tag] || [];
+                const usageCount = tagUsageCounter[tag] || 0;
+
+                // Get the next news item (loop if we run out, or stop? let's loop/reuse last if needed, or null)
+                // If we want 1st cell -> 1st news, 2nd cell -> 2nd news:
+                const newsItem = availableNews[usageCount] || null;
+
+                if (newsItem) {
+                    // Key format: sectionIndex-rowIndex-colIndex
+                    newAutoNewsData[`${sIdx}-${rIdx}-${cIdx}`] = newsItem;
+                    tagUsageCounter[tag] = usageCount + 1;
+                }
+            });
+
+            console.log("✅ Distributed Auto News Data:", newAutoNewsData);
+            setAutoNewsData(newAutoNewsData);
+
+        } catch (error) {
+            console.error("❌ Error in auto news fetch:", error);
+            toast.error("Failed to fetch auto news");
         }
     };
 
@@ -2428,6 +2547,19 @@ const PageLayoutDashboard = () => {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
+                            <Form.Check
+                                type="switch"
+                                id="custom-switch"
+                                label="Auto News Selection"
+                                checked={newPage.autoNewsSelection}
+                                onChange={(e) => setNewPage({ ...newPage, autoNewsSelection: e.target.checked })}
+                            />
+                            <Form.Text className="text-muted">
+                                If enabled, content will be automatically fetched based on tags.
+                            </Form.Text>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
                             <Form.Label>Initial Grid Size</Form.Label>
                             <Row>
                                 <Col>
@@ -2518,6 +2650,38 @@ const PageLayoutDashboard = () => {
                             />
                         </Form.Group>
 
+                        <Form.Group className="mb-4 bg-light p-3 rounded border">
+                            <div className="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h6 className="mb-1">Auto News Selection</h6>
+                                    <small className="text-muted">
+                                        Automatically populate cells with news based on their tags
+                                    </small>
+                                </div>
+                                <Form.Check
+                                    type="switch"
+                                    id="edit-auto-news-switch"
+                                    className="fs-5"
+                                    checked={editPage?.autoNewsSelection || false}
+                                    onChange={(e) => {
+                                        const newValue = e.target.checked;
+                                        setEditPage({ ...editPage, autoNewsSelection: newValue });
+                                        if (newValue) {
+                                            fetchAutoNewsForPage(editPage);
+                                        } else {
+                                            setAutoNewsData({});
+                                        }
+                                    }}
+                                />
+                            </div>
+                            {editPage?.autoNewsSelection && (
+                                <Alert variant="info" className="mt-2 py-1 small mb-0">
+                                    <i className="bi bi-info-circle me-1"></i>
+                                    <strong>Note:</strong> Editing cells is disabled while this mode is active. Disable to make layout changes.
+                                </Alert>
+                            )}
+                        </Form.Group>
+
                         {editPage?.PageSections?.map((section, sectionIndex) => (
                             <ExcelGridSection
                                 key={section.id || sectionIndex}
@@ -2538,6 +2702,19 @@ const PageLayoutDashboard = () => {
                                 token={token}
                                 availableTags={availableTags}
                                 availableDesigns={availableDesigns}
+                                globalAutoNewsSelection={editPage.autoNewsSelection}
+                                sectionAutoNewsData={
+                                    // Pass only the news data relevant to this section
+                                    // Construct an object where keys are "rowIndex-colIndex"
+                                    Object.keys(autoNewsData)
+                                        .filter(key => key.startsWith(`${sectionIndex}-`))
+                                        .reduce((obj, key) => {
+                                            const parts = key.split('-');
+                                            const newKey = `${parts[1]}-${parts[2]}`; // rowIndex-colIndex
+                                            obj[newKey] = autoNewsData[key];
+                                            return obj;
+                                        }, {})
+                                }
                             />
                         ))}
 

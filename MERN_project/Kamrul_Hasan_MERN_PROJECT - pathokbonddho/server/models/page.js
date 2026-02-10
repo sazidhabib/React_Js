@@ -6,6 +6,11 @@ const Page = sequelize.define("Page", {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    autoNewsSelection: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
 }, {
     tableName: "pages",
     // timestamps: false,

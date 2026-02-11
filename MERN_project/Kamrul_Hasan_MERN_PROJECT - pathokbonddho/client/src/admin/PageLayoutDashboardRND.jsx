@@ -1818,8 +1818,8 @@ const PageLayoutDashboard = () => {
             console.log("Processed page data for editing:", pageData);
             setEditPage(pageData);
 
-            // If auto news is enabled, fetch data immediately
-            if (pageData.autoNewsSelection) {
+            // If auto news is enabled (globally or per section), fetch data immediately
+            if (pageData.autoNewsSelection || pageData.PageSections?.some(s => s.autoNewsSelection)) {
                 fetchAutoNewsForPage(pageData);
             }
 
@@ -2223,6 +2223,7 @@ const PageLayoutDashboard = () => {
 
             const updateData = {
                 name: editPage.name,
+                autoNewsSelection: editPage.autoNewsSelection,
                 PageSections: editPage.PageSections.map((section, sectionIndex) => {
                     const processedSection = {
                         layoutType: section.layoutType || 'grid',

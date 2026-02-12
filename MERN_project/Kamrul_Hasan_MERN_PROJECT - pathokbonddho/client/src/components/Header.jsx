@@ -40,8 +40,8 @@ const Header = () => {
   const renderMenuLinks = (onClickHandler = null) => {
     if (loading) return <li>Loading menus...</li>;
 
-    return menus.sort((a, b) => a.order - b.order).map(menu => (
-      <li className="nav-item" key={menu._id}>
+    return menus.sort((a, b) => a.order - b.order).map((menu, index) => (
+      <li className="nav-item" key={menu._id || index}>
         <Link
           to={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
           className="nav-link text-white"
@@ -118,10 +118,10 @@ const Header = () => {
             <i className="fas fa-bars text-white fs-4"></i>
           </div>
           <div className="social-iconst">
-            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-            <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+            <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+            <a key="twitter" href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
+            <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+            <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
           </div>
         </div>
       )}
@@ -140,10 +140,10 @@ const Header = () => {
             <i className="fas fa-bars text-white fs-4"></i>
           </div>
           <div className="social-iconst">
-            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-            <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+            <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+            <a key="twitter" href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
+            <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+            <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
           </div>
         </div>
       )}
@@ -173,10 +173,10 @@ const Header = () => {
                 </ul>
 
                 <div className="social-icons mt-3">
-                  <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-                  <a href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-                  <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-                  <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+                  <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+                  <a key="twitter" href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
+                  <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+                  <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
                 </div>
               </div>
             </div>
@@ -207,10 +207,10 @@ const Header = () => {
                   {renderMenuLinks()}
                 </ul>
                 <div className="social-icons mt-4">
-                  <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-linkedin-in"></i></a>
-                  <a href="#" className="text-white me-1"><i className="fa-brands fa-x-twitter"></i></a>
-                  <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-facebook-f"></i></a>
-                  <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+                  <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-linkedin-in"></i></a>
+                  <a key="twitter" href="#" className="text-white me-1"><i className="fa-brands fa-x-twitter"></i></a>
+                  <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-facebook-f"></i></a>
+                  <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
                 </div>
               </div>
             )}

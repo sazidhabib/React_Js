@@ -343,7 +343,15 @@ const getAllNews = async (req, res) => {
                     model: Menu,
                     through: { attributes: [] },
                     attributes: ['id', 'name', 'path'],
-                    as: 'Categories'
+                    as: 'Categories',
+                    ...(categories && {
+                        where: {
+                            [Op.or]: [
+                                { name: { [Op.in]: categories.split(',') } },
+                                { path: { [Op.in]: categories.split(',') } }
+                            ]
+                        }
+                    })
                 },
                 {
                     model: Author,

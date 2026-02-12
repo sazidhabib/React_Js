@@ -9,8 +9,8 @@ const {
 const authMiddleware = require("../middlewares/auth-middleware");
 const router = express.Router();
 
-// Get all pages (ADD THIS ROUTE)
-router.get("/", authMiddleware, getAllPages);
+// Get all pages
+router.get("/", getAllPages);
 
 // Create a page with sections/rows/columns
 router.post("/", authMiddleware, createPage);

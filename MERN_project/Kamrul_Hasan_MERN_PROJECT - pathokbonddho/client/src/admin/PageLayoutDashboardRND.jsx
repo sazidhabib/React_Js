@@ -270,33 +270,27 @@ const VideoSelectionModal = ({ show, onClose, onSelect, token }) => {
     const fetchVideos = async () => {
         try {
             setLoading(true);
+            const params = {
+                // Request filtering by 'video' or 'ভিডিও' (Bangla for video)
+                categories: 'video,ভিডিও',
+                limit: 12,
+                page: 1
+            };
             const newsApiUrl = `${API_URL}/api/news`;
-            console.log('Fetching video content from news API:', newsApiUrl);
-            console.log('Token available:', !!token);
+            console.log('Fetching video content from news API:', newsApiUrl, params);
 
             const response = await axios.get(newsApiUrl, {
+                params,
                 headers: {
-                    Authorization: token ? `Bearer ${token}` : undefined,
-                    'Content-Type': 'application/json'
+                    Authorization: token ? `Bearer ${token}` : undefined
                 }
             });
 
-            console.log('News API response status:', response.status);
-            console.log('News API response data:', response.data);
+            console.log('Video fetch response:', response.data);
 
-            // Extract news data from response
-            let newsData = response.data.news || response.data.rows || response.data.data || response.data || [];
+            // The API should now return filtered results
+            let videosData = response.data.news || response.data.rows || [];
 
-            // Filter news items to show only those with video category
-            const videosData = newsData.filter(item => {
-                if (item.Categories && Array.isArray(item.Categories)) {
-                    return item.Categories.some(cat => cat.path === 'video');
-                }
-                return false;
-            });
-
-            console.log('Filtered video content count:', videosData.length);
-            console.log('First video sample:', videosData[0]);
             setVideos(videosData);
         } catch (error) {
             console.error('Error fetching video content:', error);
@@ -1332,6 +1326,7 @@ const ExcelGridSection = ({
                         checked={section.autoNewsSelection || false}
                         onChange={(e) => onUpdateSection(sectionIndex, 'autoNewsSelection', e.target.checked)}
                         className="ms-3 custom-switch"
+                        disabled={globalAutoNewsSelection}
                     />
                 </h6>
                 <div>
@@ -1450,7 +1445,6 @@ const ExcelGridSection = ({
                                                 onCellSelect={handleCellSelect}
                                                 onMouseDown={handleMouseDown}
                                                 onMouseEnter={handleMouseEnter}
-                                                onContentSelect={handleContentSelect}
                                                 onContentSelect={handleContentSelect}
                                                 availableTags={availableTags}
                                                 availableDesigns={availableDesigns} // Pass availableDesigns
@@ -2691,7 +2685,13 @@ const PageLayoutDashboard = () => {
                                 onUpdateSection={(idx, field, value) => {
                                     const updatedSections = [...editPage.PageSections];
                                     updatedSections[idx][field] = value;
-                                    setEditPage({ ...editPage, PageSections: updatedSections });
+                                    const newEditPage = { ...editPage, PageSections: updatedSections };
+                                    setEditPage(newEditPage);
+
+                                    // Trigger fetch if enabling auto news for a section
+                                    if (field === 'autoNewsSelection' && value === true) {
+                                        fetchAutoNewsForPage(newEditPage);
+                                    }
                                 }}
                                 onAddRow={addGridRow}
                                 onAddColumn={addGridColumn}

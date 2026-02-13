@@ -11,78 +11,94 @@ const NewsWidget = ({ cell }) => {
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                if (!cell.contentId) {
+                if (!cell.contentId && !cell.tag) {
                     setLoading(false);
                     return;
                 }
 
-                // If contentId looks like a Mongo ID, fetch specific news
-                // Check if it's an "auto" fetched item from page layout data?
-                // Actually the API structure suggests `contentId` is saved.
-
-                const response = await axios.get(`${API_BASE_URL}/api/news/${cell.contentId}`);
-                setNews(response.data.data || response.data.news || response.data);
-            } catch (err) {
-                console.error('Error fetching news widget data:', err);
-                // Optionally handle error state
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (cell.contentId) {
-            fetchNews();
-        } else if (cell.tag) {
-            // Fetch latest news by tag
-            const fetchByTag = async () => {
-                try {
+                if (cell.contentId) {
+                    // Fetch specific news by ID
+                    const response = await axios.get(`${API_BASE_URL}/api/news/${cell.contentId}`);
+                    setNews(response.data.data || response.data.news || response.data);
+                } else if (cell.tag) {
+                    // Fetch latest news by tag
                     const response = await axios.get(`${API_BASE_URL}/api/news?tag=${cell.tag}&limit=1`);
                     const newsItems = response.data.news || response.data.rows || [];
                     if (newsItems.length > 0) {
                         setNews(newsItems[0]);
                     }
-                } catch (err) {
-                    // console.error(`Error fetching news by tag ${cell.tag}:`, err);
-                } finally {
-                    setLoading(false);
                 }
-            };
-            fetchByTag();
-        } else {
-            setLoading(false);
-        }
+            } catch (err) {
+                console.error('Error fetching news widget data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchNews();
     }, [cell.contentId, cell.tag, API_BASE_URL]);
+
+    // Build proper image URL from the news data
+    // The DB stores paths like: "images/post_image/filename.jpg"
+    // Server serves: /images/* → uploads/ folder, /uploads/* → uploads/ folder
+    const getImageUrl = (newsItem) => {
+        if (!newsItem) return null;
+
+        // Check fields in order of preference: thumbImage, leadImage, metaImage
+        const imagePath = newsItem.thumbImage || newsItem.leadImage || newsItem.metaImage;
+
+        if (!imagePath) return null;
+
+        // If already a full URL (starts with http)
+        if (imagePath.startsWith('http')) {
+            return imagePath.replace(/^http:\/\//, 'https://');
+        }
+
+        // Build URL: API_BASE_URL + / + imagePath
+        // imagePath is like "images/post_image/filename.jpg"
+        // Server serves /images as static, so this will work
+        return `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
+    };
 
     if (loading) {
         return <div className="text-center p-2"><Spinner animation="border" size="sm" /></div>;
     }
 
     if (!news) {
-        return null; // Or return a placeholder if desired
+        return null;
     }
 
-    // Default design
+    const imageUrl = getImageUrl(news);
+
     return (
         <Card className="h-100 border-0 shadow-sm news-widget">
             <div className="card-img-wrapper position-relative" style={{ height: '200px', overflow: 'hidden' }}>
                 <Link to={`/news/${news._id || news.id}`}>
-                    <Card.Img
-                        variant="top"
-                        src={(news.image || news.thumbnail) ? (
-                            (news.image || news.thumbnail).startsWith('http')
-                                ? (news.image || news.thumbnail)
-                                : `${API_BASE_URL.replace(/\/$/, '')}/uploads/${(news.image || news.thumbnail).replace(/^\//, '').replace(/^uploads\//, '')}`
-                        ) : '/placeholder-image.jpg'}
-                        className="h-100 w-100 object-fit-cover"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = '/placeholder-image.jpg';
-                        }}
-                    />
+                    {imageUrl ? (
+                        <Card.Img
+                            variant="top"
+                            src={imageUrl}
+                            className="h-100 w-100 object-fit-cover"
+                            onError={(e) => {
+                                // Try alternative field on error
+                                const altPath = news.leadImage || news.thumbImage;
+                                if (altPath && e.target.src.indexOf(altPath) === -1) {
+                                    e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
+                                } else {
+                                    e.target.onerror = null;
+                                    e.target.style.display = 'none';
+                                }
+                            }}
+                        />
+                    ) : (
+                        <div className="h-100 w-100 bg-light d-flex align-items-center justify-content-center">
+                            <span className="text-muted">📰</span>
+                        </div>
+                    )}
                 </Link>
-                {news.category && (
+                {news.Categories && news.Categories[0] && (
                     <Badge bg="danger" className="position-absolute top-0 start-0 m-2">
-                        {news.category.name}
+                        {news.Categories[0].name}
                     </Badge>
                 )}
             </div>

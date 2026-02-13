@@ -1,18 +1,62 @@
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import GridCell from './GridCell';
 
 const GridSection = ({ section }) => {
-    // Determine container width based on layout settings if available, otherwise default to Container
-    // For now using standard Container
-
-    // Sort rows by rowOrder
     const sortedRows = [...(section.Rows || section.rows || [])].sort((a, b) => a.rowOrder - b.rowOrder);
 
     if (!sortedRows.length) return null;
 
+    // Determine the number of grid columns from the first row
+    const firstRow = sortedRows[0];
+    const totalCols = (firstRow.Columns || firstRow.columns || []).length;
+
+    // Build a flat list of cells with grid placement info
+    // We need to process merged cells to place them correctly in CSS Grid
+    const gridCells = [];
+    const occupiedCells = new Set(); // Track cells occupied by merged spans
+
+    sortedRows.forEach((row, rowIndex) => {
+        const sortedCols = [...(row.Columns || row.columns || [])].sort((a, b) => a.colOrder - b.colOrder);
+
+        sortedCols.forEach((col, colIndex) => {
+            const cellKey = `${rowIndex}-${colIndex}`;
+
+            // Skip cells that are occupied by a merge span from another cell
+            if (occupiedCells.has(cellKey)) return;
+
+            // Skip non-master merged cells
+            if (col.merged && !col.masterCell) return;
+
+            const rowSpan = col.rowSpan || 1;
+            const colSpan = col.colSpan || 1;
+
+            // Mark occupied cells for merged spans
+            if (rowSpan > 1 || colSpan > 1) {
+                for (let r = 0; r < rowSpan; r++) {
+                    for (let c = 0; c < colSpan; c++) {
+                        if (r === 0 && c === 0) continue;
+                        occupiedCells.add(`${rowIndex + r}-${colIndex + c}`);
+                    }
+                }
+            }
+
+            // CSS Grid uses 1-based positioning
+            gridCells.push({
+                col,
+                gridRow: `${rowIndex + 1} / span ${rowSpan}`,
+                gridColumn: `${colIndex + 1} / span ${colSpan}`,
+                key: col.id || cellKey
+            });
+        });
+    });
+
+    // Calculate column template: use the width values from first row if available
+    const firstRowCols = (firstRow.Columns || firstRow.columns || []).sort((a, b) => a.colOrder - b.colOrder);
+    const gridTemplateColumns = firstRowCols.map(col => `${col.width || 1}fr`).join(' ');
+
     return (
-        <section className="py-4 section-wrapper">
+        <section className="py-3 section-wrapper">
             <Container>
                 {section.name && !section.name.startsWith('Section') && (
                     <div className="section-header mb-3">
@@ -20,45 +64,28 @@ const GridSection = ({ section }) => {
                     </div>
                 )}
 
-                {sortedRows.map((row, rowIndex) => {
-                    // Sort columns by colOrder
-                    const sortedCols = [...(row.Columns || row.columns || [])].sort((a, b) => a.colOrder - b.colOrder);
-
-                    if (!sortedCols.length) return null;
-
-                    return (
-                        <Row key={row.id || rowIndex} className="mb-3">
-                            {sortedCols.map((col, colIndex) => {
-                                // Skip if merged and not master
-                                if (col.merged && !col.masterCell) return null;
-
-                                return (
-                                    <Col
-                                        key={col.id || colIndex}
-                                        md={col.width || 12} // Use bootstrap grid width (1-12)
-                                        // Handle rowspan/colspan custom styling if needed, 
-                                        // or basic bootstrap columns do not support rowspan easily.
-                                        // For advanced grid with rowspan/colspan, CSS Grid might be better 
-                                        // but we are sticking to bootstrap structure from Admin.
-                                        // If rowSpan > 1, this gets tricky in pure Bootstrap Rows/Cols without CSS Grid.
-                                        // For now, mapping width to md={width}. 
-                                        // Note: Bootstrap doesn't support rowSpan natively in grid system. 
-                                        // If the user uses rowSpan, we might need a different approach or custom CSS.
-                                        // Admin uses simple table for preview, frontend should ideally use CSS Grid or similar.
-                                        // Let's assume standard columns for now.
-                                        className={col.merged ? 'position-relative' : ''}
-                                        style={col.merged ? {
-                                            // Simple hack for merged cells visibility, 
-                                            // real rowspans need CSS Grid implementation
-                                        } : {}}
-                                    >
-                                        <GridCell cell={col} />
-                                    </Col>
-                                );
-                            })}
-                        </Row>
-                    );
-                })}
+                <div
+                    className="grid-section"
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: gridTemplateColumns,
+                        gridTemplateRows: `repeat(${sortedRows.length}, auto)`,
+                        gap: '12px',
+                    }}
+                >
+                    {gridCells.map(({ col, gridRow, gridColumn, key }) => (
+                        <div
+                            key={key}
+                            style={{
+                                gridRow,
+                                gridColumn,
+                                minHeight: '0',
+                            }}
+                        >
+                            <GridCell cell={col} />
+                        </div>
+                    ))}
+                </div>
             </Container>
         </section>
     );

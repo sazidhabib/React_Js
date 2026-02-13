@@ -490,7 +490,184 @@ const AdSelectionModal = ({ show, onClose, onSelect, token }) => {
     );
 };
 
-// Enhanced Grid Cell Component with Merge Support
+// Preview Cell Content Component for Grid Preview Tab
+const PreviewCellContent = ({ contentType, contentId, contentTitle }) => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            if (!contentId) {
+                setLoading(false);
+                return;
+            }
+            try {
+                setLoading(true);
+                if (contentType === 'news') {
+                    const response = await axios.get(`${API_URL}/api/news/${contentId}`);
+                    setData(response.data.data || response.data.news || response.data);
+                } else if (contentType === 'image') {
+                    // For images, contentId is the image path or ID
+                    setData({ imageUrl: contentId });
+                } else if (contentType === 'video') {
+                    // For video, contentId might be a YouTube URL or video ID
+                    setData({ videoId: contentId, title: contentTitle });
+                } else if (contentType === 'ad') {
+                    const response = await axios.get(`${API_URL}/api/ad/${contentId}`);
+                    setData(response.data.data || response.data);
+                }
+            } catch (err) {
+                console.error(`Error fetching ${contentType} preview:`, err);
+                // Still show contentTitle as fallback
+                setData(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchContent();
+    }, [contentId, contentType]);
+
+    if (loading) {
+        return (
+            <div className="text-center py-1">
+                <Spinner animation="border" size="sm" style={{ width: '16px', height: '16px' }} />
+            </div>
+        );
+    }
+
+    // News content preview
+    if (contentType === 'news') {
+        const newsImage = data?.thumbImage || data?.leadImage || data?.metaImage || data?.image || data?.thumbnail;
+        const headline = data?.newsHeadline || contentTitle;
+        const imgSrc = newsImage
+            ? (newsImage.startsWith('http')
+                ? newsImage
+                : `${API_URL}/${newsImage.replace(/^\//, '')}`)
+            : null;
+
+        return (
+            <div className="preview-news-cell">
+                {imgSrc && (
+                    <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
+                        <img
+                            src={imgSrc}
+                            alt=""
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                    </div>
+                )}
+                {headline && (
+                    <div className="small fw-bold" style={{
+                        fontSize: '0.75rem',
+                        lineHeight: '1.2',
+                        maxHeight: '2.4em',
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                    }}>
+                        {headline}
+                    </div>
+                )}
+                {data?.category?.name && (
+                    <Badge bg="danger" style={{ fontSize: '0.55rem' }} className="mt-1">{data.category.name}</Badge>
+                )}
+            </div>
+        );
+    }
+
+    // Image content preview
+    if (contentType === 'image') {
+        const imgSrc = contentId
+            ? (contentId.startsWith('http')
+                ? contentId
+                : `${API_URL}/uploads/${contentId.replace(/^\//, '').replace(/^uploads\//, '')}`)
+            : null;
+
+        return (
+            <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
+                {imgSrc && (
+                    <img
+                        src={imgSrc}
+                        alt={contentTitle || 'Image'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { e.target.src = 'https://placehold.co/300x200?text=Image'; }}
+                    />
+                )}
+            </div>
+        );
+    }
+
+    // Video content preview
+    if (contentType === 'video') {
+        // Try to extract YouTube video ID
+        const videoTitle = contentTitle || 'Video';
+        let youtubeId = null;
+        if (contentId) {
+            const match = contentId.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&\n?#]+)/);
+            if (match) youtubeId = match[1];
+        }
+
+        return (
+            <div>
+                {youtubeId ? (
+                    <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px', position: 'relative' }}>
+                        <img
+                            src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                            alt={videoTitle}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                        <div style={{
+                            position: 'absolute', top: '50%', left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            fontSize: '1.5rem', color: 'white',
+                            textShadow: '0 0 6px rgba(0,0,0,0.7)'
+                        }}>▶</div>
+                    </div>
+                ) : (
+                    <div className="bg-dark text-white text-center rounded py-2" style={{ fontSize: '0.7rem' }}>
+                        🎥 {videoTitle}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Ad content preview
+    if (contentType === 'ad') {
+        const adImage = data?.image;
+        const adTitle = data?.title || data?.name || contentTitle || 'Ad';
+        const imgSrc = adImage
+            ? (adImage.startsWith('http') ? adImage : `${API_URL}/uploads/${adImage}`)
+            : null;
+
+        return (
+            <div>
+                {imgSrc && (
+                    <div style={{ height: '60px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
+                        <img
+                            src={imgSrc}
+                            alt={adTitle}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                    </div>
+                )}
+                <div className="small text-truncate" style={{ fontSize: '0.7rem' }}>{adTitle}</div>
+            </div>
+        );
+    }
+
+    // Fallback
+    return contentTitle ? (
+        <div className="small text-muted text-truncate" style={{ fontSize: '0.7rem' }}>
+            {contentTitle}
+        </div>
+    ) : null;
+};
+
 const GridCell = ({
     cell,
     rowIndex,
@@ -2252,8 +2429,17 @@ const PageLayoutDashboard = () => {
                                 });
                             }
 
-                            // Add content selection data
-                            if (column.contentId) {
+                            // Add content selection data — inject auto news if active
+                            const autoNewsKey = `${sectionIndex}-${rowIndex}-${colIndex}`;
+                            const isAutoActive = editPage.autoNewsSelection || section.autoNewsSelection;
+                            const autoItem = autoNewsData[autoNewsKey];
+
+                            if (isAutoActive && autoItem && column.tag) {
+                                // Auto news mode: inject fetched news data into the cell
+                                cellData.contentType = 'news';
+                                cellData.contentId = autoItem.id || autoItem._id;
+                                cellData.contentTitle = autoItem.newsHeadline || `News ${autoItem.id || autoItem._id}`;
+                            } else if (column.contentId) {
                                 cellData.contentId = column.contentId;
                                 // Ensure contentTitle is always a string if contentId exists
                                 cellData.contentTitle = column.contentTitle || `Selected ${column.contentType}`;
@@ -2478,20 +2664,81 @@ const PageLayoutDashboard = () => {
                                                                             return (
                                                                                 <td
                                                                                     key={colIndex}
-                                                                                    className="p-3"
+                                                                                    className="p-2"
                                                                                     rowSpan={column.rowSpan || 1}
                                                                                     colSpan={column.colSpan || 1}
+                                                                                    style={{
+                                                                                        minWidth: '150px',
+                                                                                        verticalAlign: 'top',
+                                                                                        backgroundColor: column.contentId ? '#fff' : '#f8f9fa'
+                                                                                    }}
                                                                                 >
-                                                                                    <div className="d-flex justify-content-between">
-                                                                                        <strong>{column.contentType}</strong>
+                                                                                    {/* Header: Content Type + Badges */}
+                                                                                    <div className="d-flex justify-content-between align-items-center mb-2">
+                                                                                        <Badge bg={
+                                                                                            column.contentType === 'news' ? 'primary' :
+                                                                                                column.contentType === 'image' ? 'success' :
+                                                                                                    column.contentType === 'video' ? 'danger' :
+                                                                                                        column.contentType === 'ad' ? 'warning' : 'secondary'
+                                                                                        } className="text-uppercase" style={{ fontSize: '0.65rem' }}>
+                                                                                            {column.contentType === 'news' && '📰 '}
+                                                                                            {column.contentType === 'image' && '🖼️ '}
+                                                                                            {column.contentType === 'video' && '🎥 '}
+                                                                                            {column.contentType === 'ad' && '📢 '}
+                                                                                            {column.contentType || 'text'}
+                                                                                        </Badge>
                                                                                         <div>
-                                                                                            {column.tag && <Badge bg="info" className="me-1">{column.tag}</Badge>}
-                                                                                            {column.design && <Badge bg="warning" text="dark">{column.design}</Badge>}
+                                                                                            {column.tag && <Badge bg="info" className="me-1" style={{ fontSize: '0.6rem' }}>{column.tag}</Badge>}
+                                                                                            {column.design && <Badge bg="warning" text="dark" style={{ fontSize: '0.6rem' }}>{column.design}</Badge>}
                                                                                         </div>
                                                                                     </div>
-                                                                                    <small className="text-muted">
-                                                                                        Size: {column.width}/12
-                                                                                    </small>
+
+                                                                                    {/* Content Preview */}
+                                                                                    {column.contentType === 'news' && column.contentId && (
+                                                                                        <PreviewCellContent
+                                                                                            contentType="news"
+                                                                                            contentId={column.contentId}
+                                                                                            contentTitle={column.contentTitle}
+                                                                                        />
+                                                                                    )}
+
+                                                                                    {column.contentType === 'image' && column.contentId && (
+                                                                                        <PreviewCellContent
+                                                                                            contentType="image"
+                                                                                            contentId={column.contentId}
+                                                                                            contentTitle={column.contentTitle}
+                                                                                        />
+                                                                                    )}
+
+                                                                                    {column.contentType === 'video' && column.contentId && (
+                                                                                        <PreviewCellContent
+                                                                                            contentType="video"
+                                                                                            contentId={column.contentId}
+                                                                                            contentTitle={column.contentTitle}
+                                                                                        />
+                                                                                    )}
+
+                                                                                    {column.contentType === 'ad' && column.contentId && (
+                                                                                        <PreviewCellContent
+                                                                                            contentType="ad"
+                                                                                            contentId={column.contentId}
+                                                                                            contentTitle={column.contentTitle}
+                                                                                        />
+                                                                                    )}
+
+                                                                                    {/* Fallback: No content selected */}
+                                                                                    {(!column.contentId && column.contentType && column.contentType !== 'text') && (
+                                                                                        <div className="text-center text-muted small py-2" style={{ fontSize: '0.75rem' }}>
+                                                                                            <em>No content selected</em>
+                                                                                        </div>
+                                                                                    )}
+
+                                                                                    {/* Size info */}
+                                                                                    <div className="mt-1">
+                                                                                        <small className="text-muted" style={{ fontSize: '0.6rem' }}>
+                                                                                            Size: {column.width}/12
+                                                                                        </small>
+                                                                                    </div>
                                                                                 </td>
                                                                             );
                                                                         })}

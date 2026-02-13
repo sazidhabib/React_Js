@@ -9,7 +9,7 @@ const HomeLayout = () => {
   return (
     <>
       <ScrollToSection />
-      <Header />
+
 
       <main className="main-content">
         {/* Render the dynamic 'Home' page layout */}

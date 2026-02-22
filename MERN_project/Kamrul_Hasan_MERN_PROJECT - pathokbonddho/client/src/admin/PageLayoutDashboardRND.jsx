@@ -2907,9 +2907,31 @@ const PageLayoutDashboard = () => {
                                     checked={editPage?.autoNewsSelection || false}
                                     onChange={(e) => {
                                         const newValue = e.target.checked;
-                                        setEditPage({ ...editPage, autoNewsSelection: newValue });
+                                        setEditPage(prev => {
+                                            const newEditPage = { ...prev, autoNewsSelection: newValue };
+                                            if (!newValue) {
+                                                // Clear auto news content when toggled off globally
+                                                if (newEditPage.PageSections) {
+                                                    newEditPage.PageSections = newEditPage.PageSections.map(section => ({
+                                                        ...section,
+                                                        rows: section.rows?.map(row => ({
+                                                            ...row,
+                                                            columns: row.columns?.map(col => {
+                                                                if (col.tag && col.contentType === 'news') {
+                                                                    return { ...col, contentId: null, contentTitle: null };
+                                                                }
+                                                                return col;
+                                                            })
+                                                        }))
+                                                    }));
+                                                }
+                                            }
+                                            return newEditPage;
+                                        });
+
                                         if (newValue) {
-                                            fetchAutoNewsForPage(editPage);
+                                            // Ensure fetchAutoNewsForPage gets the updated state, or we pass it
+                                            fetchAutoNewsForPage({ ...editPage, autoNewsSelection: newValue });
                                         } else {
                                             setAutoNewsData({});
                                         }
@@ -2930,8 +2952,21 @@ const PageLayoutDashboard = () => {
                                 section={section}
                                 sectionIndex={sectionIndex}
                                 onUpdateSection={(idx, field, value) => {
-                                    const updatedSections = [...editPage.PageSections];
+                                    const updatedSections = JSON.parse(JSON.stringify(editPage.PageSections));
                                     updatedSections[idx][field] = value;
+
+                                    // --- NEW LOGIC: Clear section cells if autoNews is turned OFF ---
+                                    if (field === 'autoNewsSelection' && value === false) {
+                                        updatedSections[idx].rows?.forEach(row => {
+                                            row.columns?.forEach(col => {
+                                                if (col.tag && col.contentType === 'news') {
+                                                    col.contentId = null;
+                                                    col.contentTitle = null;
+                                                }
+                                            });
+                                        });
+                                    }
+
                                     const newEditPage = { ...editPage, PageSections: updatedSections };
                                     setEditPage(newEditPage);
 

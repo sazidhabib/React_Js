@@ -11,6 +11,7 @@ const HomeLayout = () => {
       <ScrollToSection />
 
 
+      <Header />
       <main className="main-content">
         {/* Render the dynamic 'Home' page layout */}
         <PageRenderer slug="home" />

@@ -12,28 +12,13 @@ const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(window.innerWidth < 992);
   const { menus, loading, getMenuByOrder } = useMenu();
-  const [heroSection, setHeroSection] = useState(null);
-  const [heroLoading, setHeroLoading] = useState(true);
 
 
 
   const lastScrollY = useRef(window.scrollY);
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
 
-  // Fetch hero section data
-  useEffect(() => {
-    const fetchHeroSection = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/hero-section`);
-        setHeroSection(response.data);
-      } catch (error) {
-        console.error("Failed to fetch hero section:", error);
-      } finally {
-        setHeroLoading(false);
-      }
-    };
-    fetchHeroSection();
-  }, []);
+
 
 
   // Render menu links dynamically
@@ -107,7 +92,7 @@ const Header = () => {
 
 
   return (
-    <header className="header_contentent">
+    <header className="header_contentent ">
       {/* Mobile Top Bar */}
       {isMediumOrSmaller && (
         <div
@@ -185,83 +170,48 @@ const Header = () => {
       )}
 
       {!isMediumOrSmaller && (
-        <div
-          className="fixed-toplarge bg-dark d-flex justify-content-center py-2 shadow z-3"
-          style={{ top: showScrollingNavbar ? "0" : "-100px", opacity: showScrollingNavbar ? 1 : 0, position: "fixed", width: "100%", zIndex: 1050 }}
-        >
+        <div className="site-header">
+          {/* Top Bar */}
+          <div className="top-bar-custom container" style={{ top: showScrollingNavbar ? "-50px" : "0", opacity: showScrollingNavbar ? 0 : 1, transition: "all 0.3s ease-in-out" }}>
 
-          <ul className="nav text-white">
-            {renderMenuLinks()}
-          </ul>
+            <div className="top-bar-left">
+              <span>২৮ ফেব্রুয়ারি, ২০২৬</span>
+            </div>
+            <div className="top-bar-right">
+              <a href="#"><i className="fas fa-search"></i></a>
+              <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a>
+              <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a>
+              <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"></i></a>
+              <a href="#"><i className="fab fa-youtube"></i></a>
+            </div>
+          </div>
+
+          {/* White Sticky Navbar */}
+          <div className={`main-navbar-custom ${showScrollingNavbar ? 'sticky' : ''}`}>
+            <div className="inside_main container">
+              <Link to="/" className="logo-container">
+                <img src="/images/logo.png" alt="Pathokbonddho Logo" className="logo-logo" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                <span style={{ display: 'none', color: '#006a60', fontSize: '28px', fontWeight: 'bold' }}>পাঠকবন্ধু</span>
+              </Link>
+              <ul className="nav-custom-links">
+                {menus.sort((a, b) => a.order - b.order).map((menu, index) => (
+                  <li key={menu._id || index}>
+                    <Link
+                      to={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
+                      className={`nav-link-custom ${window.location.pathname === (menu.path.startsWith('/') ? menu.path : `/${menu.path}`) ? 'active' : ''}`}
+                    >
+                      {menu.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Main Content */}
-      <section className="header">
-        <div className="container-fluid">
-          <div className="row">
-            {/* Sidebar for Large Screens */}
-            {!isMediumOrSmaller && (
-              <div className="leftsidebar col-md-2 d-flex flex-column justify-content-center align-items-center text-left">
-                <ul className="navh font-weight-bold flex-column">
-                  {renderMenuLinks()}
-                </ul>
-                <div className="social-icons mt-4">
-                  <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-linkedin-in"></i></a>
-                  <a key="twitter" href="#" className="text-white me-1"><i className="fa-brands fa-x-twitter"></i></a>
-                  <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-1"><i className="fa-brands fa-facebook-f"></i></a>
-                  <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
-                </div>
-              </div>
-            )}
 
-            {/* Middle Content */}
-            <div id={homeMenu?.path || "home"}
-              className={`col-12 ${isMediumOrSmaller ? "col-md-6" : "col-md-4"
-                } middelsidebar text-center d-flex flex-column  justify-content-center`}
-            >
-              {heroLoading ? (
-                <div className="text-center"><Spinner animation="border" /></div>
-              ) : heroSection ? (
-                <div className="text-container">
-                  <div className="helloi">{heroSection.lines[0]}</div>
-                  <div className="main-text">{heroSection.lines[1]}</div>
-                  <div className="sub-text">{heroSection.lines[2]}</div>
-                </div>
-              ) : (
-                <div className="text-container">
-                  <div className="helloi">হ্যালো, আমি</div>
-                  <div className="main-text">কামরুল হাসান</div>
-                  <div className="sub-text">গণমাধ্যম কর্মী (সাংবাদিক)</div>
-                </div>
-              )}
-
-
-            </div>
-
-            {/* Right Content */}
-            <div className="col-md-6 col-12 rightsidebar text-center d-flex flex-column justify-content-center align-items-center">
-              <div className="image-wrapper">
-                {heroLoading ? (
-                  <Spinner animation="border" />
-                ) : heroSection?.imageUrl ? (
-                  <img
-                    src={`${import.meta.env.VITE_API_BASE_URL}/${heroSection.imageUrl}`}
-                    alt="Profile"
-                    className="img-fluid profile-image"
-                  />
-                ) : (
-                  <img
-                    src="/images/kamrulhasan.webp"
-                    alt="Default Profile"
-                    className="img-fluid profile-image"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </header>
   );
 

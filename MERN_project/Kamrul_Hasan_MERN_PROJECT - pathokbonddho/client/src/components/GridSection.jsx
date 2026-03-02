@@ -70,21 +70,58 @@ const GridSection = ({ section }) => {
                         display: 'grid',
                         gridTemplateColumns: gridTemplateColumns,
                         gridTemplateRows: `repeat(${sortedRows.length}, auto)`,
-                        gap: '12px',
+                        gap: '20px',
                     }}
                 >
-                    {gridCells.map(({ col, gridRow, gridColumn, key }) => (
-                        <div
-                            key={key}
-                            style={{
-                                gridRow,
-                                gridColumn,
-                                minHeight: '0',
-                            }}
-                        >
-                            <GridCell cell={col} />
-                        </div>
-                    ))}
+                    {gridCells.map(({ col, gridRow, gridColumn, key }, index) => {
+                        const colStart = parseInt(gridColumn.split(' / ')[0]);
+                        const colSpan = parseInt(gridColumn.split('span ')[1] || 1);
+                        const isLastCol = (colStart - 1 + colSpan) >= totalCols;
+
+                        const rowStart = parseInt(gridRow.split(' / ')[0]);
+                        const rowSpan = parseInt(gridRow.split('span ')[1] || 1);
+                        const isLastRow = (rowStart - 1 + rowSpan) >= sortedRows.length;
+
+                        return (
+                            <div
+                                key={key}
+                                style={{
+                                    gridRow,
+                                    gridColumn,
+                                    minHeight: '0',
+                                    position: 'relative'
+                                }}
+                            >
+                                <GridCell cell={col} />
+
+                                {/* Vertical Separator Line */}
+                                {!isLastCol && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        right: '-10px',
+                                        top: '20px',
+                                        bottom: '20px',
+                                        width: '1px',
+                                        backgroundColor: '#e5e5e5',
+                                        zIndex: 1
+                                    }} />
+                                )}
+
+                                {/* Horizontal Separator Line */}
+                                {!isLastRow && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '-1px',
+                                        left: '5px',
+                                        right: isLastCol ? '5px' : '-5px',
+                                        height: '1px',
+                                        backgroundColor: '#e5e5e5',
+                                        zIndex: 1
+                                    }} />
+                                )}
+                            </div>
+                        )
+                    })}
                 </div>
             </Container>
         </section>

@@ -1,7 +1,7 @@
 body {
     font-family: VarendraAP, sans-serif;
     line-height: 1.6;
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -13,9 +13,7 @@ body {
 
 @font-face {
     font-family: "VarendraAP";
-    src: url("/assets/fonts/VarendraAP-Black_v7.ttf") format("truetype"),
-        url("/assets/fonts/VarendraAP-BlackOblique_v7.ttf") format("truetype"),
-        url("/assets/fonts/VarendraAP-Bold_v7.ttf") format("truetype"),
+    src: url("/assets/fonts/VarendraAP-Bold_v7.ttf") format("truetype"),
         url("/assets/fonts/VarendraAP-BoldOblique_v7.ttf") format("truetype"),
         url("/assets/fonts/VarendraAP-Light_v7.ttf") format("truetype"),
         url("/assets/fonts/VarendraAP-LightOblique_v7.ttf") format("truetype"),
@@ -34,7 +32,7 @@ body {
 
 .custom-font {
     font-family: 'custom_font';
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .custom-font-initial {
@@ -237,7 +235,7 @@ body {
 }
 
 .header_contentent {
-    background-color: #26272e;
+    background-color: #006a60;
 
 }
 
@@ -481,26 +479,115 @@ body {
 
 /* videoGallery css end */
 
-/* Topbar: Hidden on desktop, shown on sm/md */
-.mobile-topbar {
-    display: none !important;
-    background-color: #000;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 999;
-    transition: top 0.3s ease-in-out;
+/* Top Bar and Main Navbar Container */
+.site-header {
+    width: 100%;
 }
 
-.mobile-topbarDef {
-    display: none !important;
-    background-color: #000;
+.top-bar-custom {
+    background-color: #006a60;
+    color: white;
+    padding: 8px 30px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
+.top-bar-left,
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.top-bar-right a,
+.top-bar-right i {
+    color: white;
+    font-size: 16px;
+    transition: opacity 0.2s;
+}
+
+.top-bar-right a:hover,
+.top-bar-right i:hover {
+    opacity: 0.8;
+}
+
+/* White Navbar */
+.main-navbar-custom {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 15px 30px;
+
+    transition: top 0.3s ease-in-out, box-shadow 0.3s ease;
+    width: 100%;
+    z-index: 1050;
+}
+
+.inside_main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-navbar-custom.sticky {
+    position: fixed;
     top: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    font-size: 24px;
+    color: #006a60;
+    /* Teal matching text */
+    text-decoration: none;
+    gap: 10px;
+}
+
+.logo-logo {
+    width: 80px;
+    height: auto;
+}
+
+/* Nav Links Styling */
+.nav-custom-links {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-link-custom {
+    color: #333 !important;
+    font-size: 20px !important;
+    font-weight: 500;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.nav-link-custom:hover {
+    color: #E67E22 !important;
+    /* Orange hover color */
+}
+
+.nav-link-custom.active {
+    color: #E67E22 !important;
+}
+
+.nav-link-custom.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
     left: 0;
-    right: 0;
-    transition: top 0.3s ease-in-out;
+    width: 100%;
+    height: 3px;
+    background-color: #E67E22;
+    /* Orange underline for active link */
 }
 
 /* Show topbar only on screens less than 992px (Bootstrap md) */
@@ -535,6 +622,16 @@ body {
 
     .name {
         font-size: 80px !important;
+    }
+
+    .top-bar-custom {
+        display: none;
+        /* Hide custom top bar on mobile as existing mobile header takes over */
+    }
+
+    .main-navbar-custom {
+        display: none;
+        /* Hide desktop nav on mobile */
     }
 
 
@@ -666,6 +763,12 @@ body {
 
 .card img {
     max-height: 200px;
+    object-fit: cover;
+}
+
+/* Allow news widget images in merged cells to scale beyond 200px */
+.news-widget .card-img-wrapper img {
+    max-height: 100%;
     object-fit: cover;
 }
 

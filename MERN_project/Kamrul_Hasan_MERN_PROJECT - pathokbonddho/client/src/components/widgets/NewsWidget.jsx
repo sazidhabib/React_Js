@@ -70,9 +70,18 @@ const NewsWidget = ({ cell }) => {
 
     const imageUrl = getImageUrl(news);
 
+    // Calculate image height based on cell merge span
+    const rowSpan = cell.rowSpan || 1;
+    const colSpan = cell.colSpan || 1;
+    const baseHeight = 200;
+    // Scale height: for merged cells, multiply base height by rowSpan and add gap compensation
+    const imageHeight = rowSpan > 1 || colSpan > 1
+        ? baseHeight * rowSpan + (rowSpan - 1) * 20 // 20px for grid gap
+        : baseHeight;
+
     return (
-        <Card className="h-100 border-0 shadow-sm news-widget">
-            <div className="card-img-wrapper position-relative" style={{ height: '200px', overflow: 'hidden' }}>
+        <Card className="h-100 border-0 news-widget">
+            <div className="card-img-wrapper position-relative" style={{ height: `${imageHeight}px`, overflow: 'hidden' }}>
                 <Link to={`/news/${news._id || news.id}`}>
                     {imageUrl ? (
                         <Card.Img
@@ -102,19 +111,19 @@ const NewsWidget = ({ cell }) => {
                     </Badge>
                 )}
             </div>
-            <Card.Body>
+            <Card.Body className='px-0'>
                 <Link to={`/news/${news._id || news.id}`} className="text-decoration-none text-dark">
-                    <Card.Title className="h6 fw-bold mb-2 code-font-bangla">
+                    <Card.Title className="h5 fw-bold mb-2 code-font-bangla">
                         {news.newsHeadline}
                     </Card.Title>
                 </Link>
-                {cell.design === 'featured' && (
-                    <Card.Text className="small text-muted mb-2">
-                        {news.shortDescription?.substring(0, 100)}...
+                {news.shortDescription && (
+                    <Card.Text className="small custom-font text-muted mb-2 code-font-bangla">
+                        {news.shortDescription}
                     </Card.Text>
                 )}
                 <div className="d-flex justify-content-between align-items-center small text-muted">
-                    <span>{new Date(news.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(news.createdAt).toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                 </div>
             </Card.Body>
         </Card>

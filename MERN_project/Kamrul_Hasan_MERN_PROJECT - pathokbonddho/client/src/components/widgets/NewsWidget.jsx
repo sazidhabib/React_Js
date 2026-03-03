@@ -17,11 +17,9 @@ const NewsWidget = ({ cell }) => {
                 }
 
                 if (cell.contentId) {
-                    // Fetch specific news by ID
                     const response = await axios.get(`${API_BASE_URL}/api/news/${cell.contentId}`);
                     setNews(response.data.data || response.data.news || response.data);
                 } else if (cell.tag) {
-                    // Fetch latest news by tag
                     const response = await axios.get(`${API_BASE_URL}/api/news?tag=${cell.tag}&limit=1`);
                     const newsItems = response.data.news || response.data.rows || [];
                     if (newsItems.length > 0) {
@@ -38,26 +36,31 @@ const NewsWidget = ({ cell }) => {
         fetchNews();
     }, [cell.contentId, cell.tag, API_BASE_URL]);
 
-    // Build proper image URL from the news data
-    // The DB stores paths like: "images/post_image/filename.jpg"
-    // Server serves: /images/* → uploads/ folder, /uploads/* → uploads/ folder
     const getImageUrl = (newsItem) => {
         if (!newsItem) return null;
-
-        // Check fields in order of preference: thumbImage, leadImage, metaImage
         const imagePath = newsItem.thumbImage || newsItem.leadImage || newsItem.metaImage;
-
         if (!imagePath) return null;
-
-        // If already a full URL (starts with http)
         if (imagePath.startsWith('http')) {
             return imagePath.replace(/^http:\/\//, 'https://');
         }
-
-        // Build URL: API_BASE_URL + / + imagePath
-        // imagePath is like "images/post_image/filename.jpg"
-        // Server serves /images as static, so this will work
         return `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
+    };
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString('bn-BD', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+    };
+
+    // Calculate dynamic image height based on cell merge span
+    const getImageHeight = () => {
+        const rowSpan = cell.rowSpan || 1;
+        const colSpan = cell.colSpan || 1;
+        const baseHeight = 200;
+        return rowSpan > 1 || colSpan > 1
+            ? baseHeight * rowSpan + (rowSpan - 1) * 20
+            : baseHeight;
     };
 
     if (loading) {
@@ -69,27 +72,263 @@ const NewsWidget = ({ cell }) => {
     }
 
     const imageUrl = getImageUrl(news);
+    const newsLink = `/news/${news._id || news.id}`;
+    const design = cell.design || 'title-image-top'; // default design
+    const imageHeight = getImageHeight();
 
-    // Calculate image height based on cell merge span
-    const rowSpan = cell.rowSpan || 1;
-    const colSpan = cell.colSpan || 1;
-    const baseHeight = 200;
-    // Scale height: for merged cells, multiply base height by rowSpan and add gap compensation
-    const imageHeight = rowSpan > 1 || colSpan > 1
-        ? baseHeight * rowSpan + (rowSpan - 1) * 20 // 20px for grid gap
-        : baseHeight;
+    // ─── DESIGN: text-inside-image ───
+    if (design === 'text-inside-image') {
+        return (
+            <div className="news-design-text-inside-image h-100 pb-2">
+                <Link to={newsLink} className="text-decoration-none">
+                    <div className="text-inside-image-wrapper">
+                        {imageUrl ? (
+                            <img
+                                src={imageUrl}
+                                alt={news.newsHeadline}
+                                className="text-inside-image-img"
+                                onError={(e) => {
+                                    const altPath = news.leadImage || news.thumbImage;
+                                    if (altPath && e.target.src.indexOf(altPath) === -1) {
+                                        e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
+                                    } else {
+                                        e.target.onerror = null;
+                                        e.target.style.display = 'none';
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <div className="h-100 w-100 bg-secondary d-flex align-items-center justify-content-center">
+                                <span className="text-white" style={{ fontSize: '2rem' }}>📰</span>
+                            </div>
+                        )}
+                        <div className="text-inside-image-overlay">
+                            <h5 className="text-inside-image-title code-font-bangla">
+                                {news.newsHeadline}
+                            </h5>
+                            <span className="text-inside-image-date">
+                                {formatDate(news.createdAt)}
+                            </span>
+                        </div>
+                    </div>
+                </Link>
+                {news.Categories && news.Categories[0] && (
+                    <Badge bg="danger" className="position-absolute top-0 start-0 m-2" style={{ zIndex: 2 }}>
+                        {news.Categories[0].name}
+                    </Badge>
+                )}
+            </div>
+        );
+    }
 
+    // ─── DESIGN: title-only ───
+    if (design === 'title-only') {
+        return (
+            <div className="news-design-title-only h-100">
+                <Link to={newsLink} className="text-decoration-none text-dark">
+                    <h5 className="fw-bold mb-2 code-font-bangla news-title-only-headline">
+                        {news.newsHeadline}
+                    </h5>
+                </Link>
+            </div>
+        );
+    }
+
+    // ─── DESIGN: title-image-left ───
+    if (design === 'title-image-left') {
+        return (
+            <div className="news-design-title-image-side h-100">
+                <Link to={newsLink} className="text-decoration-none text-dark">
+                    <h5 className="fw-bold mb-2 code-font-bangla">
+                        {news.newsHeadline}
+                    </h5>
+                </Link>
+                <div className="d-flex gap-3">
+                    {imageUrl && (
+                        <div className="news-side-image-wrapper flex-shrink-0">
+                            {news.Categories && news.Categories[0] && (
+                                <Badge bg="danger" className="position-absolute start-0 m-2">{news.Categories[0].name}</Badge>
+                            )}
+                            <Link to={newsLink}>
+                                <img
+                                    src={imageUrl}
+                                    alt={news.newsHeadline}
+                                    className="news-side-image"
+                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                                />
+                            </Link>
+                        </div>
+                    )}
+                    <div className="flex-grow-1">
+                        {news.shortDescription && (
+                            <p className="small custom-font text-muted mb-2 code-font-bangla">{news.shortDescription}</p>
+                        )}
+                        <div className="small text-muted">{formatDate(news.createdAt)}</div>
+                    </div>
+                </div>
+
+            </div>
+        );
+    }
+
+    // ─── DESIGN: title-image-right ───
+    if (design === 'title-image-right') {
+        return (
+            <div className="news-design-title-image-side h-100">
+                <Link to={newsLink} className="text-decoration-none text-dark">
+                    <h5 className="fw-bold mb-2 code-font-bangla">
+                        {news.newsHeadline}
+                    </h5>
+                </Link>
+                <div className="d-flex flex-row-reverse gap-3">
+
+                    {imageUrl && (
+                        <div className="news-side-image-wrapper flex-shrink-0">
+                            {news.Categories && news.Categories[0] && (
+                                <Badge bg="danger" className="position-absolute end-0 m-2">{news.Categories[0].name}</Badge>
+                            )}
+                            <Link to={newsLink}>
+                                <img
+                                    src={imageUrl}
+                                    alt={news.newsHeadline}
+                                    className="news-side-image"
+                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                                />
+                            </Link>
+                        </div>
+                    )}
+                    <div className="flex-grow-1">
+                        {news.shortDescription && (
+                            <p className="small custom-font text-muted mb-2 code-font-bangla">{news.shortDescription}</p>
+                        )}
+                        <div className="small text-muted">{formatDate(news.createdAt)}</div>
+                    </div>
+                </div>
+
+            </div>
+        );
+    }
+
+    // ─── DESIGN: image-top ───
+    if (design === 'image-top') {
+        return (
+            <Card className="h-100 border-0 news-widget news-design-image-top">
+                <div className="card-img-wrapper position-relative" style={{ height: `${imageHeight}px`, overflow: 'hidden' }}>
+                    <Link to={newsLink}>
+                        {imageUrl ? (
+                            <Card.Img
+                                variant="top"
+                                src={imageUrl}
+                                className="h-100 w-100 object-fit-cover"
+                                onError={(e) => {
+                                    const altPath = news.leadImage || news.thumbImage;
+                                    if (altPath && e.target.src.indexOf(altPath) === -1) {
+                                        e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
+                                    } else {
+                                        e.target.onerror = null;
+                                        e.target.style.display = 'none';
+                                    }
+                                }}
+                            />
+                        ) : (
+                            <div className="h-100 w-100 bg-light d-flex align-items-center justify-content-center">
+                                <span className="text-muted">📰</span>
+                            </div>
+                        )}
+                    </Link>
+                    {news.Categories && news.Categories[0] && (
+                        <Badge bg="danger" className="position-absolute top-0 start-0 m-2">
+                            {news.Categories[0].name}
+                        </Badge>
+                    )}
+                </div>
+                <Card.Body className='px-0 py-2'>
+                    <Link to={newsLink} className="text-decoration-none text-dark">
+                        <h5 className="fw-bold mb-1 code-font-bangla">
+                            {news.newsHeadline}
+                        </h5>
+                    </Link>
+                    <div className="small text-muted">
+                        {formatDate(news.createdAt)}
+                    </div>
+                </Card.Body>
+            </Card>
+        );
+    }
+
+    // ─── DESIGN: image-left ───
+    if (design === 'image-left') {
+        return (
+            <div className="news-design-image-compact d-flex gap-3 h-100 align-items-start">
+                {imageUrl && (
+                    <div className="news-compact-image-wrapper flex-shrink-0">
+                        {news.Categories && news.Categories[0] && (
+                            <Badge bg="danger" className="position-absolute start-0 m-2">
+                                {news.Categories[0].name}
+                            </Badge>
+                        )}
+                        <Link to={newsLink}>
+                            <img
+                                src={imageUrl}
+                                alt={news.newsHeadline}
+                                className="news-compact-image"
+                                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                            />
+                        </Link>
+                    </div>
+                )}
+                <div className="flex-grow-1">
+                    <Link to={newsLink} className=" text-decoration-none text-dark">
+                        <h5 className="fw-bold mb-1 code-font-bangla">{news.newsHeadline}</h5>
+                    </Link>
+                    <div className="small text-muted">{formatDate(news.createdAt)}</div>
+                </div>
+            </div>
+        );
+    }
+
+    // ─── DESIGN: image-right ───
+    if (design === 'image-right') {
+        return (
+            <div className="news-design-image-compact d-flex flex-row-reverse gap-3 h-100 align-items-start">
+                {imageUrl && (
+                    <div className="news-compact-image-wrapper flex-shrink-0">
+                        {news.Categories && news.Categories[0] && (
+                            <Badge bg="danger" className="position-absolute top-0 end-0 m-2">
+                                {news.Categories[0].name}
+                            </Badge>
+                        )}
+                        <Link to={newsLink}>
+                            <img
+                                src={imageUrl}
+                                alt={news.newsHeadline}
+                                className="news-compact-image"
+                                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                            />
+                        </Link>
+                    </div>
+                )}
+                <div className="flex-grow-1">
+                    <Link to={newsLink} className="text-decoration-none text-dark">
+                        <h5 className="fw-bold mb-1 code-font-bangla">{news.newsHeadline}</h5>
+                    </Link>
+                    <div className="small text-muted">{formatDate(news.createdAt)}</div>
+                </div>
+            </div>
+        );
+    }
+
+    // ─── DESIGN: title-image-top (DEFAULT) ───
     return (
         <Card className="h-100 border-0 news-widget">
             <div className="card-img-wrapper position-relative" style={{ height: `${imageHeight}px`, overflow: 'hidden' }}>
-                <Link to={`/news/${news._id || news.id}`}>
+                <Link to={newsLink}>
                     {imageUrl ? (
                         <Card.Img
                             variant="top"
                             src={imageUrl}
                             className="h-100 w-100 object-fit-cover"
                             onError={(e) => {
-                                // Try alternative field on error
                                 const altPath = news.leadImage || news.thumbImage;
                                 if (altPath && e.target.src.indexOf(altPath) === -1) {
                                     e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
@@ -112,7 +351,7 @@ const NewsWidget = ({ cell }) => {
                 )}
             </div>
             <Card.Body className='px-0'>
-                <Link to={`/news/${news._id || news.id}`} className="text-decoration-none text-dark">
+                <Link to={newsLink} className="text-decoration-none text-dark">
                     <Card.Title className="h5 fw-bold mb-2 code-font-bangla">
                         {news.newsHeadline}
                     </Card.Title>
@@ -123,7 +362,7 @@ const NewsWidget = ({ cell }) => {
                     </Card.Text>
                 )}
                 <div className="d-flex justify-content-between align-items-center small text-muted">
-                    <span>{new Date(news.createdAt).toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <span>{formatDate(news.createdAt)}</span>
                 </div>
             </Card.Body>
         </Card>

@@ -2810,11 +2810,15 @@ const PageLayoutDashboard = () => {
                                         type="number"
                                         min="1"
                                         max="10"
-                                        value={3}
-                                        onChange={(e) => setNewPage({
-                                            ...newPage,
-                                            sections: [createNewSection(parseInt(e.target.value), newPage.sections[0].rows[0].columns.length)]
-                                        })}
+                                        value={newPage.sections[0]?.rows?.length || 3}
+                                        onChange={(e) => {
+                                            const newRows = parseInt(e.target.value) || 1;
+                                            const currentCols = newPage.sections[0]?.rows[0]?.columns?.length || 3;
+                                            setNewPage({
+                                                ...newPage,
+                                                sections: [createNewSection(newRows, currentCols)]
+                                            });
+                                        }}
                                     />
                                 </Col>
                                 <Col>
@@ -2823,11 +2827,15 @@ const PageLayoutDashboard = () => {
                                         type="number"
                                         min="1"
                                         max="10"
-                                        value={3}
-                                        onChange={(e) => setNewPage({
-                                            ...newPage,
-                                            sections: [createNewSection(newPage.sections[0].rows.length, parseInt(e.target.value))]
-                                        })}
+                                        value={newPage.sections[0]?.rows[0]?.columns?.length || 3}
+                                        onChange={(e) => {
+                                            const currentRows = newPage.sections[0]?.rows?.length || 3;
+                                            const newCols = parseInt(e.target.value) || 1;
+                                            setNewPage({
+                                                ...newPage,
+                                                sections: [createNewSection(currentRows, newCols)]
+                                            });
+                                        }}
                                     />
                                 </Col>
                             </Row>

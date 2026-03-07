@@ -13,7 +13,7 @@ const AdWidget = ({ cell }) => {
                 return;
             }
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/ad/${cell.contentId}`);
+                const response = await axios.get(`${API_BASE_URL}/api/ads/${cell.contentId}`);
                 setAd(response.data.data || response.data);
             } catch (err) {
                 console.error('Error fetching ad widget data:', err);
@@ -39,32 +39,31 @@ const AdWidget = ({ cell }) => {
 
     const adImage = ad.image;
     const adTitle = ad.title || ad.name || cell.contentTitle || 'Advertisement';
-    const adLink = ad.link || ad.url || '#';
+    const adLink = ad.imageUrl || ad.link || ad.url || '#';
     const imgSrc = adImage
         ? (adImage.startsWith('http') ? adImage : `${API_BASE_URL}/uploads/${adImage}`)
         : null;
 
+    if (ad.type === 'google_adsense') {
+        return (
+            <div className="ad-widget h-100 w-100 d-flex flex-column align-items-center justify-content-center overflow-hidden">
+                {ad.headCode && <div dangerouslySetInnerHTML={{ __html: ad.headCode }} />}
+                {ad.bodyCode && <div dangerouslySetInnerHTML={{ __html: ad.bodyCode }} />}
+            </div>
+        );
+    }
+
     const content = (
-        <div className="ad-widget h-100 border rounded overflow-hidden" style={{ backgroundColor: '#fffdf5' }}>
+        <div className="ad-widget h-100  overflow-hidden" style={{ backgroundColor: '#ffffffff' }}>
             {imgSrc && (
                 <div style={{ overflow: 'hidden' }}>
                     <img
                         src={imgSrc}
                         alt={adTitle}
                         className="w-100"
-                        style={{ objectFit: 'cover', maxHeight: '300px' }}
+                        style={{ objectFit: 'cover' }}
                         onError={(e) => { e.target.style.display = 'none'; }}
                     />
-                </div>
-            )}
-            {adTitle && (
-                <div className="p-2">
-                    <p className="small mb-0 fw-bold">{adTitle}</p>
-                    {ad.description && (
-                        <p className="small text-muted mb-0" style={{ fontSize: '0.8rem' }}>
-                            {ad.description.substring(0, 80)}{ad.description.length > 80 ? '...' : ''}
-                        </p>
-                    )}
                 </div>
             )}
         </div>

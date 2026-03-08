@@ -24,6 +24,8 @@ import DesignDashboard from "./admin/DesignDashboard";
 import NewsCreate from "./admin/NewsCreate";
 import NewsList from "./admin/NewsList";
 import NewsEdit from "./admin/NewsEdit";
+import NewsLayout from "./layouts/NewsLayout";
+import NewsDetails from "./components/NewsDetails";
 
 
 
@@ -32,6 +34,11 @@ const AppRoutes = () => {
     <Router>
 
       <Routes>
+        {/* News Detail Page */}
+        <Route path="/news" element={<NewsLayout />}>
+          <Route path=":id" element={<NewsDetails />} />
+        </Route>
+
         {/* Home Page Layout */}
         <Route path="/*" element={<HomeLayout />} />
         <Route path="/login" element={<Login />} />

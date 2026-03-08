@@ -2,6 +2,14 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../db/database");
 
 const PageSection = sequelize.define("PageSection", {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    menuSlug: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
     layoutType: {
         type: DataTypes.ENUM("grid", "flex"),
         allowNull: false,

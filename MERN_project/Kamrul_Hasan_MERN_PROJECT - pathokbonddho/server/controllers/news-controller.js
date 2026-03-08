@@ -291,12 +291,24 @@ const getAllNews = async (req, res) => {
             status,
             categories,
             tag,
-            author
+            author,
+            excludeIds
         } = req.query;
 
         const offset = (page - 1) * limit;
 
         let whereClause = {};
+
+        // Exclude IDs logic
+        if (excludeIds) {
+            const idsList = typeof excludeIds === 'string'
+                ? excludeIds.split(',').map(id => parseInt(id)).filter(id => !isNaN(id))
+                : (Array.isArray(excludeIds) ? excludeIds.map(id => parseInt(id)).filter(id => !isNaN(id)) : []);
+
+            if (idsList.length > 0) {
+                whereClause.id = { [Op.notIn]: idsList };
+            }
+        }
 
         // Search functionality
         if (search) {

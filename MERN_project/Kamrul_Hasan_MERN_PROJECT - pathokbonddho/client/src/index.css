@@ -757,8 +757,12 @@ body {
 
 .section-title {
     text-align: center;
-    margin: 40px 0;
-    color: #34495e;
+    color: #ffffff;
+}
+
+.casection-title {
+    text-align: center;
+    color: #333333;
 }
 
 .card img {

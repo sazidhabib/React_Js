@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import GridSection from './GridSection';
+import LoadMoreNews from './LoadMoreNews';
 
 const PageRenderer = ({ pageId, slug }) => {
     const [pageLayout, setPageLayout] = useState(null);
@@ -108,11 +109,29 @@ const PageRenderer = ({ pageId, slug }) => {
         );
     }
 
+    const getExcludeIds = () => {
+        if (!pageLayout?.PageSections) return [];
+        const ids = new Set();
+        pageLayout.PageSections.forEach(section => {
+            (section.Rows || section.rows || []).forEach(row => {
+                (row.Columns || row.columns || []).forEach(col => {
+                    if (col.contentType === 'news' && col.contentId) {
+                        ids.add(col.contentId);
+                    }
+                });
+            });
+        });
+        return Array.from(ids);
+    };
+
     return (
         <div className="page-renderer">
             {pageLayout.PageSections.map((section, index) => (
                 <GridSection key={section.id || index} section={section} />
             ))}
+            {slug && slug.toLowerCase() !== 'home' && (
+                <LoadMoreNews slug={slug} excludeIds={getExcludeIds()} />
+            )}
         </div>
     );
 };

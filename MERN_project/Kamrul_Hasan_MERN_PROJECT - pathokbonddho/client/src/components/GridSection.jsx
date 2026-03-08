@@ -1,8 +1,11 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { useMenu } from '../store/MenuContext';
 import GridCell from './GridCell';
 
 const GridSection = ({ section }) => {
+    const { menus } = useMenu();
     const sortedRows = [...(section.Rows || section.rows || [])].sort((a, b) => a.rowOrder - b.rowOrder);
 
     if (!sortedRows.length) return null;
@@ -60,7 +63,38 @@ const GridSection = ({ section }) => {
             <Container>
                 {section.name && !section.name.startsWith('Section') && (
                     <div className="section-header mb-3">
-                        <h2 className="section-title border-bottom pb-2">{section.name}</h2>
+                        <div className="text-center" style={{ backgroundColor: '#006a60' }}>
+                            {(() => {
+                                const trimmedName = section.name?.trim();
+                                const resolvedSlug = section.menuSlug || menus.find(m =>
+                                    m.name?.trim().toLowerCase() === trimmedName?.toLowerCase()
+                                )?.path;
+
+                                const targetTo = resolvedSlug ? (resolvedSlug.startsWith('/') ? resolvedSlug : `/${resolvedSlug}`) : '#';
+
+                                // Debug log to help identify issues
+                                if (targetTo === '#') {
+                                    console.warn(`⚠️ GridSection: Could not resolve slug for section "${section.name}".`, {
+                                        menuSlug: section.menuSlug,
+                                        availableMenus: menus.map(m => m.name)
+                                    });
+                                }
+
+                                return (
+                                    <Link
+                                        to={targetTo}
+                                        className="text-decoration-none text-dark d-inline-block"
+                                        onClick={(e) => {
+                                            if (targetTo === '#') e.preventDefault();
+                                            console.log(`🔗 Navigating to: ${targetTo}`);
+                                        }}
+                                        style={{ position: 'relative', zIndex: 5 }}
+                                    >
+                                        <h2 className="section-title border-bottom py-2 mb-0">{section.name}</h2>
+                                    </Link>
+                                );
+                            })()}
+                        </div>
                     </div>
                 )}
 

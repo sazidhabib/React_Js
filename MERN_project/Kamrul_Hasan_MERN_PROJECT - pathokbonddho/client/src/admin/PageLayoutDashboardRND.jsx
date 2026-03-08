@@ -513,7 +513,7 @@ const PreviewCellContent = ({ contentType, contentId, contentTitle }) => {
                     // For video, contentId might be a YouTube URL or video ID
                     setData({ videoId: contentId, title: contentTitle });
                 } else if (contentType === 'ad') {
-                    const response = await axios.get(`${API_URL}/api/ad/${contentId}`);
+                    const response = await axios.get(`${API_URL}/api/ads/${contentId}`);
                     setData(response.data.data || response.data);
                 }
             } catch (err) {
@@ -1152,7 +1152,8 @@ const ExcelGridSection = ({
     availableTags,
     availableDesigns, // Accept availableDesigns prop
     globalAutoNewsSelection = false, // Accept global auto news flag
-    sectionAutoNewsData = {} // Accept auto news data for this section
+    sectionAutoNewsData = {}, // Accept auto news data for this section
+    menus // Accept menus prop
 }) => {
     const [selectedCells, setSelectedCells] = useState(new Set()); // Store multiple selected cells
     const [selectionStart, setSelectionStart] = useState(null);
@@ -1526,12 +1527,26 @@ const ExcelGridSection = ({
             </Card.Header>
             <Card.Body>
                 <Form.Group className="mb-3">
-                    <Form.Label>Section Name</Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={section.name || `Section ${sectionIndex + 1}`}
-                        onChange={(e) => onUpdateSection(sectionIndex, 'name', e.target.value)}
-                    />
+                    <Form.Label>Section Name (Menu Category)</Form.Label>
+                    <Form.Select
+                        value={section.name || ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val) {
+                                const selectedMenu = menus.find(m => m.name === val);
+                                onUpdateSection(sectionIndex, { name: val, menuSlug: selectedMenu?.path || '' });
+                            } else {
+                                onUpdateSection(sectionIndex, { name: '', menuSlug: '' });
+                            }
+                        }}
+                    >
+                        <option value="">No menu selection</option>
+                        {menus.map((menu) => (
+                            <option key={menu.id} value={menu.name}>
+                                {menu.name}
+                            </option>
+                        ))}
+                    </Form.Select>
                 </Form.Group>
 
                 {/* Enhanced Merge Controls */}
@@ -1783,6 +1798,19 @@ const PageLayoutDashboard = () => {
         }
     };
 
+    const [menus, setMenus] = useState([]);
+    const fetchMenus = async () => {
+        try {
+            const response = await api.get('/menus');
+            const menusData = response.data.data || response.data.menus || response.data || [];
+            if (Array.isArray(menusData)) {
+                setMenus(menusData);
+            }
+        } catch (error) {
+            console.error('Error fetching menus:', error);
+        }
+    };
+
     const [availableDesigns, setAvailableDesigns] = useState([]);
     const [autoNewsData, setAutoNewsData] = useState({}); // State to store fetched news for auto mode
 
@@ -1802,6 +1830,7 @@ const PageLayoutDashboard = () => {
         if (isLoggedIn) {
             fetchUniqueTags();
             fetchDesigns();
+            fetchMenus();
         }
     }, [isLoggedIn]);
 
@@ -2959,9 +2988,16 @@ const PageLayoutDashboard = () => {
                                 key={section.id || sectionIndex}
                                 section={section}
                                 sectionIndex={sectionIndex}
+                                menus={menus}
                                 onUpdateSection={(idx, field, value) => {
                                     const updatedSections = JSON.parse(JSON.stringify(editPage.PageSections));
-                                    updatedSections[idx][field] = value;
+                                    if (typeof field === 'object') {
+                                        Object.keys(field).forEach(k => {
+                                            updatedSections[idx][k] = field[k];
+                                        });
+                                    } else {
+                                        updatedSections[idx][field] = value;
+                                    }
 
                                     // --- NEW LOGIC: Clear section cells if autoNews is turned OFF ---
                                     if (field === 'autoNewsSelection' && value === false) {

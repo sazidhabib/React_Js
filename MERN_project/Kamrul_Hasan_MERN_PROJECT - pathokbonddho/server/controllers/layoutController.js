@@ -11,6 +11,8 @@ exports.createPage = async (req, res) => {
                 name,
                 autoNewsSelection: autoNewsSelection || false,
                 PageSections: sections.map((section) => ({
+                    name: section.name,
+                    menuSlug: section.menuSlug,
                     layoutType: section.layoutType,
                     autoNewsSelection: section.autoNewsSelection || false,
                     Rows: section.rows.map((row) => ({
@@ -111,6 +113,8 @@ exports.updatePageLayout = async (req, res) => {
             // Create new sections with proper structure
             for (const [index, sectionData] of PageSections.entries()) {
                 console.log(`📦 Creating section ${index + 1}:`, {
+                    name: sectionData.name,
+                    menuSlug: sectionData.menuSlug,
                     layoutType: sectionData.layoutType,
                     autoNewsSelection: sectionData.autoNewsSelection,
                     rowsCount: sectionData.rows?.length,
@@ -131,6 +135,8 @@ exports.updatePageLayout = async (req, res) => {
                     }];
 
                 await PageSection.create({
+                    name: sectionData.name || null,
+                    menuSlug: sectionData.menuSlug || null,
                     layoutType: sectionData.layoutType || 'grid',
                     autoNewsSelection: sectionData.autoNewsSelection || false,
                     pageId: page.id,

@@ -83,7 +83,9 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
         <section className="py-4 bg-white mt-4 border-top">
             <Container>
                 <div className="section-header mb-4">
-                    <h2 className="casection-title border-bottom pb-2 font-bangla fw-bold">আরও খবর</h2>
+                    <div className="section-title-with-lines">
+                        <h2 className="title-text font-bangla">আরও খবর</h2>
+                    </div>
                 </div>
 
                 <div className="row g-4">

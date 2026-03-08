@@ -757,7 +757,7 @@ body {
 
 .section-title {
     text-align: center;
-    color: #ffffff;
+    color: rgb(0, 106, 96);
 }
 
 .casection-title {
@@ -1525,4 +1525,36 @@ footer {
         width: 70px;
         height: 50px;
     }
+}
+
+/* Custom Section Header Design with Lines on Sides */
+.section-title-with-lines {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+
+.section-title-with-lines::before,
+.section-title-with-lines::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #757575;
+    /* Dark gray line */
+}
+
+.section-title-with-lines:not(:empty)::before {
+    margin-right: 20px;
+}
+
+.section-title-with-lines:not(:empty)::after {
+    margin-left: 20px;
+}
+
+.section-title-with-lines .title-text {
+    color: #006a60;
+    font-weight: bold;
+    font-size: 32px;
+    margin-bottom: 0;
 }

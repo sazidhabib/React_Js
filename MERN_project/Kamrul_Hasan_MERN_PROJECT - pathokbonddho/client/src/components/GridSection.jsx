@@ -63,7 +63,7 @@ const GridSection = ({ section }) => {
             <Container>
                 {section.name && !section.name.startsWith('Section') && (
                     <div className="section-header mb-3">
-                        <div className="text-center" style={{ backgroundColor: '#006a60' }}>
+                        <div className="text-center">
                             {(() => {
                                 const trimmedName = section.name?.trim();
                                 const resolvedSlug = section.menuSlug || menus.find(m =>
@@ -83,14 +83,14 @@ const GridSection = ({ section }) => {
                                 return (
                                     <Link
                                         to={targetTo}
-                                        className="text-decoration-none text-dark d-inline-block"
+                                        className="text-decoration-none section-title-with-lines"
                                         onClick={(e) => {
                                             if (targetTo === '#') e.preventDefault();
                                             console.log(`🔗 Navigating to: ${targetTo}`);
                                         }}
                                         style={{ position: 'relative', zIndex: 5 }}
                                     >
-                                        <h2 className="section-title border-bottom py-2 mb-0">{section.name}</h2>
+                                        <h2 className="title-text font-bangla">{section.name}</h2>
                                     </Link>
                                 );
                             })()}

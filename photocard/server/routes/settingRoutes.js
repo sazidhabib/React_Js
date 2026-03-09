@@ -5,10 +5,16 @@ const settingController = require('../controllers/settingController');
 const multer = require('multer');
 const path = require('path');
 
+const fs = require('fs');
+
 // Configure Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Ensure this directory exists
+        const uploadPath = path.join(__dirname, '../uploads'); // Use absolute path
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
         cb(null, 'setting-' + file.fieldname + '-' + Date.now() + path.extname(file.originalname));

@@ -14,7 +14,8 @@ initDb();
 const corsOptions = {
     origin: [
         'https://photocard.nextideasolution.com',
-        'http://localhost:5173' // for local development
+        'https://card.deshprobaho.com/',
+        'http://localhost:5000' // for local development
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -53,4 +54,13 @@ app.use('/api/categories', categoryRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+});
+
+// Serve static files from the React client
+const clientBuildPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientBuildPath));
+
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
 });

@@ -1,20 +1,14 @@
 <IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
+  RewriteEngine On
+  RewriteBase /
 
-    # 1. First, handle image requests - serve from photoc_sever/uploads
-    # Try to serve actual files from photoc_sever first
-    RewriteCond %{REQUEST_URI} ^/uploads/(.*)$
-    RewriteCond /home/[YOUR_USERNAME]/photoc_sever/uploads/$1 -f
-    RewriteRule ^uploads/(.*)$ /home/[YOUR_USERNAME]/photoc_sever/uploads/$1 [L]
+  # 1. Proxy API requests to Node.js server
+  RewriteRule ^api/(.*)$ http://localhost:5000/api/$1 [P,L]
 
-    # 2. Proxy API requests to Node.js server
-    RewriteRule ^api/(.*)$ http://localhost:5000/api/$1 [P,L]
-
-    # 3. React Router rules
-    RewriteRule ^index\.html$ - [L]
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-l
-    RewriteRule . /index.html [L]
+  # 2. React Router rules
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-l
+  RewriteRule . /index.html [L]
 </IfModule>

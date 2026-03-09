@@ -39,12 +39,20 @@ const initDb = async () => {
 
         console.log('Initializing database...');
 
+
         // Pre-Migration: Fix ph_settings column name BEFORE running schema
         try {
             const [settingsCols] = await pool.query("SHOW COLUMNS FROM ph_settings LIKE 'site_title'");
             if (settingsCols.length > 0) {
                 console.log('Migrating: Renaming site_title to site_name in ph_settings...');
                 await pool.query("ALTER TABLE ph_settings CHANGE site_title site_name VARCHAR(255) DEFAULT 'Photo Card BD'");
+            }
+
+            // Rename contact_email to support_email
+            const [emailCols] = await pool.query("SHOW COLUMNS FROM ph_settings LIKE 'contact_email'");
+            if (emailCols.length > 0) {
+                console.log('Migrating: Renaming contact_email to support_email in ph_settings...');
+                await pool.query("ALTER TABLE ph_settings CHANGE contact_email support_email VARCHAR(255)");
             }
         } catch (e) {
             // Table doesn't exist yet, which is fine
@@ -58,6 +66,25 @@ const initDb = async () => {
 
         // Simple Migration to add columns if they don't exist (since CREATE TABLE IF NOT EXISTS won't do it)
         try {
+            // Check specific ph_settings columns
+            const checkAndAddColumn = async (table, column, definition) => {
+                const [cols] = await pool.query(`SHOW COLUMNS FROM ${table} LIKE '${column}'`);
+                if (cols.length === 0) {
+                    console.log(`Migrating: Adding ${column} column to ${table}...`);
+                    await pool.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+                }
+            };
+
+            await checkAndAddColumn('ph_settings', 'site_description', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'facebook_url', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'youtube_url', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'website_url', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'address_text', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'support_email', 'VARCHAR(255)');
+            await checkAndAddColumn('ph_settings', 'logo_url', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'favicon_url', 'TEXT');
+            await checkAndAddColumn('ph_settings', 'helpline_number', "VARCHAR(50) DEFAULT '01880578893'");
+            await checkAndAddColumn('ph_settings', 'footer_text', "VARCHAR(255) DEFAULT '© 2026 Photo Card BD. All rights reserved.'");
             await pool.query(`
                 CREATE TABLE IF NOT EXISTS ph_categories (
                     id INT AUTO_INCREMENT PRIMARY KEY,

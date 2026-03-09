@@ -40,7 +40,7 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                 maxImpressions: ad.maxImpressions || ''
             });
             if (ad.image) {
-                setImagePreview(`${baseUrl}/uploads/${ad.image}`);
+                setImagePreview(`${baseUrl}/uploads/ads/${ad.image}`);
             }
         }
     }, [ad]);
@@ -135,10 +135,14 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                 }
 
                 // Handle specific fields
-                if (key === 'displayPages' && value) {
-                    // Convert comma-separated pages to array
-                    const pages = value.split(',').map(page => page.trim()).filter(page => page);
-                    submitData.append(key, JSON.stringify(pages));
+                if (key === 'displayPages') {
+                    if (value && value !== 'none') {
+                        submitData.append(key, JSON.stringify([value]));
+                    } else if (value === 'none') {
+                        submitData.append(key, JSON.stringify(['none']));
+                    } else {
+                        submitData.append(key, '[]');
+                    }
                 } else if (key === 'maxImpressions') {
                     // Convert empty string to null for maxImpressions
                     if (value === '' || value === null) {
@@ -384,17 +388,20 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                                 <label htmlFor="displayPages" className="form-label">
                                     Display Pages
                                 </label>
-                                <input
-                                    type="text"
-                                    className="form-control"
+                                <select
+                                    className="form-select"
                                     id="displayPages"
                                     name="displayPages"
                                     value={formData.displayPages}
                                     onChange={handleInputChange}
-                                    placeholder="home, about, contact (comma separated)"
-                                />
+                                >
+                                    <option value="">All Pages</option>
+                                    <option value="home">Home Page</option>
+                                    <option value="details">Details Page</option>
+                                    <option value="none">No Page</option>
+                                </select>
                                 <div className="form-text">
-                                    Leave empty to show on all pages
+                                    Select which page this ad should appear on
                                 </div>
                             </div>
                         </div>

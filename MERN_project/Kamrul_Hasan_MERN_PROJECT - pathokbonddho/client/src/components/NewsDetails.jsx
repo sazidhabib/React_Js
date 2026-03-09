@@ -8,8 +8,10 @@ const NewsDetails = () => {
     const { id } = useParams();
     const [news, setNews] = useState(null);
     const [loading, setLoading] = useState(true);
+
     const [error, setError] = useState(null);
     const [relatedNews, setRelatedNews] = useState([]);
+    const [sidebarAds, setSidebarAds] = useState([]);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -32,6 +34,25 @@ const NewsDetails = () => {
 
                 const relatedRes = await axios.get(`${API_BASE_URL}/api/news`, { params: relatedParams });
                 setRelatedNews(relatedRes.data.news || relatedRes.data.rows || []);
+
+                // Fetch sidebar ads for details page
+                try {
+                    const adsRes = await axios.get(`${API_BASE_URL}/api/ads/position`, {
+                        params: { position: 'sidebar', page: 'details' }
+                    });
+                    const fetchedAds = adsRes.data || [];
+                    setSidebarAds(fetchedAds);
+
+                    // Record impressions for loaded ads
+                    fetchedAds.forEach(ad => {
+                        const adId = ad.id || ad._id;
+                        if (adId) {
+                            axios.post(`${API_BASE_URL}/api/ads/${adId}/impression`).catch(err => console.error('Impression error:', err));
+                        }
+                    });
+                } catch (err) {
+                    console.error('Error fetching ads:', err);
+                }
 
             } catch (err) {
                 console.error('Error fetching news details:', err);
@@ -148,15 +169,17 @@ const NewsDetails = () => {
 
                         {/* Hero Image */}
                         {leadImageUrl && (
-                            <div className="hero-image-wrapper mb-4 rounded shadow-sm overflow-hidden bg-light" style={{ maxHeight: '500px' }}>
-                                <img
-                                    src={leadImageUrl}
-                                    alt={news.imageCaption || news.newsHeadline}
-                                    className="w-100 h-100 object-fit-cover"
-                                    style={{ width: '100%', display: 'block' }}
-                                />
+                            <div className="mb-4">
+                                <div className="hero-image-wrapper rounded shadow-sm overflow-hidden bg-light" style={{ maxHeight: '500px' }}>
+                                    <img
+                                        src={leadImageUrl}
+                                        alt={news.imageCaption || news.newsHeadline}
+                                        className="w-100 object-fit-cover"
+                                        style={{ maxHeight: '500px', display: 'block' }}
+                                    />
+                                </div>
                                 {news.imageCaption && (
-                                    <p className="text-muted small text-center my-2 font-bangla px-3 fst-italic">
+                                    <p className="text-muted small text-center mt-2 font-bangla px-3 fst-italic">
                                         {news.imageCaption}
                                     </p>
                                 )}
@@ -164,14 +187,29 @@ const NewsDetails = () => {
                         )}
 
                         {/* Article Body Content */}
+                        <style>
+                            {`
+                                .article-body {
+                                    color: #333;
+                                    word-wrap: break-word;
+                                    line-height: 1.9;
+                                }
+                                .article-body p, 
+                                .article-body p span, 
+                                .article-body p * {
+                                    font-size: 1.2rem !important;
+                                    line-height: inherit !important;
+                                }
+                                .article-body p:first-of-type,
+                                .article-body p:first-of-type span,
+                                .article-body p:first-of-type * {
+                                    font-size: 1.2rem !important;
+                                    font-weight: 500 !important;
+                                }
+                            `}
+                        </style>
                         <div
-                            className="article-body font-bangla editor-content"
-                            style={{
-                                fontSize: '1.2rem',
-                                lineHeight: '1.9',
-                                color: '#333',
-                                wordWrap: 'break-word',
-                            }}
+                            className="article-body font-bangla custom-font editor-content"
                             dangerouslySetInnerHTML={{ __html: news.content }}
                         />
 
@@ -194,13 +232,47 @@ const NewsDetails = () => {
                     <Col lg={4} className="sidebar-column">
                         <div className="sticky-top" style={{ top: '100px', zIndex: 1 }}>
 
-                            {/* Optional Ad Space in Sidebar */}
-                            <div className="my-4 p-4 bg-light text-center border rounded d-flex align-items-center justify-content-center flex-column" style={{ minHeight: '250px' }}>
-                                <span className="text-muted small mb-2">- Advertisement -</span>
-                                <div className="text-muted opacity-50">
-                                    <i className="bi bi-badge-ad fs-1"></i>
+                            {/* Dynamic Sidebar Ads */}
+                            {sidebarAds.length > 0 ? (
+                                sidebarAds.map((ad, idx) => {
+                                    const adImage = ad.image;
+                                    const imgSrc = adImage ? (adImage.startsWith('http') ? adImage : `${API_BASE_URL}/uploads/ads/${adImage}`) : null;
+
+                                    return (
+                                        <div key={ad.id || idx} className="my-4 text-center">
+                                            {ad.type === 'google_adsense' ? (
+                                                <div className="w-100 overflow-hidden">
+                                                    {ad.headCode && <div dangerouslySetInnerHTML={{ __html: ad.headCode }} />}
+                                                    {ad.bodyCode && <div dangerouslySetInnerHTML={{ __html: ad.bodyCode }} />}
+                                                </div>
+                                            ) : (
+                                                imgSrc && (
+                                                    <a
+                                                        href={ad.imageUrl || '#'}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={() => {
+                                                            const adId = ad.id || ad._id;
+                                                            if (adId) {
+                                                                axios.post(`${API_BASE_URL}/api/ads/${adId}/click`).catch(err => console.error('Click error:', err));
+                                                            }
+                                                        }}
+                                                    >
+                                                        <img src={imgSrc} alt={ad.name || 'Advertisement'} className="w-100 img-fluid rounded shadow-sm" style={{ objectFit: 'contain' }} />
+                                                    </a>
+                                                )
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="my-4 p-4 bg-light text-center border rounded d-flex align-items-center justify-content-center flex-column" style={{ minHeight: '250px' }}>
+                                    <span className="text-muted small mb-2">- Advertisement -</span>
+                                    <div className="text-muted opacity-50">
+                                        <i className="bi bi-badge-ad fs-1"></i>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <div className="section-header mb-4">
                                 <div className="section-title-with-lines">
@@ -243,9 +315,6 @@ const NewsDetails = () => {
                                     <p className="text-muted small text-center font-bangla py-3 bg-light rounded">No related news found.</p>
                                 )}
                             </div>
-
-
-
                         </div>
                     </Col>
                 </Row>

@@ -49,11 +49,11 @@ const createAd = async (req, res) => {
         const imagePath = req.file ? req.file.filename : null;
 
         // Parse displayPages if provided
-        let parsedDisplayPages = null;
-        if (displayPages) {
+        let displayPagesToSave = null;
+        if (displayPages && displayPages !== '[]' && displayPages !== 'null' && displayPages !== '') {
             try {
-                parsedDisplayPages = typeof displayPages === 'string' ?
-                    JSON.parse(displayPages) : displayPages;
+                const parsed = typeof displayPages === 'string' ? JSON.parse(displayPages) : displayPages;
+                displayPagesToSave = JSON.stringify(parsed);
             } catch (error) {
                 return res.status(400).json({ message: "Invalid displayPages format" });
             }
@@ -76,7 +76,7 @@ const createAd = async (req, res) => {
             headCode: type === 'google_adsense' ? headCode : null,
             bodyCode: type === 'google_adsense' ? bodyCode : null,
             position,
-            displayPages: parsedDisplayPages ? JSON.stringify(parsedDisplayPages) : null,
+            displayPages: displayPagesToSave,
             startDate: startDate || null,
             endDate: endDate || null,
             isActive: isActive === "true" || isActive === true,
@@ -362,18 +362,21 @@ const updateAd = async (req, res) => {
         }
 
         // Parse displayPages if provided
-        let parsedDisplayPages = null;
-        if (displayPages) {
-            try {
-                parsedDisplayPages = typeof displayPages === 'string' ?
-                    JSON.parse(displayPages) : displayPages;
-            } catch (error) {
-                console.log('Error parsing displayPages, using as string:', error.message);
-                parsedDisplayPages = displayPages;
+        let displayPagesToSave = existingAd.displayPages;
+        if (displayPages !== undefined) {
+            if (displayPages === '[]' || displayPages === '' || displayPages === 'null') {
+                displayPagesToSave = null; // Clear it
+            } else {
+                try {
+                    const parsed = typeof displayPages === 'string' ? JSON.parse(displayPages) : displayPages;
+                    displayPagesToSave = JSON.stringify(parsed);
+                } catch (error) {
+                    console.log('Error parsing displayPages, using existing:', error.message);
+                    displayPagesToSave = displayPages;
+                }
             }
         }
 
-        // Prepare update data
         // Prepare update data
         const updateData = {
             name: name || existingAd.name,
@@ -383,11 +386,11 @@ const updateAd = async (req, res) => {
             imageUrl: imageUrl !== undefined ? imageUrl : existingAd.imageUrl,
             headCode: headCode !== undefined ? headCode : existingAd.headCode,
             bodyCode: bodyCode !== undefined ? bodyCode : existingAd.bodyCode,
-            displayPages: parsedDisplayPages ? JSON.stringify(parsedDisplayPages) : existingAd.displayPages,
+            displayPages: displayPagesToSave,
             startDate: startDate !== undefined ? startDate : existingAd.startDate,
             endDate: endDate !== undefined ? endDate : existingAd.endDate,
             isActive: parsedIsActive,
-            maxImpressions: parsedMaxImpressions, // Use the parsed value
+            maxImpressions: parsedMaxImpressions,
         };
 
         // Only update image if a new one is uploaded

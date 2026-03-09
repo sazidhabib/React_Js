@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
 const AdWidget = ({ cell }) => {
@@ -6,6 +6,45 @@ const AdWidget = ({ cell }) => {
     const [loading, setLoading] = useState(true);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+    // Detect current page context
+    const currentPage = useMemo(() => {
+        const path = window.location.pathname;
+        if (path === '/') return 'home';
+        if (path.startsWith('/news/')) return 'details';
+        return path.split('/')[1] || 'unknown';
+    }, []);
+
+    // Parse displayPages from the ad data
+    const displayPages = useMemo(() => {
+        if (!ad || !ad.displayPages) return [];
+        let pages = ad.displayPages;
+        if (typeof pages === 'string') {
+            try {
+                pages = JSON.parse(pages);
+                // Handle double-stringified arrays
+                if (typeof pages === 'string') {
+                    pages = JSON.parse(pages);
+                }
+            } catch (e) {
+                console.warn('Could not parse displayPages:', ad.displayPages);
+                return [];
+            }
+        }
+        return Array.isArray(pages) ? pages : [];
+    }, [ad]);
+
+    // Check if ad should be visible on current page
+    const shouldShowAd = useMemo(() => {
+        if (!ad) return false;
+        // No displayPages set = show on ALL pages
+        if (displayPages.length === 0) return true;
+        // "none" means don't show anywhere
+        if (displayPages.includes('none')) return false;
+        // Check if current page is in the allowed list
+        return displayPages.includes(currentPage);
+    }, [ad, displayPages, currentPage]);
+
+    // Fetch ad data
     useEffect(() => {
         const fetchAd = async () => {
             if (!cell.contentId) {
@@ -25,6 +64,15 @@ const AdWidget = ({ cell }) => {
         fetchAd();
     }, [cell.contentId, API_BASE_URL]);
 
+    // Fire impression tracking when ad renders and is visible
+    useEffect(() => {
+        if (ad && ad.id && shouldShowAd) {
+            axios.post(`${API_BASE_URL}/api/ads/${ad.id}/impression`).catch(() => { });
+        }
+    }, [ad, API_BASE_URL, shouldShowAd]);
+
+    // --- All hooks are above, conditional returns below ---
+
     if (loading) {
         return (
             <div className="text-center p-3">
@@ -37,11 +85,14 @@ const AdWidget = ({ cell }) => {
 
     if (!ad) return null;
 
+    // Don't render if ad is not meant for this page
+    if (!shouldShowAd) return null;
+
     const adImage = ad.image;
     const adTitle = ad.title || ad.name || cell.contentTitle || 'Advertisement';
     const adLink = ad.imageUrl || ad.link || ad.url || '#';
     const imgSrc = adImage
-        ? (adImage.startsWith('http') ? adImage : `${API_BASE_URL}/uploads/${adImage}`)
+        ? (adImage.startsWith('http') ? adImage : `${API_BASE_URL}/uploads/ads/${adImage}`)
         : null;
 
     if (ad.type === 'google_adsense') {
@@ -54,7 +105,7 @@ const AdWidget = ({ cell }) => {
     }
 
     const content = (
-        <div className="ad-widget h-100  overflow-hidden" style={{ backgroundColor: '#ffffffff' }}>
+        <div className="ad-widget h-100 overflow-hidden" style={{ backgroundColor: '#ffffffff' }}>
             {imgSrc && (
                 <div style={{ overflow: 'hidden' }}>
                     <img
@@ -72,7 +123,17 @@ const AdWidget = ({ cell }) => {
     // Wrap in a link if URL exists
     if (adLink && adLink !== '#') {
         return (
-            <a href={adLink} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+            <a
+                href={adLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-decoration-none"
+                onClick={() => {
+                    if (ad && ad.id) {
+                        axios.post(`${API_BASE_URL}/api/ads/${ad.id}/click`).catch(() => { });
+                    }
+                }}
+            >
                 {content}
             </a>
         );

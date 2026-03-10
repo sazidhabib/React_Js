@@ -8,6 +8,7 @@ const NewsDetails = () => {
     const { id } = useParams();
     const [news, setNews] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [fontSize, setFontSize] = useState(19);
 
     const [error, setError] = useState(null);
     const [relatedNews, setRelatedNews] = useState([]);
@@ -80,9 +81,13 @@ const NewsDetails = () => {
         if (!dateStr) return '';
         return new Date(dateStr).toLocaleDateString('bn-BD', {
             year: 'numeric', month: 'long', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
+            hour: '2-digit', minute: '2-digit', hour12: false
         });
     };
+
+    const increaseFontSize = () => setFontSize(prev => Math.min(prev + 1, 22));
+    const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 1, 14));
+    const handlePrint = () => window.print();
 
     if (loading) {
         return (
@@ -123,12 +128,18 @@ const NewsDetails = () => {
                     {/* LEFT COLUMN: Main Article (col-lg-8) */}
                     <Col lg={8} className="main-article-column">
 
-                        {/* Categories Badge */}
+                        {/* Categories Badge (Clickable Breadcrumb) */}
                         <div className="mb-3">
                             {news.Categories && news.Categories.map(cat => (
-                                <Badge bg="danger" className="me-2 px-3 py-2 font-bangla rounded-pill shadow-sm" key={cat.id || cat._id}>
-                                    {cat.name}
-                                </Badge>
+                                <Link
+                                    to={`/${cat.path}`}
+                                    key={cat.id || cat._id}
+                                    className="text-decoration-none"
+                                >
+                                    <Badge bg="danger" className="me-2 px-3 py-2 font-bangla rounded-pill shadow-sm" style={{ cursor: 'pointer' }}>
+                                        {cat.name}
+                                    </Badge>
+                                </Link>
                             ))}
                         </div>
 
@@ -158,12 +169,43 @@ const NewsDetails = () => {
                                 </div>
                             </div>
 
-                            {/* Social Sharing (Static UI for now) */}
-                            <div className="social-sharing-icons mt-2 mt-md-0">
-                                <span className="me-2 text-muted small">শেয়ার করুন:</span>
-                                <button className="btn btn-sm btn-light rounded-circle me-2 shadow-sm border"><i className="fab fa-facebook-f text-primary"></i></button>
-                                <button className="btn btn-sm btn-light rounded-circle me-2 shadow-sm border"><i className="fab fa-twitter text-info"></i></button>
-                                <button className="btn btn-sm btn-light rounded-circle shadow-sm border"><i className="fab fa-whatsapp text-success"></i></button>
+                            {/* Tools: Font Size, Print, Sharing */}
+                            <div className="d-flex align-items-center gap-2 mt-2 mt-md-0 flex-wrap">
+                                {/* Font Size Controls */}
+                                <div className="d-flex align-items-center border rounded-pill px-2 py-1 no-print">
+                                    <button
+                                        className="btn btn-sm p-0 px-2 border-0"
+                                        onClick={decreaseFontSize}
+                                        disabled={fontSize <= 14}
+                                        title="ফন্ট ছোট করুন"
+                                    >
+                                        <i className="fas fa-minus"></i>
+                                    </button>
+                                    {/* <span className="mx-1 fw-bold" style={{ minWidth: '28px', textAlign: 'center', fontSize: '14px', color: '#333' }}>{fontSize}</span> */}
+                                    <button
+                                        className="btn btn-sm p-0 px-2 border-0"
+                                        onClick={increaseFontSize}
+                                        disabled={fontSize >= 22}
+                                        title="ফন্ট বড় করুন"
+                                    >
+                                        <i className="fas fa-plus"></i>
+                                    </button>
+                                </div>
+
+                                {/* Print Button */}
+                                <button
+                                    className="btn btn-sm btn-light rounded-circle shadow-sm border no-print"
+                                    onClick={handlePrint}
+                                    title="প্রিন্ট করুন"
+                                >
+                                    <i className="fas fa-print"></i>
+                                </button>
+
+                                {/* Social Sharing */}
+                                <span className="me-1 text-muted small no-print">শেয়ার:</span>
+                                <button className="btn btn-sm btn-light rounded-circle me-1 shadow-sm border no-print"><i className="fab fa-facebook-f text-primary"></i></button>
+                                <button className="btn btn-sm btn-light rounded-circle me-1 shadow-sm border no-print"><i className="fab fa-twitter text-info"></i></button>
+                                <button className="btn btn-sm btn-light rounded-circle shadow-sm border no-print"><i className="fab fa-whatsapp text-success"></i></button>
                             </div>
                         </div>
 
@@ -197,14 +239,39 @@ const NewsDetails = () => {
                                 .article-body p, 
                                 .article-body p span, 
                                 .article-body p * {
-                                    font-size: 1.2rem !important;
+                                    font-size: ${fontSize}px !important;
                                     line-height: inherit !important;
                                 }
                                 .article-body p:first-of-type,
                                 .article-body p:first-of-type span,
                                 .article-body p:first-of-type * {
-                                    font-size: 1.2rem !important;
+                                    font-size: ${fontSize}px !important;
                                     font-weight: 500 !important;
+                                }
+
+                                /* Print styles */
+                                @media print {
+                                    body * {
+                                        visibility: hidden;
+                                    }
+                                    .news-details-page,
+                                    .news-details-page .main-article-column,
+                                    .news-details-page .main-article-column * {
+                                        visibility: visible;
+                                    }
+                                    .news-details-page .main-article-column {
+                                        position: absolute;
+                                        left: 0;
+                                        top: 0;
+                                        width: 100%;
+                                    }
+                                    .no-print,
+                                    .sidebar-column,
+                                    .social-sharing-icons,
+                                    header,
+                                    footer {
+                                        display: none !important;
+                                    }
                                 }
                             `}
                         </style>
@@ -215,15 +282,13 @@ const NewsDetails = () => {
 
                         {/* Article Tags */}
                         {news.Tags && news.Tags.length > 0 && (
-                            <div className="flex items-center mt-5 pt-4 border-top">
-                                <h6 className="fw-bold mb-3 font-bangla text-muted">ট্যাগ:</h6>
-                                <div className=" gap-2">
-                                    {news.Tags.map(tag => (
-                                        <span key={tag.id || tag._id} className="badge bg-light text-dark border px-3 py-2 font-bangla">
-                                            #{tag.name}
-                                        </span>
-                                    ))}
-                                </div>
+                            <div className="d-flex align-items-center flex-wrap gap-2 mt-5 pt-4 border-top">
+                                <h6 className="fw-bold mb-0 font-bangla text-muted me-2">ট্যাগ:</h6>
+                                {news.Tags.map(tag => (
+                                    <span key={tag.id || tag._id} className="badge bg-light text-dark border px-3 py-2 custom-font font-bangla">
+                                        #{tag.name}
+                                    </span>
+                                ))}
                             </div>
                         )}
                     </Col>

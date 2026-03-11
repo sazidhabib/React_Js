@@ -190,7 +190,7 @@ const Header = () => {
           <div className={`main-navbar-custom ${showScrollingNavbar ? 'sticky' : ''}`}>
             <div className="inside_main container">
               <Link to="/" className="logo-container">
-                <img src="/images/logo.png" alt="Pathokbonddho Logo" className="logo-logo" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                <img src="/images/Logo.png" alt="Pathokbonddho Logo" className="logo-logo" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
                 <span style={{ display: 'none', color: '#006a60', fontSize: '28px', fontWeight: 'bold' }}>পাঠকবন্ধু</span>
               </Link>
               <ul className="nav-custom-links">

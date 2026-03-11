@@ -63,6 +63,15 @@ const NewsWidget = ({ cell }) => {
             : baseHeight;
     };
 
+    // Render category badge content: icon for ছবি/ভিডিও, text for others
+    const renderCategoryBadgeContent = (category) => {
+        if (!category) return null;
+        const name = category.name?.trim();
+        if (name === 'ছবি') return <i className="fas fa-camera" title="ছবি"></i>;
+        if (name === 'ভিডিও') return <i className="fas fa-video" title="ভিডিও"></i>;
+        return name;
+    };
+
     if (loading) {
         return <div className="text-center p-2"><Spinner animation="border" size="sm" /></div>;
     }
@@ -114,7 +123,7 @@ const NewsWidget = ({ cell }) => {
                 </Link>
                 {news.Categories && news.Categories[0] && (
                     <Badge bg="danger" className="position-absolute top-0 start-0 m-2" style={{ zIndex: 2 }}>
-                        {news.Categories[0].name}
+                        {renderCategoryBadgeContent(news.Categories[0])}
                     </Badge>
                 )}
             </div>
@@ -147,7 +156,7 @@ const NewsWidget = ({ cell }) => {
                     {imageUrl && (
                         <div className="news-side-image-wrapper flex-shrink-0">
                             {news.Categories && news.Categories[0] && (
-                                <Badge bg="danger" className="position-absolute start-0 m-2">{news.Categories[0].name}</Badge>
+                                <Badge bg="danger" className="position-absolute start-0 m-2">{renderCategoryBadgeContent(news.Categories[0])}</Badge>
                             )}
                             <Link to={newsLink}>
                                 <img
@@ -185,7 +194,7 @@ const NewsWidget = ({ cell }) => {
                     {imageUrl && (
                         <div className="news-side-image-wrapper flex-shrink-0">
                             {news.Categories && news.Categories[0] && (
-                                <Badge bg="danger" className="position-absolute end-0 m-2">{news.Categories[0].name}</Badge>
+                                <Badge bg="danger" className="position-absolute end-0 m-2">{renderCategoryBadgeContent(news.Categories[0])}</Badge>
                             )}
                             <Link to={newsLink}>
                                 <img
@@ -238,7 +247,7 @@ const NewsWidget = ({ cell }) => {
                     </Link>
                     {news.Categories && news.Categories[0] && (
                         <Badge bg="danger" className="position-absolute top-0 start-0 m-2">
-                            {news.Categories[0].name}
+                            {renderCategoryBadgeContent(news.Categories[0])}
                         </Badge>
                     )}
                 </div>
@@ -264,7 +273,7 @@ const NewsWidget = ({ cell }) => {
                     <div className="news-compact-image-wrapper flex-shrink-0">
                         {news.Categories && news.Categories[0] && (
                             <Badge bg="danger" className="position-absolute start-0 m-2">
-                                {news.Categories[0].name}
+                                {renderCategoryBadgeContent(news.Categories[0])}
                             </Badge>
                         )}
                         <Link to={newsLink}>
@@ -295,7 +304,7 @@ const NewsWidget = ({ cell }) => {
                     <div className="news-compact-image-wrapper flex-shrink-0">
                         {news.Categories && news.Categories[0] && (
                             <Badge bg="danger" className="position-absolute top-0 end-0 m-2">
-                                {news.Categories[0].name}
+                                {renderCategoryBadgeContent(news.Categories[0])}
                             </Badge>
                         )}
                         <Link to={newsLink}>
@@ -346,7 +355,7 @@ const NewsWidget = ({ cell }) => {
                 </Link>
                 {news.Categories && news.Categories[0] && (
                     <Badge bg="danger" className="position-absolute top-0 start-0 m-2">
-                        {news.Categories[0].name}
+                        {renderCategoryBadgeContent(news.Categories[0])}
                     </Badge>
                 )}
             </div>

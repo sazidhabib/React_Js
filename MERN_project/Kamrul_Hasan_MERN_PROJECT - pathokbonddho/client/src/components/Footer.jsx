@@ -100,7 +100,7 @@ const Footer = () => {
                                 নীতিমালা
                             </a>
                             <span className="text-secondary opacity-50">|</span>
-                            <Link className="text-light text-decoration-none opacity-75 small transition hover-opacity" style={{ transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.75} to="/about">
+                            <Link className="text-light text-decoration-none opacity-75 small transition hover-opacity" style={{ transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = 1} onMouseOut={e => e.currentTarget.style.opacity = 0.75} to="/about-us">
                                 আমাদের সম্পর্কে
                             </Link>
                         </div>

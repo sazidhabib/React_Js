@@ -26,6 +26,7 @@ import NewsList from "./admin/NewsList";
 import NewsEdit from "./admin/NewsEdit";
 import NewsLayout from "./layouts/NewsLayout";
 import NewsDetails from "./components/NewsDetails";
+import AboutUsPage from "./components/AboutUsPage";
 
 
 
@@ -38,6 +39,9 @@ const AppRoutes = () => {
         <Route path="/news" element={<NewsLayout />}>
           <Route path=":id" element={<NewsDetails />} />
         </Route>
+
+        {/* About Us Page */}
+        <Route path="/about-us" element={<AboutUsPage />} />
 
         {/* Home Page Layout */}
         <Route path="/*" element={<HomeLayout />} />

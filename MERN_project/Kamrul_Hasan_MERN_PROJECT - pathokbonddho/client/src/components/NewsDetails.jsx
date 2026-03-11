@@ -89,6 +89,13 @@ const NewsDetails = () => {
     const decreaseFontSize = () => setFontSize(prev => Math.max(prev - 1, 14));
     const handlePrint = () => window.print();
 
+    const getYouTubeId = (url) => {
+        if (!url) return null;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
     if (loading) {
         return (
             <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
@@ -209,24 +216,46 @@ const NewsDetails = () => {
                             </div>
                         </div>
 
-                        {/* Hero Image */}
-                        {leadImageUrl && (
-                            <div className="mb-4">
-                                <div className="hero-image-wrapper rounded shadow-sm overflow-hidden bg-light" style={{ maxHeight: '500px' }}>
-                                    <img
-                                        src={leadImageUrl}
-                                        alt={news.imageCaption || news.newsHeadline}
-                                        className="w-100 object-fit-cover"
-                                        style={{ maxHeight: '500px', display: 'block' }}
-                                    />
+                        {/* Hero Image or Video Player */}
+                        {(() => {
+                            const isVideoCategory = news.Categories && news.Categories.some(cat => cat.name === 'ভিডিও' || cat.path === 'video');
+                            const youtubeId = getYouTubeId(news.videoLink);
+
+                            if (isVideoCategory && youtubeId) {
+                                return (
+                                    <div className="mb-4 no-print">
+                                        <div className="video-responsive rounded shadow-sm overflow-hidden bg-black" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+                                            <iframe
+                                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0`}
+                                                title={news.newsHeadline}
+                                                frameBorder="0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            ></iframe>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            return leadImageUrl && (
+                                <div className="mb-4">
+                                    <div className="hero-image-wrapper rounded shadow-sm overflow-hidden bg-light" style={{ maxHeight: '500px' }}>
+                                        <img
+                                            src={leadImageUrl}
+                                            alt={news.imageCaption || news.newsHeadline}
+                                            className="w-100 object-fit-cover"
+                                            style={{ maxHeight: '500px', display: 'block' }}
+                                        />
+                                    </div>
+                                    {news.imageCaption && (
+                                        <p className="text-muted small text-center mt-2 font-bangla px-3 fst-italic">
+                                            {news.imageCaption}
+                                        </p>
+                                    )}
                                 </div>
-                                {news.imageCaption && (
-                                    <p className="text-muted small text-center mt-2 font-bangla px-3 fst-italic">
-                                        {news.imageCaption}
-                                    </p>
-                                )}
-                            </div>
-                        )}
+                            );
+                        })()}
 
                         {/* Article Body Content */}
                         <style>

@@ -28,20 +28,22 @@ const upload = multer({
 });
 
 
-// Middleware to convert uploaded image to WebP - WITH ORIGINAL NAMES
-const convertToWebp = async (req, res, next) => {
+// Middleware to convert uploaded image to WebP - WITH SUBDIRECTORY SUPPORT
+const convertToWebp = (subdir = "") => async (req, res, next) => {
     try {
-        // Handle single file uploads (for blog, article, section images)
+        const uploadDir = subdir ? path.join("uploads", subdir) : "uploads";
+
+        // Ensure target directory exists
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // Handle single file uploads
         if (req.file) {
             const originalName = path.parse(req.file.originalname).name;
             const sanitizedOriginalName = sanitizeFilename(originalName);
             const filename = `${sanitizedOriginalName}-${Date.now()}.webp`;
-            const outputPath = path.join("uploads", filename);
-
-            // Ensure uploads directory exists
-            if (!fs.existsSync("uploads")) {
-                fs.mkdirSync("uploads", { recursive: true });
-            }
+            const outputPath = path.join(uploadDir, filename);
 
             // Convert buffer to webp using sharp
             await sharp(req.file.buffer)
@@ -51,23 +53,20 @@ const convertToWebp = async (req, res, next) => {
             // Attach file info for controller use
             req.file.filename = filename;
             req.file.path = outputPath;
-            req.file.originalname = filename; // Keep track of original name
+            req.file.originalname = filename;
         }
 
-        // Handle multiple file uploads (for photos)
-        else if (req.files && req.files.length > 0) {
-            // Ensure uploads directory exists
-            if (!fs.existsSync("uploads")) {
-                fs.mkdirSync("uploads", { recursive: true });
-            }
-
+        // Handle multiple file uploads
+        else if (req.files) {
             const processedFiles = [];
+            const filesToProcess = Array.isArray(req.files) ? req.files : 
+                                 Object.values(req.files).flat();
 
-            for (const file of req.files) {
+            for (const file of filesToProcess) {
                 const originalName = path.parse(file.originalname).name;
                 const sanitizedOriginalName = sanitizeFilename(originalName);
                 const filename = `${sanitizedOriginalName}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}.webp`;
-                const outputPath = path.join("uploads", filename);
+                const outputPath = path.join(uploadDir, filename);
 
                 // Convert buffer to webp using sharp
                 await sharp(file.buffer)
@@ -82,7 +81,18 @@ const convertToWebp = async (req, res, next) => {
                 processedFiles.push(file);
             }
 
-            req.files = processedFiles;
+            // Restore structure for upload.fields() if applicable
+            if (!Array.isArray(req.files)) {
+                const groupedFiles = {};
+                processedFiles.forEach(file => {
+                    const fieldName = file.fieldname;
+                    if (!groupedFiles[fieldName]) groupedFiles[fieldName] = [];
+                    groupedFiles[fieldName].push(file);
+                });
+                req.files = groupedFiles;
+            } else {
+                req.files = processedFiles;
+            }
         }
 
         next();

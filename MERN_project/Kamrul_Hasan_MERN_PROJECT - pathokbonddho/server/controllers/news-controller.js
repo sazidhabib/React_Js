@@ -128,9 +128,9 @@ const createNews = async (req, res) => {
         console.log('Final parsedCategoryIds:', parsedCategoryIds);
 
         // Handle file uploads
-        const leadImage = req.files?.leadImage ? `uploads/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
-        const thumbImage = req.files?.thumbImage ? `uploads/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
-        const metaImage = req.files?.metaImage ? `uploads/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
+        const leadImage = req.files?.leadImage ? `uploads/news/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
+        const thumbImage = req.files?.thumbImage ? `uploads/news/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
+        const metaImage = req.files?.metaImage ? `uploads/news/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
 
         // Remove duplicate 'uploads/' prefix if present in body path
         const leadImagePath = leadImage ? leadImage : null;
@@ -613,7 +613,7 @@ const updateNews = async (req, res) => {
                     }
                 });
             }
-            updateData.leadImage = `uploads/${req.files.leadImage[0].filename}`;
+            updateData.leadImage = `uploads/news/${req.files.leadImage[0].filename}`;
 
             // Register new image
             await ImageService.registerImage(
@@ -640,7 +640,7 @@ const updateNews = async (req, res) => {
                     }
                 });
             }
-            updateData.thumbImage = `uploads/${req.files.leadImage[0].filename}`;
+            updateData.thumbImage = `uploads/news/${req.files.thumbImage[0].filename}`;
 
             // Register new image
             await ImageService.registerImage(

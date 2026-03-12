@@ -33,8 +33,8 @@ router.get("/slug/:slug", getNewsBySlug);
 router.get("/categories/list", getCategories);
 
 // Protected routes (require authentication)
-router.post("/", authMiddleware, newsUpload, convertToWebp, createNews);
-router.patch("/:id", authMiddleware, newsUpload, convertToWebp, updateNews);
+router.post("/", authMiddleware, newsUpload, convertToWebp('news'), createNews);
+router.patch("/:id", authMiddleware, newsUpload, convertToWebp('news'), updateNews);
 router.delete("/:id", authMiddleware, deleteNews);
 router.post("/bulk-delete", authMiddleware, bulkDeleteNews);
 

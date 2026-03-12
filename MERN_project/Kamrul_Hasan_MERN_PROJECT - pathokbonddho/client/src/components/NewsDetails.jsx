@@ -13,6 +13,8 @@ const NewsDetails = () => {
     const [error, setError] = useState(null);
     const [relatedNews, setRelatedNews] = useState([]);
     const [sidebarAds, setSidebarAds] = useState([]);
+    const [headerAds, setHeaderAds] = useState([]);
+    const [footerAds, setFooterAds] = useState([]);
 
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -36,19 +38,23 @@ const NewsDetails = () => {
                 const relatedRes = await axios.get(`${API_BASE_URL}/api/news`, { params: relatedParams });
                 setRelatedNews(relatedRes.data.news || relatedRes.data.rows || []);
 
-                // Fetch sidebar ads for details page
+                // Fetch ads for details page
                 try {
-                    const adsRes = await axios.get(`${API_BASE_URL}/api/ads/position`, {
-                        params: { position: 'sidebar', page: 'details' }
-                    });
-                    const fetchedAds = adsRes.data || [];
-                    setSidebarAds(fetchedAds);
+                    const [headerRes, sidebarRes, footerRes] = await Promise.all([
+                        axios.get(`${API_BASE_URL}/api/ads/position`, { params: { position: 'header', page: 'details' } }),
+                        axios.get(`${API_BASE_URL}/api/ads/position`, { params: { position: 'sidebar', page: 'details' } }),
+                        axios.get(`${API_BASE_URL}/api/ads/position`, { params: { position: 'footer', page: 'details' } })
+                    ]);
 
-                    // Record impressions for loaded ads
-                    fetchedAds.forEach(ad => {
+                    setSidebarAds(sidebarRes.data || []);
+                    setHeaderAds(headerRes.data || []);
+                    setFooterAds(footerRes.data || []);
+
+                    // Record impressions for all loaded ads
+                    [...(headerRes.data || []), ...(sidebarRes.data || []), ...(footerRes.data || [])].forEach(ad => {
                         const adId = ad.id || ad._id;
                         if (adId) {
-                            axios.post(`${API_BASE_URL}/api/ads/${adId}/impression`).catch(err => console.error('Impression error:', err));
+                            axios.post(`${API_BASE_URL}/api/ads/${adId}/impression`).catch(() => { });
                         }
                     });
                 } catch (err) {
@@ -128,8 +134,43 @@ const NewsDetails = () => {
                 {leadImageUrl && <meta property="og:image" content={leadImageUrl} />}
             </Helmet>
 
+            {/* Header Ads */}
+            <Container className="pt-3">
+                {headerAds.map((ad, idx) => (
+                    <div key={ad.id || idx} className="mb-4 text-center">
+                        {ad.type === 'google_adsense' ? (
+                            <div className="w-100 overflow-hidden">
+                                {ad.headCode && <div dangerouslySetInnerHTML={{ __html: ad.headCode }} />}
+                                {ad.bodyCode && <div dangerouslySetInnerHTML={{ __html: ad.bodyCode }} />}
+                            </div>
+                        ) : (
+                            ad.image && (
+                                <a
+                                    href={ad.imageUrl || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => {
+                                        const adId = ad.id || ad._id;
+                                        if (adId) {
+                                            axios.post(`${API_BASE_URL}/api/ads/${adId}/click`).catch(() => { });
+                                        }
+                                    }}
+                                >
+                                    <img 
+                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`} 
+                                        alt={ad.name || 'Advertisement'} 
+                                        className="img-fluid rounded shadow-sm" 
+                                        style={{ maxHeight: '120px', width: 'auto' }} 
+                                    />
+                                </a>
+                            )
+                        )}
+                    </div>
+                ))}
+            </Container>
+
             {/* Main Content Container */}
-            <Container className="pt-4">
+            <Container className="pt-2">
                 <Row className="g-5">
 
                     {/* LEFT COLUMN: Main Article (col-lg-8) */}
@@ -412,6 +453,41 @@ const NewsDetails = () => {
                         </div>
                     </Col>
                 </Row>
+            </Container>
+
+            {/* Footer Ads */}
+            <Container className="mt-5 pb-4">
+                {footerAds.map((ad, idx) => (
+                    <div key={ad.id || idx} className="mb-4 text-center">
+                        {ad.type === 'google_adsense' ? (
+                            <div className="w-100 overflow-hidden">
+                                {ad.headCode && <div dangerouslySetInnerHTML={{ __html: ad.headCode }} />}
+                                {ad.bodyCode && <div dangerouslySetInnerHTML={{ __html: ad.bodyCode }} />}
+                            </div>
+                        ) : (
+                            ad.image && (
+                                <a
+                                    href={ad.imageUrl || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => {
+                                        const adId = ad.id || ad._id;
+                                        if (adId) {
+                                            axios.post(`${API_BASE_URL}/api/ads/${adId}/click`).catch(() => { });
+                                        }
+                                    }}
+                                >
+                                    <img 
+                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`} 
+                                        alt={ad.name || 'Advertisement'} 
+                                        className="img-fluid rounded shadow-sm" 
+                                        style={{ maxHeight: '120px', width: 'auto' }} 
+                                    />
+                                </a>
+                            )
+                        )}
+                    </div>
+                ))}
             </Container>
         </article>
     );

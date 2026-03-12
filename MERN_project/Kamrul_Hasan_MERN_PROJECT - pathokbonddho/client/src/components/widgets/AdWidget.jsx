@@ -36,10 +36,18 @@ const AdWidget = ({ cell }) => {
     // Check if ad should be visible on current page
     const shouldShowAd = useMemo(() => {
         if (!ad) return false;
-        // No displayPages set = show on ALL pages
+
+        // Special rule: "details" page MUST be explicitly selected
+        if (currentPage === 'details') {
+            return displayPages.includes('details');
+        }
+
+        // No displayPages set = show on ALL pages (except details, handled above)
         if (displayPages.length === 0) return true;
+
         // "none" means don't show anywhere
         if (displayPages.includes('none')) return false;
+
         // Check if current page is in the allowed list
         return displayPages.includes(currentPage);
     }, [ad, displayPages, currentPage]);

@@ -213,7 +213,7 @@ const NewsDetails = () => {
                                 )}
                                 <div>
                                     <i className="bi bi-calendar3 me-2 text-secondary"></i>
-                                    {formatDate(news.newsSchedule || news.createdAt)}
+                                    {formatDate(news.createdAt)}
                                 </div>
                             </div>
 

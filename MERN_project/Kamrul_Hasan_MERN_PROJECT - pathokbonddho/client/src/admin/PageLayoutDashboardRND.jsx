@@ -436,7 +436,7 @@ const AdSelectionModal = ({ show, onClose, onSelect, token }) => {
                                 >
                                     {ad.image && (
                                         <Image
-                                            src={`${API_URL}/uploads/${ad.image}`}
+                                            src={`${API_URL}/uploads/ads/${ad.image}`}
                                             className="card-img-top"
                                             style={{ height: '150px', objectFit: 'cover' }}
                                         />

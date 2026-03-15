@@ -4,6 +4,8 @@ import axios from 'axios';
 import { useAuth } from '../store/auth';
 import { toast } from 'react-toastify';
 import WYSIWYGEditor from './WYSIWYGEditor';
+import ImageFormatModal from './ImageFormatModal';
+import { useRef } from 'react';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
@@ -37,6 +39,14 @@ const NewsCreate = () => {
     });
     const [selectedImageType, setSelectedImageType] = useState('');
     const [currentEditor, setCurrentEditor] = useState(null);
+    const [showFormatModal, setShowFormatModal] = useState(false);
+    const [photoToFormat, setPhotoToFormat] = useState(null);
+    const [editingElement, setEditingElement] = useState(null);
+
+    // Refs for editor instances
+    const highlightEditorRef = useRef(null);
+    const shortDescriptionEditorRef = useRef(null);
+    const contentEditorRef = useRef(null);
 
     const [formData, setFormData] = useState({
         newsHeadline: '',
@@ -151,44 +161,84 @@ const NewsCreate = () => {
             setUploading(false);
         }
     };
-
     const handleEditorImageSelect = (photo) => {
-        const imageUrl = `${API_URL}/${photo.imageUrl}`;
-        let currentEditorField = '';
+        setPhotoToFormat(photo);
+        setEditingElement(null);
+        setShowFormatModal(true);
+    };
 
-        switch (currentEditor) {
-            case 'highlight':
-                currentEditorField = 'highlight';
-                break;
-            case 'shortDescription':
-                currentEditorField = 'shortDescription';
-                break;
-            case 'content':
-                currentEditorField = 'content';
-                break;
-            default:
-                return;
+    const handleEditImage = (imageData) => {
+        setPhotoToFormat({
+            imageUrl: imageData.imageUrl,
+            caption: imageData.caption
+        });
+        setEditingElement(imageData.element);
+        setShowFormatModal(true);
+    };
+
+    const handleFormatConfirm = ({ format, altText, caption }) => {
+        const photo = photoToFormat;
+        const imageUrl = `${API_URL}/${photo.imageUrl}`;
+        
+        let htmlImage = '';
+        if (format === 'full-width') {
+            htmlImage = `<img src="${imageUrl}" alt="${altText}" style="width: 100%; height: auto; display: block; margin: 1em 0; border-radius: 0.375rem;" />`;
+        } else if (format === 'left-aligned') {
+            htmlImage = `<img src="${imageUrl}" alt="${altText}" style="float: left; margin: 0 1.5em 1em 0; max-width: 50%; height: auto; border-radius: 0.375rem;" />`;
+        } else if (format === 'right-aligned') {
+            htmlImage = `<img src="${imageUrl}" alt="${altText}" style="float: right; margin: 0 0 1em 1.5em; max-width: 50%; height: auto; border-radius: 0.375rem;" />`;
+        } else if (format === 'full-width-captioned') {
+            htmlImage = `
+                <figure style="width: 100%; margin: 1em 0; text-align: center; display: inline-block;">
+                    <img src="${imageUrl}" alt="${altText}" style="width: 100%; height: auto; border-radius: 0.375rem;" />
+                    <figcaption style="font-size: 0.9em; color: #666; margin-top: 0.5em; font-style: italic;">${caption}</figcaption>
+                </figure>
+                <p></p>
+            `;
         }
 
-        // Insert HTML image with proper styling
-        const htmlImage = `<img src="${imageUrl}" alt="${photo.caption || 'News Image'}" style="max-width: 100%; height: auto; border-radius: 0.375rem; margin: 1em 0; display: block;" />`;
+        if (editingElement) {
+            // Update existing element
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlImage.trim();
+            const newElement = tempDiv.firstChild;
+            editingElement.parentNode.replaceChild(newElement, editingElement);
+            
+            // Trigger content update
+            if (highlightEditorRef.current) highlightEditorRef.current.focus(); 
+            // This is a bit hacky but it triggers the handleInput in the editor
+            const event = new Event('input', { bubbles: true });
+            newElement.parentElement.dispatchEvent(event);
+            
+            toast.success('Image updated');
+        } else {
+            // Insert new element
+            // Determine which editor ref to use
+            let editorRef = null;
+            switch (currentEditor) {
+                case 'highlight': editorRef = highlightEditorRef; break;
+                case 'shortDescription': editorRef = shortDescriptionEditorRef; break;
+                case 'content': editorRef = contentEditorRef; break;
+                default: break;
+            }
 
-        // Get current content
-        const currentContent = formData[currentEditorField] || '';
+            if (editorRef && editorRef.current) {
+                editorRef.current.insertHTML(htmlImage);
+                toast.success('Image inserted');
+            } else {
+                // Fallback
+                const currentEditorField = currentEditor;
+                const currentContent = formData[currentEditorField] || '';
+                const newContent = currentContent + (currentContent ? '<br>' : '') + htmlImage;
+                setFormData(prev => ({ ...prev, [currentEditorField]: newContent }));
+                toast.success('Image inserted');
+            }
+        }
 
-        // Insert image at the cursor position or at the end
-        const newContent = currentContent + (currentContent ? '<br>' : '') + htmlImage;
-
-        setFormData(prev => ({
-            ...prev,
-            [currentEditorField]: newContent
-        }));
-
-        toast.success('Image inserted into editor');
-        setShowImageModal(prev => ({
-            ...prev,
-            editor: false
-        }));
+        setShowFormatModal(false);
+        setPhotoToFormat(null);
+        setEditingElement(null);
+        setShowImageModal(prev => ({ ...prev, editor: false }));
         setCurrentEditor(null);
     };
 
@@ -926,8 +976,10 @@ const NewsCreate = () => {
                                         <div className="mb-3">
                                             <label className="form-label">Highlight</label>
                                             <WYSIWYGEditor
-                                                value={formData.highlight}
+                                        ref={highlightEditorRef}
+                                        value={formData.highlight}
                                                 onChange={(value) => setFormData(prev => ({ ...prev, highlight: value }))}
+                                                onEditImage={handleEditImage}
                                                 placeholder="Enter highlight text..."
                                                 height={200}
                                                 onImageClick={() => openEditorImageModal('highlight')}
@@ -1022,8 +1074,10 @@ const NewsCreate = () => {
                                         <div className="mb-3">
                                             <label className="form-label">Short Description</label>
                                             <WYSIWYGEditor
-                                                value={formData.shortDescription}
+                                        ref={shortDescriptionEditorRef}
+                                        value={formData.shortDescription}
                                                 onChange={(value) => setFormData(prev => ({ ...prev, shortDescription: value }))}
+                                                onEditImage={handleEditImage}
                                                 placeholder="Enter short description..."
                                                 height={200}
                                                 onImageClick={() => openEditorImageModal('shortDescription')}
@@ -1036,8 +1090,10 @@ const NewsCreate = () => {
                                         <div className="mb-3">
                                             <label className="form-label">Content *</label>
                                             <WYSIWYGEditor
-                                                value={formData.content}
+                                    ref={contentEditorRef}
+                                    value={formData.content}
                                                 onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                                                onEditImage={handleEditImage}
                                                 placeholder="Start writing your news content..."
                                                 height={400}
                                                 onImageClick={() => openEditorImageModal('content')}
@@ -1320,6 +1376,13 @@ const NewsCreate = () => {
                 onClose={closeImageModal}
                 onSelect={handleImageSelect}
                 title="Select Meta Image"
+            />
+            {/* Image Format Modal */}
+            <ImageFormatModal 
+                show={showFormatModal}
+                onHide={() => setShowFormatModal(false)}
+                onConfirm={handleFormatConfirm}
+                photo={photoToFormat}
             />
         </div>
     );

@@ -1,15 +1,52 @@
-// WYSIWYGEditor.jsx
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 
-const WYSIWYGEditor = ({
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
+
+const WYSIWYGEditor = forwardRef(({
     value,
     onChange,
     placeholder = "Start typing...",
     height = 300,
-    onImageClick
-}) => {
+    onImageClick,
+    onEditImage
+}, ref) => {
     const editorRef = useRef(null);
     const [isFocused, setIsFocused] = useState(false);
+    const [savedRange, setSavedRange] = useState(null);
+    const [selectedElement, setSelectedElement] = useState(null);
+    const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
+
+    // Handle selection and scroll effects
+    useEffect(() => {
+        const handleScroll = () => {
+            if (selectedElement && editorRef.current) {
+                const rect = selectedElement.getBoundingClientRect();
+                const containerRect = editorRef.current.parentElement.getBoundingClientRect();
+                
+                setToolbarPosition({
+                    top: rect.top - containerRect.top - 40,
+                    left: rect.left - containerRect.left + (rect.width / 2)
+                });
+            }
+        };
+
+        const container = editorRef.current?.parentElement;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+        }
+        
+        // Remove selection highlights when clicking outside or selecting other images
+        if (selectedElement) {
+            selectedElement.setAttribute('data-selected', 'true');
+        }
+
+        return () => {
+            if (container) container.removeEventListener('scroll', handleScroll);
+            if (selectedElement) {
+                selectedElement.removeAttribute('data-selected');
+            }
+        };
+    }, [selectedElement]);
 
     // Initialize editor content
     useEffect(() => {
@@ -25,9 +62,110 @@ const WYSIWYGEditor = ({
         }
     }, [value]);
 
+    const saveSelection = () => {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            setSavedRange(selection.getRangeAt(0));
+        }
+    };
+
+    const restoreSelection = () => {
+        if (savedRange && editorRef.current) {
+            editorRef.current.focus();
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(savedRange);
+        }
+    };
+
+    useImperativeHandle(ref, () => ({
+        insertHTML: (html) => {
+            restoreSelection();
+            document.execCommand('insertHTML', false, html);
+            handleInput();
+        },
+        saveSelection: () => {
+            saveSelection();
+        },
+        focus: () => {
+            if (editorRef.current) {
+                editorRef.current.focus();
+            }
+        }
+    }));
+
     const handleInput = () => {
         const newContent = editorRef.current.innerHTML;
         onChange(newContent);
+    };
+
+    const handleEditorClick = (e) => {
+        const target = e.target;
+        
+        // Check if we clicked an image or a figure
+        const img = target.closest('img');
+        const figure = target.closest('figure');
+        
+        const element = figure || img;
+        
+        if (element && editorRef.current.contains(element)) {
+            setSelectedElement(element);
+            
+            // Calculate position for toolbar
+            const rect = element.getBoundingClientRect();
+            const editorRect = editorRef.current.parentElement.getBoundingClientRect();
+            
+            setToolbarPosition({
+                top: rect.top - editorRect.top - 40,
+                left: rect.left - editorRect.left + (rect.width / 2)
+            });
+        } else {
+            setSelectedElement(null);
+        }
+    };
+
+    const handleDeleteElement = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (selectedElement) {
+            selectedElement.remove();
+            setSelectedElement(null);
+            handleInput();
+        }
+    };
+
+    const handleEditElement = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (selectedElement && onEditImage) {
+            // Extract data from element
+            let img = selectedElement;
+            let caption = '';
+            let format = 'full-width';
+
+            if (selectedElement.tagName === 'FIGURE') {
+                img = selectedElement.querySelector('img');
+                const figcaption = selectedElement.querySelector('figcaption');
+                caption = figcaption ? figcaption.innerText : '';
+                format = 'full-width-captioned';
+            } else {
+                // Determine format based on style
+                const style = selectedElement.getAttribute('style') || '';
+                if (style.includes('float: left')) format = 'left-aligned';
+                else if (style.includes('float: right')) format = 'right-aligned';
+            }
+
+            const imageData = {
+                imageUrl: img.getAttribute('src').replace(`${API_URL}/`, ''),
+                alt: img.getAttribute('alt') || '',
+                caption: caption,
+                format: format,
+                element: selectedElement
+            };
+
+            onEditImage(imageData);
+            setSelectedElement(null);
+        }
     };
 
     // Improved execCommand with better focus handling
@@ -69,6 +207,7 @@ const WYSIWYGEditor = ({
 
     const handleBlur = () => {
         setIsFocused(false);
+        saveSelection();
     };
 
     // Toolbar button handlers with event prevention
@@ -204,6 +343,7 @@ const WYSIWYGEditor = ({
 
     const handleImageInsert = (e) => {
         e.preventDefault();
+        saveSelection();
         if (onImageClick) {
             onImageClick();
         } else {
@@ -462,9 +602,9 @@ const WYSIWYGEditor = ({
     );
 
     return (
-        <div className="border rounded" style={{ height: `${height}px`, display: 'flex', flexDirection: 'column' }}>
+        <div className="border rounded" style={{ height: `${height}px`, display: 'flex', flexDirection: 'column', position: 'relative' }}>
             <Toolbar />
-            <div style={{ flex: 1, overflow: 'auto' }}>
+            <div style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
                 <div
                     ref={editorRef}
                     contentEditable
@@ -472,13 +612,60 @@ const WYSIWYGEditor = ({
                     onPaste={handlePaste}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
+                    onClick={handleEditorClick}
                     style={editorStyles}
                     className="editor-content"
                     data-placeholder={placeholder}
                 />
+
+                {/* Floating Image Toolbar inside scrollable area */}
+                {selectedElement && (
+                    <div 
+                        className="position-absolute bg-dark text-white rounded shadow d-flex gap-2 p-1"
+                        style={{ 
+                            top: `${toolbarPosition.top}px`, 
+                            left: `${toolbarPosition.left}px`,
+                            transform: 'translateX(-50%)',
+                            zIndex: 1000,
+                            height: '32px'
+                        }}
+                        onMouseDown={(e) => e.preventDefault()} // Prevent blur
+                    >
+                        <button 
+                            type="button"
+                            className="btn btn-sm btn-dark p-1 d-flex align-items-center"
+                            onClick={handleEditElement}
+                            title="Edit Image"
+                        >
+                            <i className="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <div className="vr bg-white opacity-25"></div>
+                        <button 
+                            type="button"
+                            className="btn btn-sm btn-dark p-1 d-flex align-items-center text-danger"
+                            onClick={handleDeleteElement}
+                            title="Delete Image"
+                        >
+                            <i className="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                )}
             </div>
+
+            <style>{`
+                .editor-content img, .editor-content figure {
+                    transition: outline 0.2s;
+                    cursor: pointer;
+                }
+                .editor-content img:hover, .editor-content figure:hover {
+                    outline: 2px solid #3b82f6;
+                }
+                .editor-content img[data-selected="true"], .editor-content figure[data-selected="true"] {
+                    outline: 2px solid #2563eb !important;
+                }
+            `}</style>
         </div>
     );
-};
+});
 
 export default WYSIWYGEditor;

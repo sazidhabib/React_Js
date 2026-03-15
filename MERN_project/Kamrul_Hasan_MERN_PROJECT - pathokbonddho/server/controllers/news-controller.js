@@ -588,7 +588,7 @@ const updateNews = async (req, res) => {
             content: content || existingNews.content,
             imageCaption: imageCaption !== undefined ? imageCaption : existingNews.imageCaption,
             videoLink: videoLink !== undefined ? videoLink : existingNews.videoLink,
-            newsSchedule: newsSchedule !== undefined ? newsSchedule : existingNews.newsSchedule,
+            newsSchedule: newsSchedule === '' ? null : (newsSchedule !== undefined ? newsSchedule : existingNews.newsSchedule),
             metaTitle: metaTitle !== undefined ? metaTitle : existingNews.metaTitle,
             metaKeywords: metaKeywords !== undefined ? metaKeywords : existingNews.metaKeywords,
             metaDescription: metaDescription !== undefined ? metaDescription : existingNews.metaDescription,

@@ -156,11 +156,11 @@ const NewsDetails = () => {
                                         }
                                     }}
                                 >
-                                    <img 
-                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`} 
-                                        alt={ad.name || 'Advertisement'} 
-                                        className="img-fluid rounded shadow-sm" 
-                                        style={{ maxHeight: '120px', width: 'auto' }} 
+                                    <img
+                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`}
+                                        alt={ad.name || 'Advertisement'}
+                                        className="img-fluid rounded shadow-sm"
+                                        style={{ maxHeight: '120px', width: 'auto' }}
                                     />
                                 </a>
                             )
@@ -305,10 +305,12 @@ const NewsDetails = () => {
                                     color: #333;
                                     word-wrap: break-word;
                                     line-height: 1.9;
+                                    
                                 }
                                 .article-body p, 
                                 .article-body p span, 
                                 .article-body p * {
+                                    font-family: 'custom_font' !important;
                                     font-size: ${fontSize}px !important;
                                     line-height: inherit !important;
                                 }
@@ -346,7 +348,7 @@ const NewsDetails = () => {
                             `}
                         </style>
                         <div
-                            className="article-body font-bangla custom-font editor-content"
+                            className="article-body custom-font editor-content"
                             dangerouslySetInnerHTML={{ __html: news.content }}
                         />
 
@@ -477,11 +479,11 @@ const NewsDetails = () => {
                                         }
                                     }}
                                 >
-                                    <img 
-                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`} 
-                                        alt={ad.name || 'Advertisement'} 
-                                        className="img-fluid rounded shadow-sm" 
-                                        style={{ maxHeight: '120px', width: 'auto' }} 
+                                    <img
+                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`}
+                                        alt={ad.name || 'Advertisement'}
+                                        className="img-fluid rounded shadow-sm"
+                                        style={{ maxHeight: '120px', width: 'auto' }}
                                     />
                                 </a>
                             )

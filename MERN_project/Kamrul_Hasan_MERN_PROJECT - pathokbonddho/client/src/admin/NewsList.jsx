@@ -288,6 +288,7 @@ const NewsList = () => {
                                                 />
                                             </th>
                                             <th>Headline</th>
+                                            <th>Type</th>
                                             <th>Author</th>
                                             <th>Categories</th>
                                             <th>Tags</th>
@@ -334,6 +335,15 @@ const NewsList = () => {
                                                         </div>
                                                     </td>
                                                     <td>
+                                                        {item.newsType === 'photo' ? (
+                                                            <span className="badge bg-primary">Photo</span>
+                                                        ) : item.newsType === 'video' ? (
+                                                            <span className="badge bg-danger">Video</span>
+                                                        ) : (
+                                                            <span className="badge bg-secondary">Standard</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
                                                         {getAuthorName(item)}
                                                     </td>
                                                     <td>
@@ -373,7 +383,11 @@ const NewsList = () => {
                                                     <td>
                                                         <div className="btn-group">
                                                             <Link
-                                                                to={`/admin/news/edit/${item.id}`}
+                                                                to={
+                                                                    item.newsType === 'photo' ? `/admin/photo-news/edit/${item.id}` :
+                                                                    item.newsType === 'video' ? `/admin/video-news/edit/${item.id}` :
+                                                                    `/admin/news/edit/${item.id}`
+                                                                }
                                                                 className="btn btn-sm btn-outline-primary"
                                                             >
                                                                 <i className="fas fa-edit"></i>

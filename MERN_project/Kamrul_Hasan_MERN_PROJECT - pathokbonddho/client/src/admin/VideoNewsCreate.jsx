@@ -9,7 +9,7 @@ import { useRef } from 'react';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
-const NewsCreate = () => {
+const VideoNewsCreate = () => {
     const { token } = useAuth();
     const [loading, setLoading] = useState(false);
     const [authors, setAuthors] = useState([]);
@@ -618,12 +618,13 @@ const NewsCreate = () => {
                 }
             });
 
-            // Append selected image paths from gallery
             Object.keys(selectedImages).forEach(key => {
                 if (selectedImages[key]) {
                     submitData.append(`${key}Path`, selectedImages[key].imageUrl);
                 }
             });
+
+            submitData.append('newsType', 'video');
 
             const response = await axios.post(`${API_URL}/api/news`, submitData, {
                 headers: {
@@ -935,7 +936,7 @@ const NewsCreate = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-header">
-                            <h4 className="card-title">Create New News Post</h4>
+                            <h4 className="card-title">Create New Video News Post</h4>
                         </div>
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
@@ -1170,6 +1171,19 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
+                                    <div className="col-12">
+                                        <div className="mb-3">
+                                            <label className="form-label">YouTube Video Link</label>
+                                            <input
+                                                type="url"
+                                                className="form-control"
+                                                name="videoLink"
+                                                value={formData.videoLink}
+                                                onChange={handleInputChange}
+                                                placeholder="https://www.youtube.com/watch?v=..."
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Categories & Tags */}
@@ -1377,4 +1391,4 @@ const NewsCreate = () => {
     );
 };
 
-export default NewsCreate;
+export default VideoNewsCreate;

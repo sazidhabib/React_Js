@@ -259,10 +259,10 @@ const NewsDetails = () => {
 
                         {/* Hero Image or Video Player */}
                         {(() => {
-                            const isVideoCategory = news.Categories && news.Categories.some(cat => cat.name === 'ভিডিও' || cat.path === 'video');
+                            const isVideo = news.newsType === 'video';
                             const youtubeId = getYouTubeId(news.videoLink);
 
-                            if (isVideoCategory && youtubeId) {
+                            if ((isVideo || news.Categories?.some(cat => cat.name === 'ভিডিও' || cat.path === 'video')) && youtubeId) {
                                 return (
                                     <div className="mb-4 no-print">
                                         <div className="video-responsive rounded shadow-sm overflow-hidden bg-black" style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
@@ -307,7 +307,8 @@ const NewsDetails = () => {
                                     line-height: 1.9;
                                     
                                 }
-                                .article-body p, 
+                                .article-body p,
+                                .article-body div,
                                 .article-body p span, 
                                 .article-body p * {
                                     font-family: 'custom_font' !important;
@@ -348,9 +349,37 @@ const NewsDetails = () => {
                             `}
                         </style>
                         <div
-                            className="article-body custom-font editor-content"
+                            className="article-body  editor-content"
                             dangerouslySetInnerHTML={{ __html: news.content }}
                         />
+
+                        {/* Photo Gallery (if Photo News) */}
+                        {news.newsType === 'photo' && news.GalleryItems && news.GalleryItems.length > 0 && (
+                            <div className="photo-gallery-section mt-5 border-top pt-4">
+                                <h4 className="fw-bold font-bangla mb-4">গ্যালারি</h4>
+                                {news.GalleryItems.sort((a, b) => a.sortOrder - b.sortOrder).map((item, idx) => (
+                                    <div key={item.id || idx} className="gallery-item mb-5 bg-light p-3 rounded shadow-sm">
+                                        {item.imageUrl && (
+                                            <div className="text-center mb-3">
+                                                <img 
+                                                    src={getImageUrl(item.imageUrl)} 
+                                                    alt={item.caption || `Gallery image ${idx + 1}`} 
+                                                    className="img-fluid rounded shadow-sm w-100" 
+                                                />
+                                            </div>
+                                        )}
+                                        {item.caption && (
+                                            <h5 className="font-bangla fw-bold mb-2 text-dark">{item.caption}</h5>
+                                        )}
+                                        {item.content && (
+                                            <div className="font-bangla text-muted" style={{ lineHeight: '1.6', fontSize: `${fontSize - 1}px` }}>
+                                                {item.content}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
                         {/* Article Tags */}
                         {news.Tags && news.Tags.length > 0 && (

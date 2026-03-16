@@ -96,6 +96,16 @@ function AdminSidebar({ isSidebarOpen }) {
                   News Edit
                 </NavLink>
               </li>
+              <li className={`text-decoration-none py-2 sm-fs-6 ${isActiveRoute("/admin/photo-news/create") ? "active-item" : ""}`}>
+                <NavLink to="/admin/photo-news/create" className="text-decoration-none  sm-fs-6 text-white fs-5">
+                  Photo News Create
+                </NavLink>
+              </li>
+              <li className={`text-decoration-none py-2 sm-fs-6 ${isActiveRoute("/admin/video-news/create") ? "active-item" : ""}`}>
+                <NavLink to="/admin/video-news/create" className="text-decoration-none  sm-fs-6 text-white fs-5">
+                  Video News Create
+                </NavLink>
+              </li>
             </ul>
           </div>
         </li>

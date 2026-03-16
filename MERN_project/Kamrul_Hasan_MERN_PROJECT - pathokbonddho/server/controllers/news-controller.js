@@ -8,6 +8,7 @@ const Menu = require("../models/menu-model");
 const Author = require("../models/author-model");
 const ImageService = require('../services/imageService');
 const ImageRegistry = require('../models/imageRegistry');
+const NewsGalleryItem = require('../models/news-gallery-item');
 const fs = require("fs");
 const path = require("path");
 const { Sequelize } = require('sequelize');
@@ -43,7 +44,9 @@ const createNews = async (req, res) => {
             metaTitle,
             metaKeywords,
             metaDescription,
-            status
+            status,
+            newsType,
+            galleryItems
         } = req.body;
 
         // Generate random slug using UUID
@@ -128,9 +131,9 @@ const createNews = async (req, res) => {
         console.log('Final parsedCategoryIds:', parsedCategoryIds);
 
         // Handle file uploads
-        const leadImage = req.files?.leadImage ? `uploads/news/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
-        const thumbImage = req.files?.thumbImage ? `uploads/news/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
-        const metaImage = req.files?.metaImage ? `uploads/news/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
+        const leadImage = req.files?.leadImage ? `uploads/post_image/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
+        const thumbImage = req.files?.thumbImage ? `uploads/post_image/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
+        const metaImage = req.files?.metaImage ? `uploads/post_image/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
 
         // Remove duplicate 'uploads/' prefix if present in body path
         const leadImagePath = leadImage ? leadImage : null;
@@ -160,6 +163,7 @@ const createNews = async (req, res) => {
             metaDescription: metaDescription || shortDescription,
             metaImage: metaImagePath,
             status: status || 'draft',
+            newsType: newsType || 'standard',
             slug
         });
 
@@ -202,6 +206,25 @@ const createNews = async (req, res) => {
                 categoryId: parseInt(categoryId)
             }));
             await NewsCategory.bulkCreate(newsCategories);
+        }
+
+        // Create Gallery Items for Photo News
+        if (newsType === 'photo' && galleryItems) {
+            try {
+                const parsedGalleryItems = typeof galleryItems === 'string' ? JSON.parse(galleryItems) : galleryItems;
+                if (Array.isArray(parsedGalleryItems) && parsedGalleryItems.length > 0) {
+                    const galleryRecords = parsedGalleryItems.map((item, index) => ({
+                        newsId: newNews.id,
+                        imageUrl: item.imageUrl,
+                        caption: item.caption,
+                        content: item.content,
+                        sortOrder: index
+                    }));
+                    await NewsGalleryItem.bulkCreate(galleryRecords);
+                }
+            } catch (error) {
+                console.error("Error parsing gallery items:", error);
+            }
         }
 
         // REGISTER IMAGES IN CENTRALIZED REGISTRY
@@ -464,6 +487,10 @@ const getNews = async (req, res) => {
                 {
                     model: Author,
                     attributes: ['id', 'name']
+                },
+                {
+                    model: NewsGalleryItem,
+                    as: 'GalleryItems'
                 }
             ]
         });
@@ -505,6 +532,10 @@ const getNewsBySlug = async (req, res) => {
                 {
                     model: Author,
                     attributes: ['id', 'name', 'email', 'image']
+                },
+                {
+                    model: NewsGalleryItem,
+                    as: 'GalleryItems'
                 }
             ]
         });
@@ -544,7 +575,9 @@ const updateNews = async (req, res) => {
             metaTitle,
             metaKeywords,
             metaDescription,
-            status
+            status,
+            newsType,
+            galleryItems
         } = req.body;
 
         const existingNews = await News.findByPk(req.params.id);
@@ -593,6 +626,7 @@ const updateNews = async (req, res) => {
             metaKeywords: metaKeywords !== undefined ? metaKeywords : existingNews.metaKeywords,
             metaDescription: metaDescription !== undefined ? metaDescription : existingNews.metaDescription,
             status: status || existingNews.status,
+            newsType: newsType || existingNews.newsType,
             slug
         };
 
@@ -613,7 +647,7 @@ const updateNews = async (req, res) => {
                     }
                 });
             }
-            updateData.leadImage = `uploads/news/${req.files.leadImage[0].filename}`;
+            updateData.leadImage = `uploads/post_image/${req.files.leadImage[0].filename}`;
 
             // Register new image
             await ImageService.registerImage(
@@ -640,7 +674,7 @@ const updateNews = async (req, res) => {
                     }
                 });
             }
-            updateData.thumbImage = `uploads/news/${req.files.thumbImage[0].filename}`;
+            updateData.thumbImage = `uploads/post_image/${req.files.thumbImage[0].filename}`;
 
             // Register new image
             await ImageService.registerImage(
@@ -703,12 +737,33 @@ const updateNews = async (req, res) => {
             }
         }
 
+        // Update Gallery Items for Photo News
+        if ((newsType === 'photo' || existingNews.newsType === 'photo') && galleryItems !== undefined) {
+            try {
+                const parsedGalleryItems = typeof galleryItems === 'string' ? JSON.parse(galleryItems) : galleryItems;
+                await NewsGalleryItem.destroy({ where: { newsId: req.params.id } });
+                if (Array.isArray(parsedGalleryItems) && parsedGalleryItems.length > 0) {
+                     const galleryRecords = parsedGalleryItems.map((item, index) => ({
+                        newsId: req.params.id,
+                        imageUrl: item.imageUrl,
+                        caption: item.caption,
+                        content: item.content,
+                        sortOrder: index
+                    }));
+                    await NewsGalleryItem.bulkCreate(galleryRecords);
+                }
+            } catch (error) {
+                console.error("Error updating gallery items:", error);
+            }
+        }
+
         // Fetch updated news with associations
         const completeNews = await News.findByPk(req.params.id, {
             include: [
                 { model: Tag, through: { attributes: [] }, as: 'Tags' },
                 { model: Menu, through: { attributes: [] }, as: 'Categories' },
-                { model: Author, as: 'Author' }
+                { model: Author, as: 'Author' },
+                { model: NewsGalleryItem, as: 'GalleryItems' }
             ]
         });
 
@@ -785,7 +840,7 @@ const bulkDeleteNews = async (req, res) => {
             const imageFields = ['leadImage', 'thumbImage', 'metaImage'];
             for (const field of imageFields) {
                 if (news[field]) {
-                    const imagePath = path.join(__dirname, "..", "uploads", "news", news[field]);
+                    const imagePath = path.join(__dirname, "..", "uploads", "post_image", news[field]);
                     if (fs.existsSync(imagePath)) {
                         fs.unlinkSync(imagePath);
                     }

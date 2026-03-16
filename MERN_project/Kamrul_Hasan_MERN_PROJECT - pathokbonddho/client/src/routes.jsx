@@ -24,6 +24,10 @@ import DesignDashboard from "./admin/DesignDashboard";
 import NewsCreate from "./admin/NewsCreate";
 import NewsList from "./admin/NewsList";
 import NewsEdit from "./admin/NewsEdit";
+import PhotoNewsCreate from "./admin/PhotoNewsCreate";
+import PhotoNewsEdit from "./admin/PhotoNewsEdit";
+import VideoNewsCreate from "./admin/VideoNewsCreate";
+import VideoNewsEdit from "./admin/VideoNewsEdit";
 import NewsLayout from "./layouts/NewsLayout";
 import NewsDetails from "./components/NewsDetails";
 import AboutUsPage from "./components/AboutUsPage";
@@ -68,8 +72,12 @@ const AppRoutes = () => {
           <Route path="/admin/ads" element={<AdsDashboard />} />
           <Route path="/admin/design" element={<DesignDashboard />} />
           <Route path="/admin/news/create" element={<NewsCreate />} />
+          <Route path="/admin/photo-news/create" element={<PhotoNewsCreate />} />
+          <Route path="/admin/video-news/create" element={<VideoNewsCreate />} />
           <Route path="/admin/news" element={<NewsList />} />
           <Route path="/admin/news/edit/:id" element={<NewsEdit />} />
+          <Route path="/admin/photo-news/edit/:id" element={<PhotoNewsEdit />} />
+          <Route path="/admin/video-news/edit/:id" element={<VideoNewsEdit />} />
         </Route>
       </Routes>
 

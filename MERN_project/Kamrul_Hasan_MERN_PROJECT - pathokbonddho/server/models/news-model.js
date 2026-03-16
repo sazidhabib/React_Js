@@ -71,6 +71,10 @@ const News = sequelize.define("News", {
         type: DataTypes.ENUM('draft', 'published', 'scheduled'),
         defaultValue: 'draft',
     },
+    newsType: {
+        type: DataTypes.ENUM('standard', 'photo', 'video'),
+        defaultValue: 'standard',
+    },
     slug: {
         type: DataTypes.STRING,
         allowNull: false,

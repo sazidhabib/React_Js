@@ -16,6 +16,7 @@ const Author = require('./author-model'); // Make sure you have this
 const News = require('./news-model');
 const NewsTag = require('./news-tag-model');
 const NewsCategory = require('./news-category-model');
+const NewsGalleryItem = require('./news-gallery-item');
 const ImageRegistry = require('./imageRegistry');
 
 // Associations for Photo Gallery
@@ -124,6 +125,16 @@ Menu.hasMany(NewsCategory, {
 });
 NewsCategory.belongsTo(Menu, {
     foreignKey: 'categoryId'
+});
+
+// News ↔ NewsGalleryItem (One-to-Many)
+News.hasMany(NewsGalleryItem, {
+    foreignKey: 'newsId',
+    as: 'GalleryItems',
+    onDelete: 'CASCADE'
+});
+NewsGalleryItem.belongsTo(News, {
+    foreignKey: 'newsId'
 });
 
 // Add after other associations

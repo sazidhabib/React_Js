@@ -8,7 +8,7 @@ import ImageFormatModal from './ImageFormatModal';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
-const NewsEdit = () => {
+const VideoNewsEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { token } = useAuth();
@@ -806,12 +806,13 @@ const NewsEdit = () => {
                 }
             });
 
-            // Append selected image paths from gallery
             Object.keys(selectedImages).forEach(key => {
                 if (selectedImages[key]) {
                     submitData.append(`${key}Path`, selectedImages[key].imageUrl);
                 }
             });
+
+            submitData.append('newsType', 'video');
 
             const response = await axios.patch(`${API_URL}/api/news/${id}`, submitData, {
                 headers: {
@@ -908,7 +909,7 @@ const NewsEdit = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-header">
-                            <h4 className="card-title">Edit News Post</h4>
+                            <h4 className="card-title">Edit Video News Post</h4>
                         </div>
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
@@ -1120,6 +1121,19 @@ const NewsEdit = () => {
                                         </div>
                                     </div>
 
+                                    <div className="col-12">
+                                        <div className="mb-3">
+                                            <label className="form-label">YouTube Video Link</label>
+                                            <input
+                                                type="url"
+                                                className="form-control"
+                                                name="videoLink"
+                                                value={formData.videoLink}
+                                                onChange={handleInputChange}
+                                                placeholder="https://www.youtube.com/watch?v=..."
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Categories & Tags */}
@@ -1305,5 +1319,4 @@ const NewsEdit = () => {
     );
 };
 
-
-export default NewsEdit;
+export default VideoNewsEdit;

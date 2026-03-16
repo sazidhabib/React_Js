@@ -1,3 +1,4 @@
+// PhotoNewsEdit.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,7 +9,7 @@ import ImageFormatModal from './ImageFormatModal';
 
 const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
-const NewsEdit = () => {
+const PhotoNewsEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { token } = useAuth();
@@ -30,9 +31,11 @@ const NewsEdit = () => {
         leadImage: false,
         thumbImage: false,
         metaImage: false,
-        editor: false
+        editor: false,
+        gallery: false
     });
     const [selectedImageType, setSelectedImageType] = useState('');
+    const [targetGalleryIndex, setTargetGalleryIndex] = useState(null);
     const [currentEditor, setCurrentEditor] = useState(null);
     const [showFormatModal, setShowFormatModal] = useState(false);
     const [photoToFormat, setPhotoToFormat] = useState(null);
@@ -60,6 +63,8 @@ const NewsEdit = () => {
         tagIds: [],
         categoryIds: []
     });
+
+    const [galleryItems, setGalleryItems] = useState([]);
 
     const [files, setFiles] = useState({
         leadImage: null,
@@ -434,10 +439,12 @@ const NewsEdit = () => {
             leadImage: false,
             thumbImage: false,
             metaImage: false,
-            editor: false
+            editor: false,
+            gallery: false
         });
         setSelectedImageType('');
         setCurrentEditor(null);
+        setTargetGalleryIndex(null);
     };
 
     const handleImageSelect = (photo) => {
@@ -450,6 +457,15 @@ const NewsEdit = () => {
             [selectedImageType]: null
         }));
         closeImageModal();
+    };
+
+    const handleGalleryImageSelect = (photo) => {
+        if (targetGalleryIndex !== null) {
+            const newItems = [...galleryItems];
+            newItems[targetGalleryIndex].imageUrl = photo.imageUrl;
+            setGalleryItems(newItems);
+            closeImageModal();
+        }
     };
 
     const fetchNewsData = async () => {
@@ -484,6 +500,12 @@ const NewsEdit = () => {
                 tagIds: (news.Tags || []).map(tag => tag.id?.toString()).filter(Boolean),
                 categoryIds: (news.Categories || []).map(cat => cat.id?.toString()).filter(Boolean)
             });
+
+            if (news.GalleryItems && news.GalleryItems.length > 0) {
+                setGalleryItems(news.GalleryItems.sort((a,b) => a.sortOrder - b.sortOrder));
+            } else {
+                setGalleryItems([]);
+            }
 
             setCurrentImages({
                 leadImage: news.leadImage || '',
@@ -813,6 +835,11 @@ const NewsEdit = () => {
                 }
             });
 
+            submitData.append('newsType', 'photo');
+            if (galleryItems.length > 0) {
+                submitData.append('galleryItems', JSON.stringify(galleryItems));
+            }
+
             const response = await axios.patch(`${API_URL}/api/news/${id}`, submitData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -908,7 +935,7 @@ const NewsEdit = () => {
                 <div className="col-12">
                     <div className="card">
                         <div className="card-header">
-                            <h4 className="card-title">Edit News Post</h4>
+                            <h4 className="card-title">Edit Photo News Post</h4>
                         </div>
                         <div className="card-body">
                             <form onSubmit={handleSubmit}>
@@ -1120,6 +1147,106 @@ const NewsEdit = () => {
                                         </div>
                                     </div>
 
+                                    <div className="col-12">
+                                        <div className="mb-3">
+                                            <label className="form-label">YouTube Video Link</label>
+                                            <input
+                                                type="url"
+                                                className="form-control"
+                                                name="videoLink"
+                                                value={formData.videoLink}
+                                                onChange={handleInputChange}
+                                                placeholder="https://www.youtube.com/watch?v=..."
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Photo Gallery Section */}
+                                <div className="row mb-4">
+                                    <div className="col-12">
+                                        <h5>Photo Gallery</h5>
+                                        <hr />
+                                    </div>
+                                    <div className="col-12 mb-3">
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={() => {
+                                                setGalleryItems(prev => [...prev, { imageUrl: '', caption: '', content: '' }]);
+                                            }}
+                                        >
+                                            + Add Gallery Photo
+                                        </button>
+                                    </div>
+                                    
+                                    {galleryItems.map((item, index) => (
+                                        <div key={index} className="col-12 border p-3 mb-3 position-relative">
+                                            <button 
+                                                type="button" 
+                                                className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                                                onClick={() => setGalleryItems(prev => prev.filter((_, i) => i !== index))}
+                                            >
+                                                &times; Remove
+                                            </button>
+                                            
+                                            <div className="row">
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Image URL *</label>
+                                                    <div className="d-flex gap-2 mb-2">
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            value={item.imageUrl}
+                                                            onChange={(e) => {
+                                                                const newItems = [...galleryItems];
+                                                                newItems[index].imageUrl = e.target.value;
+                                                                setGalleryItems(newItems);
+                                                            }}
+                                                            placeholder="uploads/post_image/file.jpg"
+                                                            required
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline-secondary"
+                                                            onClick={() => {
+                                                                setTargetGalleryIndex(index);
+                                                                setShowImageModal(prev => ({ ...prev, gallery: true }));
+                                                            }}
+                                                        >
+                                                            Choose
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="col-md-8">
+                                                    <label className="form-label">Caption</label>
+                                                    <input
+                                                        type="text"
+                                                        className="form-control"
+                                                        value={item.caption}
+                                                        onChange={(e) => {
+                                                            const newItems = [...galleryItems];
+                                                            newItems[index].caption = e.target.value;
+                                                            setGalleryItems(newItems);
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div className="col-12 mt-2">
+                                                    <label className="form-label">Content</label>
+                                                    <textarea
+                                                        className="form-control"
+                                                        rows="3"
+                                                        value={item.content}
+                                                        onChange={(e) => {
+                                                            const newItems = [...galleryItems];
+                                                            newItems[index].content = e.target.value;
+                                                            setGalleryItems(newItems);
+                                                        }}
+                                                    ></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
 
                                 {/* Categories & Tags */}
@@ -1294,6 +1421,13 @@ const NewsEdit = () => {
                 title="Select Meta Image"
             />
             
+            <ImageSelectionModal
+                show={showImageModal.gallery}
+                onClose={closeImageModal}
+                onSelect={handleGalleryImageSelect}
+                title="Select Gallery Image"
+            />
+
             {/* Image Format Modal */}
             <ImageFormatModal 
                 show={showFormatModal}
@@ -1305,5 +1439,4 @@ const NewsEdit = () => {
     );
 };
 
-
-export default NewsEdit;
+export default PhotoNewsEdit;

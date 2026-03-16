@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 const ImageFormatModal = ({ show, onHide, onConfirm, photo }) => {
-    const [format, setFormat] = useState('full-width');
-    const [altText, setAltText] = useState(photo?.caption || '');
+    const [format, setFormat] = useState(photo?.format || 'full-width');
+    const [altText, setAltText] = useState(photo?.alt || '');
     const [caption, setCaption] = useState(photo?.caption || '');
 
     if (!show) return null;

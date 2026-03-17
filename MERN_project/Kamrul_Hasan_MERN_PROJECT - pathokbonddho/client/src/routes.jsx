@@ -28,6 +28,7 @@ import PhotoNewsCreate from "./admin/PhotoNewsCreate";
 import PhotoNewsEdit from "./admin/PhotoNewsEdit";
 import VideoNewsCreate from "./admin/VideoNewsCreate";
 import VideoNewsEdit from "./admin/VideoNewsEdit";
+import UserManagement from "./admin/UserManagement";
 import NewsLayout from "./layouts/NewsLayout";
 import NewsDetails from "./components/NewsDetails";
 import AboutUsPage from "./components/AboutUsPage";
@@ -78,6 +79,7 @@ const AppRoutes = () => {
           <Route path="/admin/news/edit/:id" element={<NewsEdit />} />
           <Route path="/admin/photo-news/edit/:id" element={<PhotoNewsEdit />} />
           <Route path="/admin/video-news/edit/:id" element={<VideoNewsEdit />} />
+          <Route path="/admin/users" element={<UserManagement />} />
         </Route>
       </Routes>
 

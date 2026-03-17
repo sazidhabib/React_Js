@@ -1008,7 +1008,7 @@ const NewsCreate = () => {
                                                     required
                                                 />
                                                 {showAuthorDropdown && filteredAuthors.length > 0 && (
-                                                    <div className="dropdown-menu show w-100" style={{ zIndex: 1060 }}>
+                                                    <div className="dropdown-menu show w-100" style={{ zIndex: 1060, maxHeight: '300px', overflowY: 'auto' }}>
                                                         {filteredAuthors.map(author => (
                                                             <button
                                                                 key={author.id}
@@ -1032,36 +1032,7 @@ const NewsCreate = () => {
                                         </div>
                                     </div>
 
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Status</label>
-                                            <select
-                                                className="form-control"
-                                                name="status"
-                                                value={formData.status}
-                                                onChange={handleInputChange}
-                                            >
-                                                <option value="draft">Draft</option>
-                                                <option value="published">Published</option>
-                                                <option value="scheduled">Scheduled</option>
-                                            </select>
-                                        </div>
-                                    </div>
 
-                                    {formData.status === 'scheduled' && (
-                                        <div className="col-md-6">
-                                            <div className="mb-3">
-                                                <label className="form-label">Schedule Date & Time</label>
-                                                <input
-                                                    type="datetime-local"
-                                                    className="form-control"
-                                                    name="newsSchedule"
-                                                    value={formData.newsSchedule}
-                                                    onChange={handleInputChange}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Content */}
@@ -1319,6 +1290,37 @@ const NewsCreate = () => {
                                             />
                                         </div>
                                     </div>
+
+                                    <div className="col-md-6">
+                                        <div className="mb-3">
+                                            <label className="form-label">Status</label>
+                                            <select
+                                                className="form-control"
+                                                name="status"
+                                                value={formData.status}
+                                                onChange={handleInputChange}
+                                            >
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
+                                                <option value="scheduled">Scheduled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {formData.status === 'scheduled' && (
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">Schedule Date & Time</label>
+                                                <input
+                                                    type="datetime-local"
+                                                    className="form-control"
+                                                    name="newsSchedule"
+                                                    value={formData.newsSchedule}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="row">

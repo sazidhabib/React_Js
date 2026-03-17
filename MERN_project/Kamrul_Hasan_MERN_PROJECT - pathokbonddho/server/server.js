@@ -51,6 +51,7 @@ app.use('/api/authors', authorRoutes);
 app.use('/api/ads', adRouter);
 app.use('/api/designs', designRoutes);
 app.use("/api/news", newsRouter);
+app.use("/api/users", require("./router/user-router"));
 
 //wildcard route like /api, / or /*, it might be intercepting the /api/news request & others API routes
 app.use("/api", require("./router/photoRoutes"));

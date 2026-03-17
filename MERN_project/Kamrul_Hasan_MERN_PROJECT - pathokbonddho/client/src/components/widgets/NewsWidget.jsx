@@ -113,7 +113,7 @@ const NewsWidget = ({ cell }) => {
                         )}
                         <div className="text-inside-image-overlay">
                             <h5 className="text-inside-image-title code-font-bangla">
-                                {news.newsHeadline}
+                                {news.alternativeHeadline || news.newsHeadline}
                             </h5>
                             <span className="text-inside-image-date">
                                 {formatDate(news.createdAt)}
@@ -136,7 +136,7 @@ const NewsWidget = ({ cell }) => {
             <div className="news-design-title-only h-100">
                 <Link to={newsLink} className="text-decoration-none text-dark">
                     <h5 className="fw-bold mb-2 code-font-bangla news-title-only-headline">
-                        {news.newsHeadline}
+                        {news.alternativeHeadline || news.newsHeadline}
                     </h5>
                 </Link>
             </div>
@@ -149,7 +149,7 @@ const NewsWidget = ({ cell }) => {
             <div className="news-design-title-image-side h-100">
                 <Link to={newsLink} className="text-decoration-none text-dark">
                     <h5 className="fw-bold mb-2 code-font-bangla">
-                        {news.newsHeadline}
+                        {news.alternativeHeadline || news.newsHeadline}
                     </h5>
                 </Link>
                 <div className="d-flex gap-3">
@@ -186,7 +186,7 @@ const NewsWidget = ({ cell }) => {
             <div className="news-design-title-image-side h-100">
                 <Link to={newsLink} className="text-decoration-none text-dark">
                     <h5 className="fw-bold mb-2 code-font-bangla">
-                        {news.newsHeadline}
+                        {news.alternativeHeadline || news.newsHeadline}
                     </h5>
                 </Link>
                 <div className="d-flex flex-row-reverse gap-3">
@@ -254,7 +254,7 @@ const NewsWidget = ({ cell }) => {
                 <Card.Body className='px-0 py-2'>
                     <Link to={newsLink} className="text-decoration-none text-dark">
                         <h5 className="fw-bold mb-1 code-font-bangla">
-                            {news.newsHeadline}
+                            {news.alternativeHeadline || news.newsHeadline}
                         </h5>
                     </Link>
                     <div className="small text-muted">
@@ -288,7 +288,7 @@ const NewsWidget = ({ cell }) => {
                 )}
                 <div className="flex-grow-1">
                     <Link to={newsLink} className=" text-decoration-none text-dark">
-                        <h5 className="fw-bold mb-1 code-font-bangla">{news.newsHeadline}</h5>
+                        <h5 className="fw-bold mb-1 code-font-bangla">{news.alternativeHeadline || news.newsHeadline}</h5>
                     </Link>
                     <div className="small text-muted">{formatDate(news.createdAt)}</div>
                 </div>
@@ -319,7 +319,7 @@ const NewsWidget = ({ cell }) => {
                 )}
                 <div className="flex-grow-1">
                     <Link to={newsLink} className="text-decoration-none text-dark">
-                        <h5 className="fw-bold mb-1 code-font-bangla">{news.newsHeadline}</h5>
+                        <h5 className="fw-bold mb-1 code-font-bangla">{news.alternativeHeadline || news.newsHeadline}</h5>
                     </Link>
                     <div className="small text-muted">{formatDate(news.createdAt)}</div>
                 </div>
@@ -362,7 +362,7 @@ const NewsWidget = ({ cell }) => {
             <Card.Body className='px-0'>
                 <Link to={newsLink} className="text-decoration-none text-dark">
                     <Card.Title className="h5 fw-bold mb-2 code-font-bangla">
-                        {news.newsHeadline}
+                        {news.alternativeHeadline || news.newsHeadline}
                     </Card.Title>
                 </Link>
                 {news.shortDescription && (

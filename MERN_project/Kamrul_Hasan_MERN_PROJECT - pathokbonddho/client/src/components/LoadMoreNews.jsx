@@ -98,7 +98,7 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
                                 <div className="news-design-title-image-side h-100 p-3 border rounded shadow-sm bg-white hover-shadow transition" style={{ transition: 'all 0.3s ease' }}>
                                     <Link to={newsLink} className="text-decoration-none text-dark">
                                         <h5 className="fw-bold mb-3 code-font-bangla hover-danger" style={{ lineHeight: '1.5' }}>
-                                            {item.newsHeadline}
+                                            {item.alternativeHeadline || item.newsHeadline}
                                         </h5>
                                     </Link>
                                     <div className="d-flex gap-3">

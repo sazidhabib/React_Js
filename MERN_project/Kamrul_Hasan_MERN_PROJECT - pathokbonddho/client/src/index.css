@@ -2214,4 +2214,151 @@ footer {
     left: 0;
     width: 100%;
     height: 100%;
+}
+
+/* News Highlight Styling */
+.news-highlight-content {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 5px solid #006a60;
+    margin-bottom: 25px;
+}
+
+.news-highlight-content ul, .news-highlight-content ol {
+    padding-left: 30px;
+    margin-bottom: 0;
+}
+
+.news-highlight-content li {
+    margin-bottom: 10px;
+}
+
+.news-highlight-content li:last-child {
+    margin-bottom: 0;
+}
+
+.news-highlight-content a {
+    color: #006a60 !important;
+    text-decoration: underline !important;
+    font-weight: 500;
+}
+
+.news-highlight-content a:hover {
+    color: #e67e22 !important;
+}
+
+/* Responsive Grid and Widgets */
+@media (max-width: 991.98px) {
+    .grid-section {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        gap: 15px !important;
+    }
+
+    .news-grid-item {
+        grid-row: auto !important;
+        grid-column: auto !important;
+    }
+
+    .grid-separator-v, .grid-separator-h {
+        display: none !important;
+    }
+
+    /* Stack side images on mobile */
+    .news-design-title-image-side .d-flex {
+        flex-direction: column !important;
+    }
+
+    .news-design-title-image-side .news-side-image-wrapper {
+        width: 100% !important;
+        margin-bottom: 10px;
+    }
+
+    .news-design-title-image-side .news-side-image {
+        width: 100% !important;
+        height: 200px !important;
+    }
+
+    .news-design-image-compact {
+        flex-direction: column !important;
+    }
+
+    .news-compact-image-wrapper {
+        width: 100% !important;
+        margin-bottom: 10px;
+    }
+
+    .news-compact-image {
+        width: 100% !important;
+        height: 200px !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .grid-section {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Photography and Asarernoy Section Responsiveness */
+@media (max-width: 991.98px) {
+    .margin-photo {
+        margin-top: 20px !important;
+    }
+
+    .asarernoy-img {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Asarernoy fixes */
+    .asarernoy .news-title {
+        font-size: 1.2rem !important;
+        text-align: left !important;
+    }
+
+    .asarernoy .news-description {
+        font-size: 0.9rem !important;
+    }
+
+    /* Listening Music Section */
+    .lisenmainheading {
+        font-size: 1.5rem !important;
+    }
+
+    /* Jetuku Section */
+    .jetukuboliniaga .mainheading {
+        font-size: 1.8rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .grid-section {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Photography Album list on mobile */
+    .photography .list-group {
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        margin-bottom: 20px !important;
+    }
+
+    .photography .list-group-item {
+        flex: 0 0 auto !important;
+        margin-right: 10px !important;
+        border-radius: 20px !important;
+        width: auto !important;
+    }
+}
+
+/* General consistency fixes */
+.object-fit-cover {
+    object-fit: cover !important;
+}
+
+.img-fluid {
+    height: auto !important;
 }

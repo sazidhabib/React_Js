@@ -153,6 +153,12 @@ function AdminSidebar({ isSidebarOpen }) {
             PageLayout
           </NavLink>
         </li>
+
+        <li className={`nav-item py-2 ${isActiveRoute("/admin/users") ? "active-item" : ""}`}>
+          <NavLink to="/admin/users" className="text-decoration-none  sm-fs-6 text-white fs-5">
+            <i className="fas fa-users me-2"></i>Users
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

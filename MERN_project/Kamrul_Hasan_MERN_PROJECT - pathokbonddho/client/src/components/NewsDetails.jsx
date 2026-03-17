@@ -191,15 +191,17 @@ const NewsDetails = () => {
                             ))}
                         </div>
 
-                        {/* Title & Subtitle */}
+                        {/* Title & Highlight */}
                         <h1 className="fw-bold mb-3 font-bangla" style={{ fontSize: '2.5rem', lineHeight: '1.4', color: '#1a1a1a' }}>
                             {news.newsHeadline}
                         </h1>
 
-                        {news.alternativeHeadline && (
-                            <h3 className="text-muted font-bangla mb-4" style={{ fontSize: '1.5rem', lineHeight: '1.4' }}>
-                                {news.alternativeHeadline}
-                            </h3>
+                        {news.highlight && (
+                            <div
+                                className="text-secondary custom-font mb-4 fst-italic news-highlight-content"
+                                style={{ fontSize: '1.2rem', lineHeight: '1.6', fontWeight: '500' }}
+                                dangerouslySetInnerHTML={{ __html: news.highlight }}
+                            />
                         )}
 
                         {/* Meta Bar: Author, Date, Sharing */}
@@ -361,10 +363,10 @@ const NewsDetails = () => {
                                     <div key={item.id || idx} className="gallery-item mb-5 bg-light p-3 rounded shadow-sm">
                                         {item.imageUrl && (
                                             <div className="text-center mb-3">
-                                                <img 
-                                                    src={getImageUrl(item.imageUrl)} 
-                                                    alt={item.caption || `Gallery image ${idx + 1}`} 
-                                                    className="img-fluid rounded shadow-sm w-100" 
+                                                <img
+                                                    src={getImageUrl(item.imageUrl)}
+                                                    alt={item.caption || `Gallery image ${idx + 1}`}
+                                                    className="img-fluid rounded shadow-sm w-100"
                                                 />
                                             </div>
                                         )}
@@ -466,7 +468,7 @@ const NewsDetails = () => {
                                                 <div>
                                                     <Link to={`/news/${item.id || item._id}`} className="text-decoration-none text-dark">
                                                         <h6 className="fw-bold mb-2 font-bangla hover-danger" style={{ lineHeight: '1.4' }}>
-                                                            {item.newsHeadline}
+                                                            {item.alternativeHeadline || item.newsHeadline}
                                                         </h6>
                                                     </Link>
                                                     <div className="small text-muted font-bangla" style={{ fontSize: '0.8rem' }}>

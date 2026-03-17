@@ -119,6 +119,7 @@ const GridSection = ({ section }) => {
                         return (
                             <div
                                 key={key}
+                                className="news-grid-item"
                                 style={{
                                     gridRow,
                                     gridColumn,
@@ -130,28 +131,34 @@ const GridSection = ({ section }) => {
 
                                 {/* Vertical Separator Line */}
                                 {!isLastCol && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        right: '-10px',
-                                        top: '20px',
-                                        bottom: '20px',
-                                        width: '1px',
-                                        backgroundColor: '#e5e5e5',
-                                        zIndex: 1
-                                    }} />
+                                    <div 
+                                        className="grid-separator-v"
+                                        style={{
+                                            position: 'absolute',
+                                            right: '-10px',
+                                            top: '20px',
+                                            bottom: '20px',
+                                            width: '1px',
+                                            backgroundColor: '#e5e5e5',
+                                            zIndex: 1
+                                        }} 
+                                    />
                                 )}
 
                                 {/* Horizontal Separator Line */}
                                 {!isLastRow && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        bottom: '-1px',
-                                        left: '5px',
-                                        right: isLastCol ? '5px' : '-5px',
-                                        height: '1px',
-                                        backgroundColor: '#e5e5e5',
-                                        zIndex: 1
-                                    }} />
+                                    <div 
+                                        className="grid-separator-h"
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: '-1px',
+                                            left: '5px',
+                                            right: isLastCol ? '5px' : '-5px',
+                                            height: '1px',
+                                            backgroundColor: '#e5e5e5',
+                                            zIndex: 1
+                                        }} 
+                                    />
                                 )}
                             </div>
                         )

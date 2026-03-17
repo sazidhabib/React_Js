@@ -34,6 +34,12 @@ const PhotoNewsEdit = () => {
         editor: false,
         gallery: false
     });
+    // State for searchable dropdowns
+    const [authorSearch, setAuthorSearch] = useState('');
+    const [tagSearch, setTagSearch] = useState('');
+    const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
+    const [showTagDropdown, setShowTagDropdown] = useState(false);
+
     const [selectedImageType, setSelectedImageType] = useState('');
     const [targetGalleryIndex, setTargetGalleryIndex] = useState(null);
     const [currentEditor, setCurrentEditor] = useState(null);
@@ -61,6 +67,7 @@ const PhotoNewsEdit = () => {
         metaDescription: '',
         status: 'draft',
         tagIds: [],
+        tagNames: [],
         categoryIds: []
     });
 
@@ -498,8 +505,11 @@ const PhotoNewsEdit = () => {
                 metaDescription: news.metaDescription || '',
                 status: news.status || 'draft',
                 tagIds: (news.Tags || []).map(tag => tag.id?.toString()).filter(Boolean),
+                tagNames: (news.Tags || []).map(tag => tag.name).filter(Boolean),
                 categoryIds: (news.Categories || []).map(cat => cat.id?.toString()).filter(Boolean)
             });
+
+            setAuthorSearch(news.authorId?.name || news.Authors?.name || '');
 
             if (news.GalleryItems && news.GalleryItems.length > 0) {
                 setGalleryItems(news.GalleryItems.sort((a,b) => a.sortOrder - b.sortOrder));
@@ -769,6 +779,46 @@ const PhotoNewsEdit = () => {
         return [];
     };
 
+    const handleAuthorSelect = (author) => {
+        setFormData(prev => ({
+            ...prev,
+            authorId: author.id
+        }));
+        setAuthorSearch(author.name);
+        setShowAuthorDropdown(false);
+    };
+
+    const handleTagSelect = (tag) => {
+        if (!formData.tagIds.includes(tag.id.toString())) {
+            setFormData(prev => ({
+                ...prev,
+                tagIds: [...prev.tagIds, tag.id.toString()],
+                tagNames: [...prev.tagNames, tag.name]
+            }));
+        }
+        setTagSearch('');
+        setShowTagDropdown(false);
+    };
+
+    const removeTag = (tagId) => {
+        const tagIdStr = tagId.toString();
+        setFormData(prev => {
+            const index = prev.tagIds.indexOf(tagIdStr);
+            if (index === -1) return prev;
+            
+            const newTagIds = [...prev.tagIds];
+            const newTagNames = [...prev.tagNames];
+            newTagIds.splice(index, 1);
+            newTagNames.splice(index, 1);
+            
+            return {
+                ...prev,
+                tagIds: newTagIds,
+                tagNames: newTagNames
+            };
+        });
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -816,6 +866,9 @@ const PhotoNewsEdit = () => {
                 if (key === 'tagIds' || key === 'categoryIds') {
                     // Send as JSON string
                     submitData.append(key, JSON.stringify(formData[key]));
+                } else if (key === 'tagNames') {
+                    // Skip display-only field
+                    return;
                 } else {
                     submitData.append(key, formData[key]);
                 }
@@ -992,53 +1045,41 @@ const PhotoNewsEdit = () => {
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Author *</label>
-                                            <select
-                                                className="form-control"
-                                                name="authorId"
-                                                value={formData.authorId}
-                                                onChange={handleInputChange}
-                                                required
-                                            >
-                                                <option value="">Select Author</option>
-                                                {authors.map(author => (
-                                                    <option key={author.id} value={author.id}>
-                                                        {author.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-md-6">
-                                        <div className="mb-3">
-                                            <label className="form-label">Status</label>
-                                            <select
-                                                className="form-control"
-                                                name="status"
-                                                value={formData.status}
-                                                onChange={handleInputChange}
-                                            >
-                                                <option value="draft">Draft</option>
-                                                <option value="published">Published</option>
-                                                <option value="scheduled">Scheduled</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    {formData.status === 'scheduled' && (
-                                        <div className="col-md-6">
-                                            <div className="mb-3">
-                                                <label className="form-label">Schedule Date & Time</label>
+                                            <div className="position-relative">
                                                 <input
-                                                    type="datetime-local"
+                                                    type="text"
                                                     className="form-control"
-                                                    name="newsSchedule"
-                                                    value={formData.newsSchedule}
-                                                    onChange={handleInputChange}
+                                                    placeholder="Search author..."
+                                                    value={authorSearch}
+                                                    onChange={(e) => {
+                                                        setAuthorSearch(e.target.value);
+                                                        setShowAuthorDropdown(true);
+                                                    }}
+                                                    onFocus={() => setShowAuthorDropdown(true)}
+                                                    onBlur={() => setTimeout(() => setShowAuthorDropdown(false), 200)}
+                                                    required
                                                 />
+                                                {showAuthorDropdown && (
+                                                    <div className="dropdown-menu show w-100" style={{ maxHeight: '300px', overflowY: 'auto', zIndex: 1060 }}>
+                                                        {authors.filter(a => a.name.toLowerCase().includes(authorSearch.toLowerCase())).length > 0 ? (
+                                                            authors.filter(a => a.name.toLowerCase().includes(authorSearch.toLowerCase())).map(author => (
+                                                                <button
+                                                                    key={author.id}
+                                                                    type="button"
+                                                                    className="dropdown-item"
+                                                                    onClick={() => handleAuthorSelect(author)}
+                                                                >
+                                                                    {author.name}
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <div className="dropdown-item disabled">No authors found</div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
 
                                 {/* Content */}
@@ -1279,21 +1320,54 @@ const PhotoNewsEdit = () => {
                                     <div className="col-md-6">
                                         <div className="mb-3">
                                             <label className="form-label">Tags</label>
-                                            <select
-                                                className="form-control"
-                                                multiple
-                                                value={formData.tagIds}
-                                                onChange={(e) => handleMultiSelect(e, 'tagIds')}
-                                                size="6"
-                                            >
-                                                <option value="">Select Tags</option>
-                                                {tags.map(tag => (
-                                                    <option key={tag.id} value={tag.id}>
-                                                        {tag.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <small className="text-muted">Hold Ctrl to select multiple tags</small>
+                                            <div className="position-relative">
+                                                <input
+                                                    type="text"
+                                                    className="form-control"
+                                                    placeholder="Search tags..."
+                                                    value={tagSearch}
+                                                    onChange={(e) => {
+                                                        setTagSearch(e.target.value);
+                                                        setShowTagDropdown(true);
+                                                    }}
+                                                    onFocus={() => setShowTagDropdown(true)}
+                                                    onBlur={() => setTimeout(() => setShowTagDropdown(false), 200)}
+                                                />
+                                                {showTagDropdown && (
+                                                    <div className="dropdown-menu show w-100" style={{ maxHeight: '300px', overflowY: 'auto', zIndex: 1060 }}>
+                                                        {tags.filter(t => t.name.toLowerCase().includes(tagSearch.toLowerCase())).length > 0 ? (
+                                                            tags.filter(t => t.name.toLowerCase().includes(tagSearch.toLowerCase())).map(tag => (
+                                                                <button
+                                                                    key={tag.id}
+                                                                    type="button"
+                                                                    className="dropdown-item"
+                                                                    onClick={() => handleTagSelect(tag)}
+                                                                >
+                                                                    {tag.name}
+                                                                </button>
+                                                            ))
+                                                        ) : (
+                                                            <div className="dropdown-item disabled">No tags found</div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {formData.tagNames.length > 0 && (
+                                                <div className="mt-2">
+                                                    {formData.tagNames.map((tagName, index) => (
+                                                        <span key={formData.tagIds[index]} className="badge bg-primary me-1 mb-1">
+                                                            {tagName}
+                                                            <button
+                                                                type="button"
+                                                                className="btn-close btn-close-white ms-1"
+                                                                style={{ fontSize: '0.7rem' }}
+                                                                onClick={() => removeTag(formData.tagIds[index])}
+                                                            ></button>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1367,6 +1441,37 @@ const PhotoNewsEdit = () => {
                                             />
                                         </div>
                                     </div>
+
+                                    <div className="col-md-6">
+                                        <div className="mb-3">
+                                            <label className="form-label">Status</label>
+                                            <select
+                                                className="form-control"
+                                                name="status"
+                                                value={formData.status}
+                                                onChange={handleInputChange}
+                                            >
+                                                <option value="draft">Draft</option>
+                                                <option value="published">Published</option>
+                                                <option value="scheduled">Scheduled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {formData.status === 'scheduled' && (
+                                        <div className="col-md-6">
+                                            <div className="mb-3">
+                                                <label className="form-label">Schedule Date & Time</label>
+                                                <input
+                                                    type="datetime-local"
+                                                    className="form-control"
+                                                    name="newsSchedule"
+                                                    value={formData.newsSchedule}
+                                                    onChange={handleInputChange}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="row">

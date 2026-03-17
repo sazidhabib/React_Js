@@ -23,6 +23,10 @@ const authMiddleware = async (req, res, next) => {
       return res.status(403).json({ message: "Unauthorized: Not an Admin" });
     }
 
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Unauthorized: Account is deactivated" });
+    }
+
     req.user = user;
     next();
   } catch (error) {

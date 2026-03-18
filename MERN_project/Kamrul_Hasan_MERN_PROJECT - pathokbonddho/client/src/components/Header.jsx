@@ -137,7 +137,7 @@ const Header = () => {
       {/* Bootstrap Modal Sidebar for Small/Medium Devices */}
       {shouldShowMobileSidebar && (
         <div
-          className="modal d-block bg-dark bg-opacity-75"
+          className="modal d-block bg-opacity-75"
           tabIndex="-1"
           onClick={toggleSidebar}
           style={{ top: showSidebar ? "0" : "-100px", transition: "top 0.3s, opacity 0.3s", opacity: showSidebar ? 1 : 0 }}

@@ -94,8 +94,9 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
                         const newsLink = `/news/${item._id || item.id}`;
 
                         return (
-                            <div key={item.id || index} className="col-lg-6 mb-3">
-                                <div className="news-design-title-image-side h-100 p-3 border rounded shadow-sm bg-white hover-shadow transition" style={{ transition: 'all 0.3s ease' }}>
+                            <div key={item.id || index} className="col-lg-6 col-6 mb-3">
+                                {/* Desktop Layout */}
+                                <div className="d-none d-md-block news-design-title-image-side h-100 p-3 border rounded shadow-sm bg-white hover-shadow transition" style={{ transition: 'all 0.3s ease' }}>
                                     <Link to={newsLink} className="text-decoration-none text-dark">
                                         <h5 className="fw-bold mb-3 code-font-bangla hover-danger" style={{ lineHeight: '1.5' }}>
                                             {item.alternativeHeadline || item.newsHeadline}
@@ -126,6 +127,31 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
                                                 {formatDate(item.createdAt)}
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Mobile Layout: Image Top */}
+                                <div className="d-flex d-md-none flex-column h-100 p-2 border rounded shadow-sm bg-white hover-shadow transition" style={{ transition: 'all 0.3s ease' }}>
+                                    {imageUrl && (
+                                        <div className="mb-2 w-100 position-relative" style={{ aspectRatio: '16/9' }}>
+                                            <Link to={newsLink}>
+                                                <img
+                                                    src={imageUrl}
+                                                    alt={item.newsHeadline}
+                                                    className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rounded"
+                                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                                                />
+                                            </Link>
+                                        </div>
+                                    )}
+                                    <Link to={newsLink} className="text-decoration-none text-dark flex-grow-1">
+                                        <h6 className="fw-bold mb-2 code-font-bangla hover-danger" style={{ lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            {item.alternativeHeadline || item.newsHeadline}
+                                        </h6>
+                                    </Link>
+                                    <div className="small text-muted mt-2" style={{ fontSize: '0.75rem' }}>
+                                        <i className="bi bi-clock me-1"></i>
+                                        {formatDate(item.createdAt)}
                                     </div>
                                 </div>
                             </div>

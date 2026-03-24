@@ -1,0 +1,12 @@
+{
+  "/about-us/page": "app/about-us/page.js",
+  "/admin/users/page": "app/admin/users/page.js",
+  "/admin/author/page": "app/admin/author/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/photos/page": "app/admin/photos/page.js",
+  "/admin/ads/page": "app/admin/ads/page.js",
+  "/admin/album/page": "app/admin/album/page.js",
+  "/admin/video-news/create/page": "app/admin/video-news/create/page.js",
+  "/admin/photo-news/create/page": "app/admin/photo-news/create/page.js",
+  "/admin/news/page": "app/admin/news/page.js"
+}

@@ -1,0 +1,32 @@
+{
+  "app\\components\\GridCell.jsx -> ./widgets/AdWidget": {
+    "id": "app\\components\\GridCell.jsx -> ./widgets/AdWidget",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_widgets_AdWidget_jsx.js"
+    ]
+  },
+  "app\\components\\GridCell.jsx -> ./widgets/ImageWidget": {
+    "id": "app\\components\\GridCell.jsx -> ./widgets/ImageWidget",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_widgets_ImageWidget_jsx.js"
+    ]
+  },
+  "app\\components\\GridCell.jsx -> ./widgets/NewsWidget": {
+    "id": "app\\components\\GridCell.jsx -> ./widgets/NewsWidget",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_widgets_NewsWidget_jsx.js"
+    ]
+  },
+  "app\\components\\GridCell.jsx -> ./widgets/VideoWidget": {
+    "id": "app\\components\\GridCell.jsx -> ./widgets/VideoWidget",
+    "files": [
+      "static/chunks/_app-pages-browser_app_components_widgets_VideoWidget_jsx.js"
+    ]
+  },
+  "node_modules\\next\\dist\\client\\components\\react-dev-overlay\\internal\\helpers\\use-websocket.js -> @vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts": {
+    "id": "node_modules\\next\\dist\\client\\components\\react-dev-overlay\\internal\\helpers\\use-websocket.js -> @vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts",
+    "files": [
+      "static/chunks/_app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js"
+    ]
+  }
+}

@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Op } from 'sequelize';
-import News from '@/lib/models/news-model';
-import Tag from '@/lib/models/tag-model';
-import Menu from '@/lib/models/menu-model';
-import Author from '@/lib/models/author-model';
-import NewsTag from '@/lib/models/news-tag-model';
-import NewsCategory from '@/lib/models/news-category-model';
+import { News, Tag, Menu, Author, NewsTag, NewsCategory } from '@/lib/models/index.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request) {

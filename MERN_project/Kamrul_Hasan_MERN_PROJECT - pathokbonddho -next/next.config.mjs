@@ -12,9 +12,7 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    serverComponentsExternalPackages: ['mysql2', 'sequelize', 'bcryptjs'],
-  },
+  serverExternalPackages: ['mysql2', 'sequelize', 'bcryptjs'],
 };
 
 export default nextConfig;

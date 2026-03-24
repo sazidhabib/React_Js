@@ -1,19 +1,43 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/app/providers/AuthProvider';
 
 export default function AdminLayout({ children }) {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+    const [isNewsOpen, setIsNewsOpen] = useState(false);
+
+    const { logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        router.push('/login');
+    };
 
     useEffect(() => {
         if (!loading && (!user || !user.isAdmin)) {
             router.push('/login');
         }
     }, [user, loading, router]);
+
+    // Auto-expand sub-menus based on current path
+    useEffect(() => {
+        if (pathname?.startsWith('/admin/news') || pathname?.startsWith('/admin/photo-news') || pathname?.startsWith('/admin/video-news')) {
+            setIsNewsOpen(true);
+        }
+        if (pathname?.startsWith('/admin/album') || pathname?.startsWith('/admin/photos')) {
+            setIsGalleryOpen(true);
+        }
+    }, [pathname]);
+
+    const isActiveRoute = (path) => pathname === path;
 
     if (loading) {
         return (
@@ -30,26 +54,208 @@ export default function AdminLayout({ children }) {
     }
 
     return (
-        <div className="d-flex min-vh-100">
-            <aside className="bg-dark text-white p-3" style={{ width: '250px', minHeight: '100vh' }}>
-                <h4 className="mb-4">Admin Panel</h4>
-                <nav className="nav flex-column">
-                    <Link href="/admin" className="nav-link text-white">Dashboard</Link>
-                    <Link href="/admin/news" className="nav-link text-white">News</Link>
-                    <Link href="/admin/news/create" className="nav-link text-white">Create News</Link>
-                    <Link href="/admin/menu" className="nav-link text-white">Menu</Link>
-                    <Link href="/admin/tags" className="nav-link text-white">Tags</Link>
-                    <Link href="/admin/author" className="nav-link text-white">Authors</Link>
-                    <Link href="/admin/articles" className="nav-link text-white">Articles</Link>
-                    <Link href="/admin/blog" className="nav-link text-white">Blog</Link>
-                    <Link href="/admin/ads" className="nav-link text-white">Ads</Link>
-                    <Link href="/admin/design" className="nav-link text-white">Design</Link>
-                    <Link href="/admin/users" className="nav-link text-white">Users</Link>
-                </nav>
-            </aside>
-            <main className="flex-grow-1 p-4 bg-light">
-                {children}
-            </main>
+        <div className="d-flex flex-column min-vh-100">
+            {/* Top Navbar */}
+            <header className="navbar navbar-expand navbar-dark bg-dark sticky-top p-0 shadow">
+                <Link href="/admin" className="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6">
+                    Admin Panel
+                </Link>
+                <button
+                    className="navbar-toggler position-absolute d-md-none collapsed"
+                    type="button"
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                >
+                    <span className="navbar-toggler-icon"></span>
+                </button>
+                
+                <div className="navbar-nav ms-auto me-3">
+                    <div className="nav-item text-nowrap">
+                        <button 
+                            className="btn btn-link nav-link px-3 text-danger border-0" 
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div className="d-flex flex-grow-1">
+                <aside
+                    className={`bg-dark text-white p-0 ${isSidebarOpen ? '' : 'd-none d-md-block'}`}
+                    style={{ width: '260px', minHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}
+                >
+                    <ul className="nav flex-column p-3" style={{ fontSize: '0.95rem' }}>
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin" className="nav-link text-white px-3">
+                                Dashboard
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/menu') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/menu" className="nav-link text-white px-3">
+                                Menu
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/hero-section') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/hero-section" className="nav-link text-white px-3">
+                                Hero Section
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/sections') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/sections" className="nav-link text-white px-3">
+                                Sections
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/articles') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/articles" className="nav-link text-white px-3">
+                                Article
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/tags') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/tags" className="nav-link text-white px-3">
+                                Tags
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/author') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/author" className="nav-link text-white px-3">
+                                Author
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/ads') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/ads" className="nav-link text-white px-3">
+                                Ads
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/design') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/design" className="nav-link text-white px-3">
+                                Design
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/blog') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/blog" className="nav-link text-white px-3">
+                                Blog
+                            </Link>
+                        </li>
+
+                        {/* News Sections (collapsible) */}
+                        <li className="nav-item py-1">
+                            <div
+                                className="nav-link text-warning d-flex justify-content-between align-items-center px-3"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => setIsNewsOpen(!isNewsOpen)}
+                            >
+                                <span className="fs-5 fw-bold">News Sections</span>
+                                <i className={`fas fa-chevron-${isNewsOpen ? 'down' : 'right'}`}></i>
+                            </div>
+                            <div style={{ display: isNewsOpen ? 'block' : 'none' }}>
+                                <ul className="nav flex-column ms-3">
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/news/create') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/news/create" className="nav-link text-white px-3 fw-bold">
+                                            + News Create
+                                        </Link>
+                                    </li>
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/news') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/news" className="nav-link text-white px-3">
+                                            All News
+                                        </Link>
+                                    </li>
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/news?type=photo') || pathname?.includes('/admin/photo-news') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/news?type=photo" className="nav-link text-white px-3">
+                                            Photo News
+                                        </Link>
+                                    </li>
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/news?type=video') || pathname?.includes('/admin/video-news') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/news?type=video" className="nav-link text-white px-3">
+                                            Video News
+                                        </Link>
+                                    </li>
+                                    <hr className="bg-secondary my-1 border-0" style={{height: '1px'}} />
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/photo-news/create') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/photo-news/create" className="nav-link text-white px-3">
+                                            Photo News Create
+                                        </Link>
+                                    </li>
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/video-news/create') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/video-news/create" className="nav-link text-white px-3">
+                                            Video News Create
+                                        </Link>
+                                    </li>
+                                    <li className={`nav-item py-1 ${pathname?.includes('/admin/news/edit') || pathname?.includes('/admin/photo-news/edit') || pathname?.includes('/admin/video-news/edit') ? 'bg-secondary rounded' : ''}`}>
+                                        <span className="nav-link text-secondary px-3" style={{ cursor: 'default' }}>
+                                            Edit Module Active
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        {/* Photo Gallery (collapsible) */}
+                        <li className="nav-item py-1">
+                            <div
+                                className="nav-link text-warning d-flex justify-content-between align-items-center px-3"
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => setIsGalleryOpen(!isGalleryOpen)}
+                            >
+                                <span className="fs-5 fw-bold">Photo Gallery</span>
+                                <i className={`fas fa-chevron-${isGalleryOpen ? 'down' : 'right'}`}></i>
+                            </div>
+                            <div style={{ display: isGalleryOpen ? 'block' : 'none' }}>
+                                <ul className="nav flex-column ms-3">
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/album') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/album" className="nav-link text-white px-3">
+                                            Album
+                                        </Link>
+                                    </li>
+                                    <li className={`nav-item py-1 ${isActiveRoute('/admin/photos') ? 'bg-secondary rounded' : ''}`}>
+                                        <Link href="/admin/photos" className="nav-link text-white px-3">
+                                            Photos
+                                        </Link>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/songs') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/songs" className="nav-link text-white px-3">
+                                Songs
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/videos') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/videos" className="nav-link text-white px-3">
+                                Videos
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/page-layout') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/page-layout" className="nav-link text-white px-3">
+                                PageLayout
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/users') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/users" className="nav-link text-white px-3">
+                                <i className="fas fa-users me-2"></i>Users
+                            </Link>
+                        </li>
+                    </ul>
+                </aside>
+
+                <main className="flex-grow-1 bg-light" style={{ minWidth: 0 }}>
+                    <div className="p-4">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 }

@@ -1,15 +1,10 @@
 import { NextResponse } from 'next/server';
 import { Op } from 'sequelize';
-import News from '@/lib/models/news-model';
-import Tag from '@/lib/models/tag-model';
-import Menu from '@/lib/models/menu-model';
-import Author from '@/lib/models/author-model';
-import NewsTag from '@/lib/models/news-tag-model';
-import NewsCategory from '@/lib/models/news-category-model';
+import { News, Tag, Menu, Author, NewsTag, NewsCategory } from '@/lib/models/index.js';
 
 export async function GET(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         
         const news = await News.findByPk(id, {
             include: [
@@ -53,7 +48,7 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body = await request.json();
 
         const existingNews = await News.findByPk(id);
@@ -154,7 +149,7 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         
         const news = await News.findByPk(id);
         if (!news) {

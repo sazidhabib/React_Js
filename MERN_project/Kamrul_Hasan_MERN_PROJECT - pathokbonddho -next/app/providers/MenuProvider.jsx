@@ -24,8 +24,10 @@ export const MenuProvider = ({ children }) => {
         fetchMenus();
     }, []);
 
+    const getMenuByOrder = (order) => menus.find(m => m.order === order) || {};
+
     return (
-        <MenuContext.Provider value={{ menus, loading, fetchMenus }}>
+        <MenuContext.Provider value={{ menus, loading, fetchMenus, getMenuByOrder }}>
             {children}
         </MenuContext.Provider>
     );

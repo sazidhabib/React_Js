@@ -1,16 +1,15 @@
 "use client";
-import React, { Suspense, lazy } from 'react';
-// Lazy load widgets to improve performance
-const NewsWidget = lazy(() => import('./widgets/NewsWidget'));
-const ImageWidget = lazy(() => import('./widgets/ImageWidget'));
-const VideoWidget = lazy(() => import('./widgets/VideoWidget'));
-const AdWidget = lazy(() => import('./widgets/AdWidget'));
+import React from 'react';
+import NewsWidget from './widgets/NewsWidget';
+import ImageWidget from './widgets/ImageWidget';
+import VideoWidget from './widgets/VideoWidget';
+import AdWidget from './widgets/AdWidget';
 
 const GridCell = ({ cell }) => {
-    const { contentType, contentId } = cell;
+    const { contentType } = cell;
 
     if (!contentType || contentType === 'text') {
-        return null; // Don't render empty text cells
+        return null;
     }
 
     const renderContent = () => {
@@ -21,6 +20,7 @@ const GridCell = ({ cell }) => {
                 return <ImageWidget cell={cell} />;
             case 'video':
                 return <VideoWidget cell={cell} />;
+            case 'ads':
             case 'ad':
                 return <AdWidget cell={cell} />;
             default:
@@ -30,9 +30,7 @@ const GridCell = ({ cell }) => {
 
     return (
         <div className="grid-cell h-100">
-            <Suspense fallback={<div className="placeholder-glow"><span className="placeholder w-100" style={{ height: '200px' }}></span></div>}>
-                {renderContent()}
-            </Suspense>
+            {renderContent()}
         </div>
     );
 };

@@ -1,93 +1,69 @@
-'use client';
+import { headers } from 'next/headers';
+import { jwtDecode } from 'jwt-decode';
+import AdminDashboardClient from './AdminDashboardClient';
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/app/providers/AuthProvider';
-import api from '@/app/lib/api';
+async function getDashboardStats(token) {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    try {
+        const [newsRes, usersRes, menusRes, tagsRes] = await Promise.all([
+            fetch(`${API_URL}/news?limit=1`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                next: { revalidate: 0 }
+            }),
+            fetch(`${API_URL}/users`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                next: { revalidate: 0 }
+            }),
+            fetch(`${API_URL}/menus`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                next: { revalidate: 0 }
+            }),
+            fetch(`${API_URL}/tags`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                next: { revalidate: 0 }
+            })
+        ]);
 
-export default function AdminDashboard() {
-    const { user } = useAuth();
-    const [stats, setStats] = useState({
-        news: 0,
-        users: 0,
-        categories: 0,
-        tags: 0
-    });
-    const [loading, setLoading] = useState(true);
+        const newsData = newsRes.ok ? await newsRes.json() : { totalCount: 0 };
+        const usersData = usersRes.ok ? await usersRes.json() : [];
+        const menusData = menusRes.ok ? await menusRes.json() : { data: [] };
+        const tagsData = tagsRes.ok ? await tagsRes.json() : { tags: [] };
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const [newsRes, usersRes, menusRes, tagsRes] = await Promise.all([
-                    api.get('/news?limit=1'),
-                    api.get('/users'),
-                    api.get('/menus'),
-                    api.get('/tags')
-                ]);
-
-                setStats({
-                    news: newsRes.data.totalCount || 0,
-                    users: usersRes.data.length || 0,
-                    categories: menusRes.data.length || 0,
-                    tags: tagsRes.data.length || 0
-                });
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-            } finally {
-                setLoading(false);
-            }
+        return {
+            news: newsData.totalCount || 0,
+            users: Array.isArray(usersData) ? usersData.length : (usersData.users?.length || 0),
+            categories: (menusData.data || menusData || []).length,
+            tags: (tagsData.tags || tagsData || []).length
         };
-        fetchStats();
-    }, []);
+    } catch (err) {
+        console.error("Dashboard stats fetch error (server):", err);
+        return { news: 0, users: 0, categories: 0, tags: 0 };
+    }
+}
 
-    if (loading) {
-        return (
-            <div className="text-center">
-                <div className="spinner-border" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        );
+export default async function AdminDashboardPage() {
+    const headersList = await headers();
+    const cookieHeader = headersList.get('cookie') || '';
+    const token = cookieHeader.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+
+    let user = null;
+    let isAdmin = false;
+
+    if (token) {
+        try {
+            user = jwtDecode(token);
+            isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.isAdmin;
+        } catch (e) {
+            console.error("JWT decode error (server dashboard):", e);
+        }
     }
 
-    return (
-        <div>
-            <h1 className="mb-4">Dashboard</h1>
-            <p className="mb-4">Welcome, {user?.username || user?.email}!</p>
+    const stats = isAdmin ? await getDashboardStats(token) : { news: 0, users: 0, categories: 0, tags: 0 };
 
-            <div className="row">
-                <div className="col-md-3 mb-4">
-                    <div className="card bg-primary text-white">
-                        <div className="card-body">
-                            <h5 className="card-title">Total News</h5>
-                            <h2>{stats.news}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-3 mb-4">
-                    <div className="card bg-success text-white">
-                        <div className="card-body">
-                            <h5 className="card-title">Total Users</h5>
-                            <h2>{stats.users}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-3 mb-4">
-                    <div className="card bg-info text-white">
-                        <div className="card-body">
-                            <h5 className="card-title">Categories</h5>
-                            <h2>{stats.categories}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-3 mb-4">
-                    <div className="card bg-warning text-white">
-                        <div className="card-body">
-                            <h5 className="card-title">Tags</h5>
-                            <h2>{stats.tags}</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    return (
+        <AdminDashboardClient 
+            initialStats={stats} 
+            user={user} 
+        />
     );
 }

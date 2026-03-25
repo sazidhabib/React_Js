@@ -2,13 +2,8 @@
   "/_not-found/page": "app/_not-found/page.js",
   "/icon.png/route": "app/icon.png/route.js",
   "/api/menus/route": "app/api/menus/route.js",
-  "/api/sections/[type]/route": "app/api/sections/[type]/route.js",
-  "/api/ads/[id]/route": "app/api/ads/[id]/route.js",
-  "/api/ads/[id]/impression/route": "app/api/ads/[id]/impression/route.js",
-  "/api/news/route": "app/api/news/route.js",
   "/page": "app/page.js",
-  "/[slug]/page": "app/[slug]/page.js",
   "/about-us/page": "app/about-us/page.js",
-  "/admin/page-layout/page": "app/admin/page-layout/page.js",
-  "/admin/news/page": "app/admin/news/page.js"
+  "/admin/page": "app/admin/page.js",
+  "/admin/sections/page": "app/admin/sections/page.js"
 }

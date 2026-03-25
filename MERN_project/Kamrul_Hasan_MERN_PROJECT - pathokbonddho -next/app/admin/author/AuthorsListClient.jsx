@@ -1,0 +1,236 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Button, Table, Spinner, Form, Card, Row, Col, Modal, Badge, Pagination } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import api from "@/app/lib/api";
+
+const IMG_URL = `${process.env.NEXT_PUBLIC_API_URL || ''}/uploads`;
+
+const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
+    const [authors, setAuthors] = useState(initialAuthors || []);
+    const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [editingAuthor, setEditingAuthor] = useState(null);
+    const [selectedAuthors, setSelectedAuthors] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterSpecial, setFilterSpecial] = useState('');
+    const [pagination, setPagination] = useState(initialPagination || {
+        currentPage: 1, totalPages: 1, totalCount: 0, hasNext: false, hasPrev: false
+    });
+
+    const [formData, setFormData] = useState({ name: '', description: '', websiteLink: '', isSpecialAuthor: false });
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+
+    const fetchAuthors = async (page = pagination.currentPage) => {
+        setLoading(true);
+        try {
+            const params = {
+                page: page,
+                limit: 10,
+                ...(searchTerm && { search: searchTerm }),
+                ...(filterSpecial && { isSpecialAuthor: filterSpecial })
+            };
+            const response = await api.get('/authors', { params });
+            const data = response.data || {};
+            const authorsList = data.authors || data.data || data || [];
+            setAuthors(Array.isArray(authorsList) ? authorsList : []);
+            setPagination({
+                currentPage: data.currentPage || data.page || 1,
+                totalPages: data.totalPages || 1,
+                totalCount: data.totalCount || data.count || authorsList.length || 0,
+                hasNext: data.hasNext || false,
+                hasPrev: data.hasPrev || false
+            });
+        } catch (error) {
+            toast.error('Failed to fetch authors');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Trigger fetch on filter changes
+    const isFirstRun = React.useRef(true);
+    useEffect(() => {
+        if (isFirstRun.current) { isFirstRun.current = false; return; }
+        fetchAuthors(1);
+    }, [searchTerm, filterSpecial]);
+
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({ name: '', description: '', websiteLink: '', isSpecialAuthor: false });
+        setImageFile(null);
+        setImagePreview('');
+        setEditingAuthor(null);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        const submitData = new FormData();
+        Object.keys(formData).forEach(key => submitData.append(key, formData[key]));
+        if (imageFile) submitData.append('image', imageFile);
+
+        try {
+            if (editingAuthor) {
+                await api.patch(`/authors/${editingAuthor.id}`, submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                toast.success('Author updated');
+            } else {
+                await api.post('/authors', submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                toast.success('Author created');
+            }
+            setShowModal(false);
+            resetForm();
+            fetchAuthors(pagination.currentPage);
+        } catch (error) { toast.error(error.response?.data?.message || 'Operation failed'); }
+        finally { setLoading(false); }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Delete this author?')) return;
+        try {
+            await api.delete(`/authors/${id}`);
+            toast.success('Author deleted');
+            fetchAuthors(pagination.currentPage);
+        } catch (error) { toast.error('Delete failed'); }
+    };
+
+    const toggleSelectAll = () => setSelectedAuthors(selectedAuthors.length === authors.length ? [] : authors.map(a => a.id));
+
+    if (!isAdmin) return <div className="p-4 text-center"><h4>Access Denied</h4></div>;
+
+    return (
+        <div className="container mt-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h4 className="mb-0">✍️ Authors Management</h4>
+                <Button variant="primary" onClick={() => { resetForm(); setShowModal(true); }} className="shadow-sm">
+                    <i className="fas fa-plus me-2"></i>Add Author
+                </Button>
+            </div>
+
+            <Card className="mb-4 shadow-sm border-0 bg-light">
+                <Card.Body>
+                    <Row className="g-3">
+                        <Col md={5}>
+                            <Form.Control placeholder="Search by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="border-0 shadow-sm" />
+                        </Col>
+                        <Col md={3}>
+                            <Form.Select value={filterSpecial} onChange={(e) => setFilterSpecial(e.target.value)} className="border-0 shadow-sm">
+                                <option value="">All Types</option>
+                                <option value="true">Special Authors</option>
+                                <option value="false">Regular Authors</option>
+                            </Form.Select>
+                        </Col>
+                        <Col md={4} className="text-end">
+                            {selectedAuthors.length > 0 && <Button variant="danger" className="shadow-sm" onClick={() => {/* bulk delete logic if exists */}}>Delete Selected ({selectedAuthors.length})</Button>}
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
+
+            <Card className="shadow-sm border-0 overflow-hidden">
+                <div className="table-responsive">
+                    <Table hover className="mb-0">
+                        <thead className="table-dark">
+                            <tr>
+                                <th style={{width: 50}}><Form.Check checked={authors.length > 0 && selectedAuthors.length === authors.length} onChange={toggleSelectAll} /></th>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th className="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {loading ? <tr><td colSpan="5" className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr> : authors.map(author => (
+                                <tr key={author.id} className="align-middle">
+                                    <td><Form.Check checked={selectedAuthors.includes(author.id)} onChange={() => setSelectedAuthors(prev => prev.includes(author.id) ? prev.filter(aid => aid !== author.id) : [...prev, author.id])} /></td>
+                                    <td>
+                                        {author.image ? (
+                                            <img src={`${IMG_URL}/${author.image}`} alt="" className="rounded-circle shadow-sm" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                        ) : (
+                                            <div className="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center" style={{width: 40, height: 40}}><i className="fas fa-user"></i></div>
+                                        )}
+                                    </td>
+                                    <td className="fw-bold">{author.name}</td>
+                                    <td><Badge bg={author.isSpecialAuthor ? "success" : "info"}>{author.isSpecialAuthor ? 'Special' : 'Regular'}</Badge></td>
+                                    <td className="text-center">
+                                        <div className="btn-group">
+                                            <Button variant="outline-primary" size="sm" onClick={() => {
+                                                setEditingAuthor(author);
+                                                setFormData({ name: author.name, description: author.description || '', websiteLink: author.websiteLink || '', isSpecialAuthor: author.isSpecialAuthor });
+                                                setImagePreview(author.image ? `${IMG_URL}/${author.image}` : '');
+                                                setShowModal(true);
+                                            }}>Edit</Button>
+                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(author.id)}>Del</Button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                </div>
+            </Card>
+
+            {pagination.totalPages > 1 && (
+                <Pagination className="justify-content-center mt-4">
+                    <Pagination.Prev disabled={!pagination.hasPrev} onClick={() => fetchAuthors(pagination.currentPage - 1)} />
+                    {[...Array(pagination.totalPages)].map((_, i) => (
+                        <Pagination.Item key={i} active={i + 1 === pagination.currentPage} onClick={() => fetchAuthors(i + 1)}>{i + 1}</Pagination.Item>
+                    ))}
+                    <Pagination.Next disabled={!pagination.hasNext} onClick={() => fetchAuthors(pagination.currentPage + 1)} />
+                </Pagination>
+            )}
+
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
+                <Modal.Header closeButton><Modal.Title className="fw-bold">{editingAuthor ? 'Edit' : 'Add'} Author Profile</Modal.Title></Modal.Header>
+                <Form onSubmit={handleSubmit}>
+                    <Modal.Body className="bg-light">
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Full Name *</Form.Label>
+                                    <Form.Control name="name" value={formData.name} onChange={handleInputChange} required placeholder="Author's name" />
+                                </Form.Group>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Website / Social URL</Form.Label>
+                                    <Form.Control name="websiteLink" value={formData.websiteLink} onChange={handleInputChange} placeholder="https://..." />
+                                </Form.Group>
+                                <Form.Check type="switch" label="Make Special Author" id="special-switch" name="isSpecialAuthor" checked={formData.isSpecialAuthor} onChange={handleInputChange} className="mb-3 fw-bold" />
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Profile Photo</Form.Label>
+                                    <Form.Control type="file" onChange={handleImageChange} className="border-0 shadow-sm" />
+                                </Form.Group>
+                                {imagePreview && <div className="text-center mt-2 border rounded p-2 bg-white"><img src={imagePreview} alt="Preview" className="img-thumbnail border-0" style={{ maxHeight: '120px' }} /></div>}
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Biography / Description</Form.Label>
+                                    <Form.Control as="textarea" rows={9} name="description" value={formData.description} onChange={handleInputChange} placeholder="Brief bio..." />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                    </Modal.Body>
+                    <Modal.Footer className="border-top-0 pt-0">
+                        <Button variant="outline-secondary" onClick={() => setShowModal(false)}>Discard</Button>
+                        <Button type="submit" variant="primary" className="px-5">Save Profile</Button>
+                    </Modal.Footer>
+                </Form>
+            </Modal>
+        </div>
+    );
+};
+
+export default AuthorsListClient;

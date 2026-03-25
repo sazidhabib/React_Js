@@ -4,64 +4,38 @@ import Link from 'next/link';
 import axios from 'axios';
 import { Container, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
 
-
-const NewsDetails = ({ id }) => {
-    
-    const [news, setNews] = useState(null);
-    const [loading, setLoading] = useState(true);
+const NewsDetails = ({ id, initialData, initialAds }) => {
+    const [news, setNews] = useState(initialData || null);
+    const [loading, setLoading] = useState(!initialData);
     const [fontSize, setFontSize] = useState(19);
 
     const [error, setError] = useState(null);
     const [relatedNews, setRelatedNews] = useState([]);
-    const [sidebarAds, setSidebarAds] = useState([]);
-    const [headerAds, setHeaderAds] = useState([]);
-    const [footerAds, setFooterAds] = useState([]);
+    const [sidebarAds, setSidebarAds] = useState(initialAds?.sidebar || []);
+    const [headerAds, setHeaderAds] = useState(initialAds?.header || []);
+    const [footerAds, setFooterAds] = useState(initialAds?.footer || []);
 
-    const API_BASE_URL = '';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
     useEffect(() => {
+        // If we have initial data, we can skip the main fetch
+        if (initialData) {
+            setNews(initialData);
+            setLoading(false);
+            // Still need to fetch related news and handle ad impressions
+            fetchSecondaryContent(initialData);
+            return;
+        }
+
         const fetchNewsDetails = async () => {
             try {
                 setLoading(true);
-                // Fetch the main news article
-                const response = await axios.get(`${API_BASE_URL}/api/news/${id}`);
+                const response = await axios.get(`${API_BASE_URL}/news/${id}`);
                 const articleData = response.data.data || response.data.news || response.data;
 
                 if (!articleData) throw new Error("Article not found");
                 setNews(articleData);
-
-                // Fetch related news (if categories exist, fetch by first category tag, otherwise just fetch latest)
-                let relatedParams = { limit: 6, status: 'published', excludeIds: id };
-                if (articleData.Categories && articleData.Categories.length > 0) {
-                    relatedParams.categories = articleData.Categories[0].slug || articleData.Categories[0].name;
-                }
-
-                const relatedRes = await axios.get(`${API_BASE_URL}/api/news`, { params: relatedParams });
-                setRelatedNews(relatedRes.data.news || relatedRes.data.rows || []);
-
-                // Fetch ads for details page
-                try {
-                    const [headerRes, sidebarRes, footerRes] = await Promise.all([
-                        axios.get(`${API_BASE_URL}/api/ads/position`, { params: { position: 'header', page: 'details' } }),
-                        axios.get(`${API_BASE_URL}/api/ads/position`, { params: { position: 'sidebar', page: 'details' } }),
-                        axios.get(`${API_BASE_URL}/api/ads/position`, { params: { position: 'footer', page: 'details' } })
-                    ]);
-
-                    setSidebarAds(sidebarRes.data || []);
-                    setHeaderAds(headerRes.data || []);
-                    setFooterAds(footerRes.data || []);
-
-                    // Record impressions for all loaded ads
-                    [...(headerRes.data || []), ...(sidebarRes.data || []), ...(footerRes.data || [])].forEach(ad => {
-                        const adId = ad.id || ad._id;
-                        if (adId) {
-                            axios.post(`${API_BASE_URL}/api/ads/${adId}/impression`).catch(() => { });
-                        }
-                    });
-                } catch (err) {
-                    console.error('Error fetching ads:', err);
-                }
-
+                fetchSecondaryContent(articleData);
             } catch (err) {
                 console.error('Error fetching news details:', err);
                 setError(err.message || "Failed to load the article.");
@@ -71,17 +45,55 @@ const NewsDetails = ({ id }) => {
         };
 
         fetchNewsDetails();
-
-        // Scroll to top when loading a new article
         window.scrollTo(0, 0);
-    }, [id, API_BASE_URL]);
+    }, [id, initialData, API_BASE_URL]);
+
+    const fetchSecondaryContent = async (articleData) => {
+        // Fetch related news
+        let relatedParams = { limit: 6, status: 'published', excludeIds: id };
+        if (articleData.Categories && articleData.Categories.length > 0) {
+            relatedParams.categories = articleData.Categories[0].slug || articleData.Categories[0].name;
+        }
+
+        try {
+            const relatedRes = await axios.get(`${API_BASE_URL}/news`, { params: relatedParams });
+            setRelatedNews(relatedRes.data.news || relatedRes.data.rows || []);
+        } catch (e) {
+            console.error('Error fetching related news:', e);
+        }
+
+        // Handle Ad Impressions (for pre-fetched ads)
+        if (initialAds) {
+            [...(initialAds.header || []), ...(initialAds.sidebar || []), ...(initialAds.footer || [])].forEach(ad => {
+                const adId = ad.id || ad._id;
+                if (adId) {
+                    axios.post(`${API_BASE_URL}/ads/${adId}/impression`).catch(() => { });
+                }
+            });
+        } else {
+            // Fetch ads if not provided
+            try {
+                const [headerRes, sidebarRes, footerRes] = await Promise.all([
+                    axios.get(`${API_BASE_URL}/ads/position`, { params: { position: 'header', page: 'details' } }),
+                    axios.get(`${API_BASE_URL}/ads/position`, { params: { position: 'sidebar', page: 'details' } }),
+                    axios.get(`${API_BASE_URL}/ads/position`, { params: { position: 'footer', page: 'details' } })
+                ]);
+                setSidebarAds(sidebarRes.data || []);
+                setHeaderAds(headerRes.data || []);
+                setFooterAds(footerRes.data || []);
+            } catch (err) {
+                console.error('Error fetching ads on client:', err);
+            }
+        }
+    };
 
     const getImageUrl = (imagePath) => {
         if (!imagePath) return null;
         if (imagePath.startsWith('http')) {
             return imagePath.replace(/^http:\/\//, 'https://');
         }
-        return `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+        return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
     };
 
     const formatDate = (dateStr) => {
@@ -103,7 +115,7 @@ const NewsDetails = ({ id }) => {
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
-    if (loading) {
+    if (loading && !news) {
         return (
             <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
                 <Spinner animation="grow" variant="success" />
@@ -127,10 +139,6 @@ const NewsDetails = ({ id }) => {
 
     return (
         <article className="news-details-page bg-white pb-5">
-            {/* SEO Helmet */}
-            
-
-            {/* Header Ads */}
             <Container className="pt-3">
                 {headerAds.map((ad, idx) => (
                     <div key={ad.id || idx} className="mb-4 text-center">
@@ -148,12 +156,12 @@ const NewsDetails = ({ id }) => {
                                     onClick={() => {
                                         const adId = ad.id || ad._id;
                                         if (adId) {
-                                            axios.post(`${API_BASE_URL}/api/ads/${adId}/click`).catch(() => { });
+                                            axios.post(`${API_BASE_URL}/ads/${adId}/click`).catch(() => { });
                                         }
                                     }}
                                 >
                                     <img
-                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`}
+                                        src={ad.image.startsWith('http') ? ad.image : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${ad.image}`}
                                         alt={ad.name || 'Advertisement'}
                                         className="img-fluid rounded shadow-sm"
                                         style={{ maxHeight: '120px', width: 'auto' }}
@@ -165,14 +173,9 @@ const NewsDetails = ({ id }) => {
                 ))}
             </Container>
 
-            {/* Main Content Container */}
             <Container className="pt-2">
                 <Row className="g-5">
-
-                    {/* LEFT COLUMN: Main Article (col-lg-8) */}
                     <Col lg={8} className="main-article-column">
-
-                        {/* Categories Badge (Clickable Breadcrumb) */}
                         <div className="mb-3">
                             {news.Categories && news.Categories.map(cat => (
                                 <Link
@@ -187,7 +190,6 @@ const NewsDetails = ({ id }) => {
                             ))}
                         </div>
 
-                        {/* Title & Highlight */}
                         <h1 className="fw-bold mb-3 font-bangla" style={{ fontSize: '2.5rem', lineHeight: '1.4', color: '#1a1a1a' }}>
                             {news.newsHeadline}
                         </h1>
@@ -200,7 +202,6 @@ const NewsDetails = ({ id }) => {
                             />
                         )}
 
-                        {/* Meta Bar: Author, Date, Sharing */}
                         <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 py-3 border-top border-bottom">
                             <div className="d-flex align-items-center text-muted small font-bangla">
                                 {news.Author && (
@@ -215,9 +216,7 @@ const NewsDetails = ({ id }) => {
                                 </div>
                             </div>
 
-                            {/* Tools: Font Size, Print, Sharing */}
                             <div className="d-flex align-items-center gap-2 mt-2 mt-md-0 flex-wrap">
-                                {/* Font Size Controls */}
                                 <div className="d-flex align-items-center border rounded-pill px-2 py-1 no-print">
                                     <button
                                         className="btn btn-sm p-0 px-2 border-0"
@@ -227,7 +226,6 @@ const NewsDetails = ({ id }) => {
                                     >
                                         <i className="fas fa-minus"></i>
                                     </button>
-                                    {/* <span className="mx-1 fw-bold" style={{ minWidth: '28px', textAlign: 'center', fontSize: '14px', color: '#333' }}>{fontSize}</span> */}
                                     <button
                                         className="btn btn-sm p-0 px-2 border-0"
                                         onClick={increaseFontSize}
@@ -238,7 +236,6 @@ const NewsDetails = ({ id }) => {
                                     </button>
                                 </div>
 
-                                {/* Print Button */}
                                 <button
                                     className="btn btn-sm btn-light rounded-circle shadow-sm border no-print"
                                     onClick={handlePrint}
@@ -247,7 +244,6 @@ const NewsDetails = ({ id }) => {
                                     <i className="fas fa-print"></i>
                                 </button>
 
-                                {/* Social Sharing */}
                                 <span className="me-1 text-muted small no-print">শেয়ার:</span>
                                 <button className="btn btn-sm btn-light rounded-circle me-1 shadow-sm border no-print"><i className="fab fa-facebook-f text-primary"></i></button>
                                 <button className="btn btn-sm btn-light rounded-circle me-1 shadow-sm border no-print"><i className="fab fa-twitter text-info"></i></button>
@@ -255,7 +251,6 @@ const NewsDetails = ({ id }) => {
                             </div>
                         </div>
 
-                        {/* Hero Image or Video Player */}
                         {(() => {
                             const isVideo = news.newsType === 'video';
                             const youtubeId = getYouTubeId(news.videoLink);
@@ -296,62 +291,25 @@ const NewsDetails = ({ id }) => {
                             );
                         })()}
 
-                        {/* Article Body Content */}
                         <style>
                             {`
-                                .article-body {
-                                    color: #333;
-                                    word-wrap: break-word;
-                                    line-height: 1.9;
-                                    
+                                .article-body { color: #333; word-wrap: break-word; line-height: 1.9; }
+                                .article-body p, .article-body div, .article-body p span, .article-body p * {
+                                    font-family: 'custom_font' !important; font-size: ${fontSize}px !important; line-height: inherit !important;
                                 }
-                                .article-body p,
-                                .article-body div,
-                                .article-body p span, 
-                                .article-body p * {
-                                    font-family: 'custom_font' !important;
-                                    font-size: ${fontSize}px !important;
-                                    line-height: inherit !important;
-                                }
-                                .article-body p:first-of-type,
-                                .article-body p:first-of-type span,
-                                .article-body p:first-of-type * {
-                                    font-size: ${fontSize}px !important;
-                                    font-weight: 500 !important;
-                                }
-
-                                /* Print styles */
                                 @media print {
-                                    body * {
-                                        visibility: hidden;
-                                    }
-                                    .news-details-page,
-                                    .news-details-page .main-article-column,
-                                    .news-details-page .main-article-column * {
-                                        visibility: visible;
-                                    }
-                                    .news-details-page .main-article-column {
-                                        position: absolute;
-                                        left: 0;
-                                        top: 0;
-                                        width: 100%;
-                                    }
-                                    .no-print,
-                                    .sidebar-column,
-                                    .social-sharing-icons,
-                                    header,
-                                    footer {
-                                        display: none !important;
-                                    }
+                                    body * { visibility: hidden; }
+                                    .news-details-page, .news-details-page .main-article-column, .news-details-page .main-article-column * { visibility: visible; }
+                                    .news-details-page .main-article-column { position: absolute; left: 0; top: 0; width: 100%; }
+                                    .no-print, .sidebar-column, .social-sharing-icons, header, footer { display: none !important; }
                                 }
                             `}
                         </style>
                         <div
-                            className="article-body  editor-content"
+                            className="article-body editor-content"
                             dangerouslySetInnerHTML={{ __html: news.content }}
                         />
 
-                        {/* Photo Gallery (if Photo News) */}
                         {news.newsType === 'photo' && news.GalleryItems && news.GalleryItems.length > 0 && (
                             <div className="photo-gallery-section mt-5 border-top pt-4">
                                 <h4 className="fw-bold font-bangla mb-4">গ্যালারি</h4>
@@ -379,7 +337,6 @@ const NewsDetails = ({ id }) => {
                             </div>
                         )}
 
-                        {/* Article Tags */}
                         {news.Tags && news.Tags.length > 0 && (
                             <div className="d-flex align-items-center flex-wrap gap-2 mt-5 pt-4 border-top">
                                 <h6 className="fw-bold mb-0 font-bangla text-muted me-2">ট্যাগ:</h6>
@@ -392,16 +349,12 @@ const NewsDetails = ({ id }) => {
                         )}
                     </Col>
 
-                    {/* RIGHT COLUMN: Sidebar (col-lg-4) */}
                     <Col lg={4} className="sidebar-column">
                         <div className="sticky-top" style={{ top: '100px', zIndex: 1 }}>
-
-                            {/* Dynamic Sidebar Ads */}
                             {sidebarAds.length > 0 ? (
                                 sidebarAds.map((ad, idx) => {
                                     const adImage = ad.image;
-                                    const imgSrc = adImage ? (adImage.startsWith('http') ? adImage : `${API_BASE_URL}/uploads/ads/${adImage}`) : null;
-
+                                    const imgSrc = adImage ? (adImage.startsWith('http') ? adImage : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${adImage}`) : null;
                                     return (
                                         <div key={ad.id || idx} className="my-4 text-center">
                                             {ad.type === 'google_adsense' ? (
@@ -418,7 +371,7 @@ const NewsDetails = ({ id }) => {
                                                         onClick={() => {
                                                             const adId = ad.id || ad._id;
                                                             if (adId) {
-                                                                axios.post(`${API_BASE_URL}/api/ads/${adId}/click`).catch(err => console.error('Click error:', err));
+                                                                axios.post(`${API_BASE_URL}/ads/${adId}/click`).catch(() => { });
                                                             }
                                                         }}
                                                     >
@@ -432,9 +385,7 @@ const NewsDetails = ({ id }) => {
                             ) : (
                                 <div className="my-4 p-4 bg-light text-center border rounded d-flex align-items-center justify-content-center flex-column" style={{ minHeight: '250px' }}>
                                     <span className="text-muted small mb-2">- Advertisement -</span>
-                                    <div className="text-muted opacity-50">
-                                        <i className="bi bi-badge-ad fs-1"></i>
-                                    </div>
+                                    <div className="text-muted opacity-50"><i className="bi bi-badge-ad fs-1"></i></div>
                                 </div>
                             )}
 
@@ -443,48 +394,35 @@ const NewsDetails = ({ id }) => {
                                     <h4 className="title-text font-bangla fs-5">আরও খবর</h4>
                                 </div>
                             </div>
-
                             <div className="related-news-list">
-                                {relatedNews.length > 0 ? (
-                                    relatedNews.map((item, idx) => {
-                                        const rImg = getImageUrl(item.thumbImage || item.leadImage);
-                                        return (
-                                            <div key={item.id || idx} className="d-flex align-items-start gap-3 mb-4 pb-3 border-bottom hover-bg-light transition rounded p-2">
-                                                {rImg && (
-                                                    <div className="flex-shrink-0" style={{ width: '100px', height: '70px', overflow: 'hidden', borderRadius: '4px' }}>
-                                                        <Link href={`/news/${item.id || item._id}`}>
-                                                            <img
-                                                                src={rImg}
-                                                                alt={item.newsHeadline}
-                                                                className="w-100 h-100 object-fit-cover hover-zoom"
-                                                            />
-                                                        </Link>
-                                                    </div>
-                                                )}
-                                                <div>
-                                                    <Link href={`/news/${item.id || item._id}`} className="text-decoration-none text-dark">
-                                                        <h6 className="fw-bold mb-2 font-bangla hover-danger" style={{ lineHeight: '1.4' }}>
-                                                            {item.alternativeHeadline || item.newsHeadline}
-                                                        </h6>
+                                {relatedNews.map((item, idx) => {
+                                    const rImg = getImageUrl(item.thumbImage || item.leadImage);
+                                    return (
+                                        <div key={item.id || idx} className="d-flex align-items-start gap-3 mb-4 pb-3 border-bottom hover-bg-light transition rounded p-2">
+                                            {rImg && (
+                                                <div className="flex-shrink-0" style={{ width: '100px', height: '70px', overflow: 'hidden', borderRadius: '4px' }}>
+                                                    <Link href={`/news/${item.id || item._id}`}>
+                                                        <img src={rImg} alt={item.newsHeadline} className="w-100 h-100 object-fit-cover hover-zoom" />
                                                     </Link>
-                                                    <div className="small text-muted font-bangla" style={{ fontSize: '0.8rem' }}>
-                                                        <i className="bi bi-clock me-1"></i>
-                                                        {new Date(item.createdAt).toLocaleDateString('bn-BD')}
-                                                    </div>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <Link href={`/news/${item.id || item._id}`} className="text-decoration-none text-dark">
+                                                    <h6 className="fw-bold mb-2 font-bangla hover-danger" style={{ lineHeight: '1.4' }}>{item.alternativeHeadline || item.newsHeadline}</h6>
+                                                </Link>
+                                                <div className="small text-muted font-bangla" style={{ fontSize: '0.8rem' }}>
+                                                    <i className="bi bi-clock me-1"></i>{new Date(item.createdAt).toLocaleDateString('bn-BD')}
                                                 </div>
                                             </div>
-                                        );
-                                    })
-                                ) : (
-                                    <p className="text-muted small text-center font-bangla py-3 bg-light rounded">No related news found.</p>
-                                )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </Col>
                 </Row>
             </Container>
 
-            {/* Footer Ads */}
             <Container className="mt-5 pb-4">
                 {footerAds.map((ad, idx) => (
                     <div key={ad.id || idx} className="mb-4 text-center">
@@ -502,12 +440,12 @@ const NewsDetails = ({ id }) => {
                                     onClick={() => {
                                         const adId = ad.id || ad._id;
                                         if (adId) {
-                                            axios.post(`${API_BASE_URL}/api/ads/${adId}/click`).catch(() => { });
+                                            axios.post(`${API_BASE_URL}/ads/${adId}/click`).catch(() => { });
                                         }
                                     }}
                                 >
                                     <img
-                                        src={ad.image.startsWith('http') ? ad.image : `${API_BASE_URL}/uploads/ads/${ad.image}`}
+                                        src={ad.image.startsWith('http') ? ad.image : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${ad.image}`}
                                         alt={ad.name || 'Advertisement'}
                                         className="img-fluid rounded shadow-sm"
                                         style={{ maxHeight: '120px', width: 'auto' }}

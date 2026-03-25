@@ -3,9 +3,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
 const AdWidget = ({ cell }) => {
-    const [ad, setAd] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const API_BASE_URL = '';
+    const [ad, setAd] = useState(cell.resolvedContent || null);
+    const [loading, setLoading] = useState(!cell.resolvedContent);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
     // Detect current page context safely
     const currentPage = useMemo(() => {
@@ -23,7 +23,6 @@ const AdWidget = ({ cell }) => {
         if (typeof pages === 'string') {
             try {
                 pages = JSON.parse(pages);
-                // Handle double-stringified arrays
                 if (typeof pages === 'string') {
                     pages = JSON.parse(pages);
                 }
@@ -38,31 +37,29 @@ const AdWidget = ({ cell }) => {
     // Check if ad should be visible on current page
     const shouldShowAd = useMemo(() => {
         if (!ad) return false;
-
-        // Special rule: "details" page MUST be explicitly selected
         if (currentPage === 'details') {
             return displayPages.includes('details');
         }
-
-        // No displayPages set = show on ALL pages (except details, handled above)
         if (displayPages.length === 0) return true;
-
-        // "none" means don't show anywhere
         if (displayPages.includes('none')) return false;
-
-        // Check if current page is in the allowed list
         return displayPages.includes(currentPage);
     }, [ad, displayPages, currentPage]);
 
-    // Fetch ad data
+    // Fetch ad data if not provided by server
     useEffect(() => {
+        if (cell.resolvedContent) {
+            setAd(cell.resolvedContent);
+            setLoading(false);
+            return;
+        }
+
         const fetchAd = async () => {
             if (!cell.contentId) {
                 setLoading(false);
                 return;
             }
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/ads/${cell.contentId}`);
+                const response = await axios.get(`${API_BASE_URL}/ads/${cell.contentId}`);
                 setAd(response.data.data || response.data);
             } catch (err) {
                 console.error('Error fetching ad widget data:', err);
@@ -72,35 +69,26 @@ const AdWidget = ({ cell }) => {
         };
 
         fetchAd();
-    }, [cell.contentId, API_BASE_URL]);
+    }, [cell.contentId, cell.resolvedContent, API_BASE_URL]);
 
-    // Fire impression tracking when ad renders and is visible
+    // Fire impression tracking
     useEffect(() => {
         if (ad && ad.id && shouldShowAd) {
-            axios.post(`${API_BASE_URL}/api/ads/${ad.id}/impression`).catch(() => { });
+            axios.post(`${API_BASE_URL}/ads/${ad.id}/impression`).catch(() => { });
         }
     }, [ad, API_BASE_URL, shouldShowAd]);
 
-    if (loading) {
-        return (
-            <div className="text-center p-3">
-                <div className="spinner-border spinner-border-sm" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        );
+    if (loading && !ad) {
+        return <div className="text-center p-3 animate-pulse bg-light rounded" style={{ height: '100px' }}></div>;
     }
 
-    if (!ad) return null;
-
-    // Don't render if ad is not meant for this page
-    if (!shouldShowAd) return null;
+    if (!ad || !shouldShowAd) return null;
 
     const adImage = ad.image;
     const adTitle = ad.title || ad.name || cell.contentTitle || 'Advertisement';
     const adLink = ad.imageUrl || ad.link || ad.url || '#';
     const imgSrc = adImage
-        ? (adImage.startsWith('http') ? adImage : `${API_BASE_URL}/uploads/ads/${adImage}`)
+        ? (adImage.startsWith('http') ? adImage : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${adImage}`)
         : null;
 
     if (ad.type === 'google_adsense') {
@@ -128,7 +116,6 @@ const AdWidget = ({ cell }) => {
         </div>
     );
 
-    // Wrap in a link if URL exists
     if (adLink && adLink !== '#') {
         return (
             <a
@@ -138,7 +125,7 @@ const AdWidget = ({ cell }) => {
                 className="text-decoration-none"
                 onClick={() => {
                     if (ad && ad.id) {
-                        axios.post(`${API_BASE_URL}/api/ads/${ad.id}/click`).catch(() => { });
+                        axios.post(`${API_BASE_URL}/ads/${ad.id}/click`).catch(() => { });
                     }
                 }}
             >

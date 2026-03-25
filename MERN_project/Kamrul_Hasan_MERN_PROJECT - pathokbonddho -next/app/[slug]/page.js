@@ -56,6 +56,16 @@ async function getPageData(slug) {
               } catch (e) {
                 console.error('Error pre-fetching image for cell:', e);
               }
+            } else if ((cell.contentType === 'ads' || cell.contentType === 'ad') && cell.contentId) {
+              try {
+                const aRes = await fetch(`${API_URL}/ads/${cell.contentId}`, { next: { revalidate: 60 } });
+                if (aRes.ok) {
+                  const data = await aRes.json();
+                  cell.resolvedContent = data.data || data;
+                }
+              } catch (e) {
+                console.error('Error pre-fetching ad for cell:', e);
+              }
             }
           }
         }

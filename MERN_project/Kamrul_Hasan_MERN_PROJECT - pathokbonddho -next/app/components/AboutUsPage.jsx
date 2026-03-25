@@ -2,22 +2,26 @@
 import { useEffect, useState, useRef } from "react";
 import { Spinner } from "react-bootstrap";
 import Link from 'next/link';
+import Image from 'next/image';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import axios from "axios";
 
-
-
-
-const AboutUsPage = () => {
-  const [aboutData, setAboutData] = useState(null);
-  const [loading, setLoading] = useState(true);
+const AboutUsPage = ({ initialData }) => {
+  const [aboutData, setAboutData] = useState(initialData || null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
   const [visibleSections, setVisibleSections] = useState(new Set());
   const sectionRefs = useRef([]);
 
-  const API_URL = `${''}/api/sections/about`;
+  const API_URL = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/sections/about`;
 
   useEffect(() => {
+    if (initialData) {
+      setAboutData(initialData);
+      setLoading(false);
+      return;
+    }
+
     const fetchAboutData = async () => {
       try {
         const response = await axios.get(API_URL);
@@ -30,10 +34,12 @@ const AboutUsPage = () => {
       }
     };
     fetchAboutData();
-  }, []);
+  }, [initialData, API_URL]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
+    if (loading) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -56,9 +62,14 @@ const AboutUsPage = () => {
     sectionRefs.current[index] = el;
   };
 
-  const imageUrl = aboutData?.imageUrl
-    ? `${''}/uploads/${aboutData.imageUrl.replace(/^\/+/, "")}`
-    : "/images/kamrul_hasan_bio2.jpg";
+  const getFullImageUrl = (path) => {
+      if (!path) return "/images/kamrul_hasan_bio2.jpg";
+      if (path.startsWith('http')) return path;
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+      return `${baseUrl}/${path.replace(/^\/+/, "")}`;
+  };
+
+  const imageUrl = getFullImageUrl(aboutData?.imageUrl);
 
   const stats = [
     { icon: "fas fa-calendar-alt", value: "৩০+", label: "বছরের অভিজ্ঞতা" },
@@ -67,222 +78,212 @@ const AboutUsPage = () => {
     { icon: "fas fa-users", value: "১ লক্ষ+", label: "পাঠক ও অনুসারী" },
   ];
 
-  if (loading) {
+  if (loading && !aboutData) {
     return (
-      <>
-
-        <div className="aboutus-loading">
+        <div className="aboutus-loading d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
           <Spinner animation="border" variant="primary" />
           <p className="mt-3 text-muted">লোড হচ্ছে...</p>
         </div>
-
-      </>
     );
   }
 
-  if (error) {
+  if (error && !aboutData) {
     return (
-      <>
-
-        <div className="aboutus-error">
-          <i className="fas fa-exclamation-triangle"></i>
-          <p>{error}</p>
-          <Link href="/" className="btn aboutus-btn-primary">প্রধান পাতায় ফিরুন</Link>
+        <div className="aboutus-error text-center py-5">
+          <i className="fas fa-exclamation-triangle fs-1 text-danger mb-3"></i>
+          <p className="lead">{error}</p>
+          <Link href="/" className="btn btn-primary">প্রধান পাতায় ফিরুন</Link>
         </div>
-
-      </>
     );
   }
 
   return (
-    <>
+    <main className="aboutus-page custom-font">
+      {/* ═══════════════ HERO SECTION ═══════════════ */}
+      <section className="aboutus-hero">
+        <div className="aboutus-hero-overlay"></div>
+        <div className="aboutus-hero-content text-center">
+          <div className="aboutus-hero-badge">আমাদের সম্পর্কে</div>
+          <h1 className="aboutus-hero-title">পাঠকবন্ধু</h1>
+          <p className="aboutus-hero-subtitle">
+            সত্য, বস্তুনিষ্ঠ ও নিরপেক্ষ সংবাদ পরিবেশনে অঙ্গীকারবদ্ধ
+          </p>
+          <div className="aboutus-hero-divider mx-auto"></div>
+        </div>
+      </section>
 
-
-      <main className="aboutus-page custom-font">
-
-        {/* ═══════════════ HERO SECTION ═══════════════ */}
-        <section className="aboutus-hero">
-          <div className="aboutus-hero-overlay"></div>
-          <div className="aboutus-hero-content">
-            <div className="aboutus-hero-badge">আমাদের সম্পর্কে</div>
-            <h1 className="aboutus-hero-title">পাঠকবন্ধু</h1>
-            <p className="aboutus-hero-subtitle">
-              সত্য, বস্তুনিষ্ঠ ও নিরপেক্ষ সংবাদ পরিবেশনে অঙ্গীকারবদ্ধ
-            </p>
-            <div className="aboutus-hero-divider"></div>
-          </div>
-        </section>
-
-        {/* ═══════════════ BIO SECTION ═══════════════ */}
-        <section
-          className={`aboutus-bio ${visibleSections.has("bio") ? "aboutus-visible" : ""}`}
-          ref={(el) => addRef(el, 0)}
-          data-section="bio"
-        >
-          <div className="container">
-            <div className="row align-items-center g-5">
-              <div className="col-lg-5">
-                <div className="aboutus-bio-image-wrapper">
-                  <div className="aboutus-bio-image-accent"></div>
-                  <img
+      {/* ═══════════════ BIO SECTION ═══════════════ */}
+      <section
+        className={`aboutus-bio ${visibleSections.has("bio") ? "aboutus-visible" : ""}`}
+        ref={(el) => addRef(el, 0)}
+        data-section="bio"
+      >
+        <div className="container">
+          <div className="row align-items-center g-5">
+            <div className="col-lg-5">
+              <div className="aboutus-bio-image-wrapper position-relative">
+                <div className="aboutus-bio-image-accent"></div>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5' }}>
+                  <Image
                     src={imageUrl}
                     alt="পাঠকবন্ধুর লোগো"
-                    className="aboutus-bio-image"
+                    fill
+                    className="aboutus-bio-image object-fit-cover rounded shadow"
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                    priority
                   />
-                  <div className="aboutus-bio-image-badge">
-                    <i className="fas fa-pen-nib"></i>
-                    <span>পাঠকবন্ধুর লোগো</span>
-                  </div>
                 </div>
-              </div>
-              <div className="col-lg-7">
-                <div className="aboutus-bio-content">
-                  <div className="aboutus-section-tag">
-                    <span></span>পরিচিতি
-                  </div>
-                  <h2 className="aboutus-bio-title">
-                    {aboutData?.title || "কামরুল হাসান"}
-                  </h2>
-                  <p className="aboutus-bio-description custom-font">
-                    {aboutData?.description ||
-                      `বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও। পেশাগত জীবনে তিনি সত্য ও বস্তুনিষ্ঠ সাংবাদিকতার জন্য নিবেদিত। তাঁর লেখনী ও প্রতিবেদনে প্রতিফলিত হয় সমাজের অসঙ্গতি, মানুষের কণ্ঠস্বর এবং পরিবর্তনের আকাঙ্ক্ষা।`}
-                  </p>
-                  <div className="aboutus-bio-social">
-                    <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
-                      <i className="fab fa-facebook-f"></i>
-                    </a>
-                    <a href="https://www.instagram.com/kamrul4112/" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
-                      <i className="fab fa-instagram"></i>
-                    </a>
-                    <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
-                      <i className="fab fa-linkedin-in"></i>
-                    </a>
-                    <a href="#" className="aboutus-social-link">
-                      <i className="fab fa-x-twitter"></i>
-                    </a>
-                  </div>
+                <div className="aboutus-bio-image-badge">
+                  <i className="fas fa-pen-nib"></i>
+                  <span>পাঠকবন্ধুর লোগো</span>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* ═══════════════ STATS SECTION ═══════════════ */}
-        <section
-          className={`aboutus-stats ${visibleSections.has("stats") ? "aboutus-visible" : ""}`}
-          ref={(el) => addRef(el, 1)}
-          data-section="stats"
-        >
-          <div className="container">
-            <div className="row g-4">
-              {stats.map((stat, index) => (
-                <div className="col-6 col-md-3" key={index}>
-                  <div className="aboutus-stat-card" style={{ animationDelay: `${index * 0.15}s` }}>
-                    <div className="aboutus-stat-icon">
-                      <i className={stat.icon}></i>
-                    </div>
-                    <div className="aboutus-stat-value">{stat.value}</div>
-                    <div className="aboutus-stat-label">{stat.label}</div>
-                  </div>
+            <div className="col-lg-7">
+              <div className="aboutus-bio-content">
+                <div className="aboutus-section-tag">
+                  <span></span>পরিচিতি
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════ MISSION / VISION ═══════════════ */}
-        <section
-          className={`aboutus-mission ${visibleSections.has("mission") ? "aboutus-visible" : ""}`}
-          ref={(el) => addRef(el, 2)}
-          data-section="mission"
-        >
-          <div className="container">
-            <div className="text-center mb-5">
-              <div className="aboutus-section-tag center">
-                <span></span>আমাদের লক্ষ্য
-              </div>
-              <h2 className="aboutus-section-title">মিশন ও ভিশন</h2>
-            </div>
-            <div className="row g-4">
-              <div className="col-md-6">
-                <div className="aboutus-glass-card mission-card">
-                  <div className="aboutus-glass-icon">
-                    <i className="fas fa-bullseye"></i>
-                  </div>
-                  <h3>আমাদের মিশন</h3>
-                  <p>
-                    সত্য ও নিরপেক্ষ সংবাদ পরিবেশনের মাধ্যমে পাঠকদের কাছে বিশ্বস্ত তথ্য পৌঁছে দেওয়া। অনুসন্ধানী সাংবাদিকতার মাধ্যমে সমাজের অসঙ্গতি তুলে ধরা এবং জনগণের কণ্ঠস্বর হিসেবে কাজ করা।
-                  </p>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="aboutus-glass-card vision-card">
-                  <div className="aboutus-glass-icon">
-                    <i className="fas fa-eye"></i>
-                  </div>
-                  <h3>আমাদের ভিশন</h3>
-                  <p>
-                    একটি সচেতন ও তথ্যসমৃদ্ধ সমাজ গড়ে তোলা যেখানে প্রতিটি মানুষ সঠিক তথ্যের ভিত্তিতে সিদ্ধান্ত নিতে পারে। ডিজিটাল প্ল্যাটফর্মের মাধ্যমে মানসম্মত সাংবাদিকতাকে সবার কাছে সহজলভ্য করা।
-                  </p>
+                <h2 className="aboutus-bio-title">
+                  {aboutData?.title || "কামরুল হাসান"}
+                </h2>
+                <p className="aboutus-bio-description">
+                  {aboutData?.description ||
+                    `বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও। পেশাগত জীবনে তিনি সত্য ও বস্তুনিষ্ঠ সাংবাদিকতার জন্য নিবেদিত। তাঁর লেখনী ও প্রতিবেদনে প্রতিফলিত হয় সমাজের অসঙ্গতি, মানুষের কণ্ঠস্বর এবং পরিবর্তনের আকাঙ্ক্ষা।`}
+                </p>
+                <div className="aboutus-bio-social d-flex gap-3 mt-4">
+                  <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                    <i className="fab fa-facebook-f"></i>
+                  </a>
+                  <a href="https://www.instagram.com/kamrul4112/" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                    <i className="fab fa-instagram"></i>
+                  </a>
+                  <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                    <i className="fab fa-linkedin-in"></i>
+                  </a>
+                  <a href="#" className="aboutus-social-link">
+                    <i className="fa-brands fa-x-twitter"></i>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ═══════════════ VALUES SECTION ═══════════════ */}
-        <section
-          className={`aboutus-values ${visibleSections.has("values") ? "aboutus-visible" : ""}`}
-          ref={(el) => addRef(el, 3)}
-          data-section="values"
-        >
-          <div className="container">
-            <div className="text-center mb-5">
-              <div className="aboutus-section-tag center">
-                <span></span>মূল্যবোধ
-              </div>
-              <h2 className="aboutus-section-title">আমাদের মূলনীতি</h2>
-            </div>
-            <div className="row g-4">
-              {[
-                { icon: "fas fa-shield-alt", title: "সত্যনিষ্ঠা", desc: "প্রতিটি সংবাদ যাচাই-বাছাই করে প্রকাশ করা আমাদের প্রথম অঙ্গীকার।" },
-                { icon: "fas fa-balance-scale", title: "নিরপেক্ষতা", desc: "পক্ষপাতহীন ও ভারসাম্যপূর্ণ সংবাদ পরিবেশন আমাদের মূল লক্ষ্য।" },
-                { icon: "fas fa-handshake", title: "দায়বদ্ধতা", desc: "পাঠক ও সমাজের প্রতি আমাদের দায়বদ্ধতা সর্বোচ্চ।" },
-                { icon: "fas fa-lightbulb", title: "উদ্ভাবন", desc: "আধুনিক প্রযুক্তি ব্যবহার করে সংবাদ পরিবেশনে নতুন মাত্রা যোগ করা।" },
-              ].map((value, index) => (
-                <div className="col-sm-6 col-lg-3" key={index}>
-                  <div className="aboutus-value-card" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <div className="aboutus-value-icon">
-                      <i className={value.icon}></i>
-                    </div>
-                    <h4>{value.title}</h4>
-                    <p>{value.desc}</p>
+      {/* ═══════════════ STATS SECTION ═══════════════ */}
+      <section
+        className={`aboutus-stats py-5 ${visibleSections.has("stats") ? "aboutus-visible" : ""}`}
+        ref={(el) => addRef(el, 1)}
+        data-section="stats"
+      >
+        <div className="container">
+          <div className="row g-4">
+            {stats.map((stat, index) => (
+              <div className="col-6 col-md-3" key={index}>
+                <div className="aboutus-stat-card text-center p-4 rounded shadow-sm" style={{ animationDelay: `${index * 0.15}s` }}>
+                  <div className="aboutus-stat-icon mb-2">
+                    <i className={`${stat.icon} fs-2 text-primary`}></i>
                   </div>
+                  <div className="aboutus-stat-value fw-bold fs-3">{stat.value}</div>
+                  <div className="aboutus-stat-label text-muted">{stat.label}</div>
                 </div>
-              ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ MISSION / VISION ═══════════════ */}
+      <section
+        className={`aboutus-mission py-5 ${visibleSections.has("mission") ? "aboutus-visible" : ""}`}
+        ref={(el) => addRef(el, 2)}
+        data-section="mission"
+      >
+        <div className="container">
+          <div className="text-center mb-5">
+            <div className="aboutus-section-tag d-inline-block px-3 py-1 bg-light rounded-pill mb-2">
+              আমাদের লক্ষ্য
+            </div>
+            <h2 className="aboutus-section-title">মিশন ও ভিশন</h2>
+          </div>
+          <div className="row g-4">
+            <div className="col-md-6">
+              <div className="aboutus-glass-card mission-card p-5 rounded border shadow-sm h-100">
+                <div className="aboutus-glass-icon mb-3">
+                  <i className="fas fa-bullseye fs-1 text-primary"></i>
+                </div>
+                <h3>আমাদের মিশন</h3>
+                <p>
+                  সত্য ও নিরপেক্ষ সংবাদ পরিবেশনের মাধ্যমে পাঠকদের কাছে বিশ্বস্ত তথ্য পৌঁছে দেওয়া। অনুসন্ধানী সাংবাদিকতার মাধ্যমে সমাজের অসঙ্গতি তুলে ধরা এবং জনগণের কণ্ঠস্বর হিসেবে কাজ করা।
+                </p>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="aboutus-glass-card vision-card p-5 rounded border shadow-sm h-100">
+                <div className="aboutus-glass-icon mb-3">
+                  <i className="fas fa-eye fs-1 text-primary"></i>
+                </div>
+                <h3>আমাদের ভিশন</h3>
+                <p>
+                  একটি সচেতন ও তথ্যসমৃদ্ধ সমাজ গড়ে তোলা যেখানে প্রতিটি মানুষ সঠিক তথ্যের ভিত্তিতে সিদ্ধান্ত নিতে পারে। ডিজিটাল প্ল্যাটফর্মের মাধ্যমে মানসম্মত সাংবাদিকতাকে সবার কাছে সহজলভ্য করা।
+                </p>
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ═══════════════ CTA SECTION ═══════════════ */}
-        <section className="aboutus-cta">
-          <div className="container text-center">
-            <h2>আমাদের সাথে যুক্ত থাকুন</h2>
-            <p>সর্বশেষ সংবাদ ও আপডেটের জন্য আমাদের অনুসরণ করুন</p>
-            <div className="aboutus-cta-buttons">
-              <Link href="/" className="aboutus-btn-primary">
-                <i className="fas fa-home me-2"></i>প্রধান পাতা
-              </Link>
-              <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="aboutus-btn-outline">
-                <i className="fab fa-facebook-f me-2"></i>ফেসবুক
-              </a>
+      {/* ═══════════════ VALUES SECTION ═══════════════ */}
+      <section
+        className={`aboutus-values py-5 ${visibleSections.has("values") ? "aboutus-visible" : ""}`}
+        ref={(el) => addRef(el, 3)}
+        data-section="values"
+      >
+        <div className="container">
+          <div className="text-center mb-5">
+            <div className="aboutus-section-tag d-inline-block px-3 py-1 bg-light rounded-pill mb-2">
+              মূল্যবোধ
             </div>
+            <h2 className="aboutus-section-title">আমাদের মূলনীতি</h2>
           </div>
-        </section>
+          <div className="row g-4">
+            {[
+              { icon: "fas fa-shield-alt", title: "সত্যনিষ্ঠা", desc: "প্রতিটি সংবাদ যাচাই-বাছাই করে প্রকাশ করা আমাদের প্রথম অঙ্গীকার।" },
+              { icon: "fas fa-balance-scale", title: "নিরপেক্ষতা", desc: "পক্ষপাতহীন ও ভারসাম্যপূর্ণ সংবাদ পরিবেশন আমাদের মূল লক্ষ্য।" },
+              { icon: "fas fa-handshake", title: "দায়বদ্ধতা", desc: "পাঠক ও সমাজের প্রতি আমাদের দায়বদ্ধতা সর্বোচ্চ।" },
+              { icon: "fas fa-lightbulb", title: "উদ্ভাবন", desc: "আধুনিক প্রযুক্তি ব্যবহার করে সংবাদ পরিবেশনে নতুন মাত্রা যোগ করা।" },
+            ].map((value, index) => (
+              <div className="col-sm-6 col-lg-3" key={index}>
+                <div className="aboutus-value-card text-center p-4 h-100 border rounded shadow-sm" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <div className="aboutus-value-icon mb-3">
+                    <i className={`${value.icon} fs-2 text-primary`}></i>
+                  </div>
+                  <h4>{value.title}</h4>
+                  <p className="text-muted small">{value.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      </main>
-
-    </>
+      {/* ═══════════════ CTA SECTION ═══════════════ */}
+      <section className="aboutus-cta py-5 bg-primary text-white text-center">
+        <div className="container">
+          <h2 className="mb-3">আমাদের সাথে যুক্ত থাকুন</h2>
+          <p className="mb-4">সর্বশেষ সংবাদ ও আপডেটের জন্য আমাদের অনুসরণ করুন</p>
+          <div className="aboutus-cta-buttons d-flex justify-content-center gap-3">
+            <Link href="/" className="btn btn-light px-4 py-2 fw-bold text-primary">
+              <i className="fas fa-home me-2"></i>প্রধান পাতা
+            </Link>
+            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="btn btn-outline-light px-4 py-2 fw-bold">
+              <i className="fab fa-facebook-f me-2"></i>ফেসবুক
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 };
 

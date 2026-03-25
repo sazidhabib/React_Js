@@ -23,10 +23,13 @@ export const AuthProvider = ({ children }) => {
                 };
                 setUser(userData);
                 localStorage.setItem('user', JSON.stringify(userData));
+                // Ensure cookie is also set for SSR
+                document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
             } catch (error) {
                 console.error('Token decode error:', error);
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
             }
         }
         setLoading(false);
@@ -45,6 +48,8 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
             localStorage.setItem('token', token);
             localStorage.setItem('user', JSON.stringify(userData));
+            // Set cookie for SSR
+            document.cookie = `token=${token}; path=/; max-age=86400; SameSite=Lax`;
         } catch (error) {
             console.error('Login error:', error);
         }
@@ -54,6 +59,8 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        // Remove cookie
+        document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     };
 
     return (

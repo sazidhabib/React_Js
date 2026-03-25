@@ -1,161 +1,52 @@
-'use client';
+import { headers } from 'next/headers';
+import { jwtDecode } from 'jwt-decode';
+import NewsListClient from './NewsListClient';
 
-import React, { useState, useEffect } from 'react';
-import { Table, Form, Button, Card, Spinner, Pagination, Badge, Row, Col, InputGroup } from 'react-bootstrap';
-import { toast } from 'react-toastify';
-import Link from 'next/link';
-import api from "@/app/lib/api";
-import { useAuth } from "@/app/providers/AuthProvider";
+async function getInitialNews(token) {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    try {
+        const res = await fetch(`${API_URL}/news?page=1&limit=10`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            next: { revalidate: 0 } // Don't cache admin lists or keep them very fresh
+        });
+        if (!res.ok) return { news: [], totalPages: 1 };
+        const data = await res.json();
+        return {
+            news: data.news || data.rows || data.data || (Array.isArray(data) ? data : []),
+            totalPages: data.totalPages || 1
+        };
+    } catch (err) {
+        console.error("Fetch news error (server):", err);
+        return { news: [], totalPages: 1 };
+    }
+}
 
-const NewsList = () => {
-    const { user } = useAuth();
-    const isAdmin = user?.role === 'admin' || user?.role === 'superadmin' || user?.isAdmin;
+export default async function NewsDashboardPage() {
+    const headersList = await headers();
+    const cookieHeader = headersList.get('cookie') || '';
+    const token = cookieHeader.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
 
-    const [news, setNews] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [search, setSearch] = useState('');
-    const [type, setType] = useState('');
-    const [status, setStatus] = useState('');
-    const [bulkAction, setBulkAction] = useState('');
-    const [selected, setSelected] = useState([]);
+    let user = null;
+    let isAdmin = false;
 
-    const fetchNews = async () => {
-        setLoading(true);
+    if (token) {
         try {
-            const params = { 
-                page, 
-                limit: 10, 
-                search, 
-                status,
-                ...(type && { newsType: type })
-            };
-            const res = await api.get('/news', { params });
-            const data = res.data;
-            const items = data.news || data.rows || data.data || (Array.isArray(data) ? data : []);
-            setNews(items);
-            setTotalPages(data.totalPages || 1);
-        } catch (err) {
-            toast.error("Failed to fetch news");
-            setNews([]);
-        } finally {
-            setLoading(false);
+            user = jwtDecode(token);
+            isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.isAdmin;
+        } catch (e) {
+            console.error("JWT decode error (server):", e);
         }
-    };
+    }
 
-    useEffect(() => {
-        const query = new URLSearchParams(window.location.search);
-        const typeParam = query.get('type');
-        if (typeParam) setType(typeParam);
-    }, []);
-
-    useEffect(() => { if (isAdmin) fetchNews(); }, [page, search, status, type, isAdmin]);
-
-    const handleBulk = async () => {
-        if (!bulkAction || selected.length === 0) return;
-        if (bulkAction === 'delete' && !confirm(`Delete ${selected.length} items?`)) return;
-
-        try {
-            if (bulkAction === 'delete') {
-                await api.post('/news/bulk-delete', { newsIds: selected });
-                toast.success("Bulk delete successful");
-            }
-            setSelected([]);
-            setBulkAction('');
-            fetchNews();
-        } catch (err) { toast.error("Bulk action failed"); }
-    };
-
-    const handleDelete = async (id) => {
-        if (!confirm("Delete this news post?")) return;
-        try {
-            await api.delete(`/news/${id}`);
-            toast.success("Deleted");
-            fetchNews();
-        } catch (err) { toast.error("Delete failed"); }
-    };
-
-    const getStatusBadge = (s) => {
-        const map = { published: 'success', draft: 'warning', scheduled: 'info' };
-        return <Badge bg={map[s] || 'secondary'}>{s}</Badge>;
-    };
-
-    if (!isAdmin) return <div className="p-4 text-center"><h4>Access Denied</h4></div>;
+    const { news, totalPages } = isAdmin ? await getInitialNews(token) : { news: [], totalPages: 1 };
 
     return (
-        <div className="container-fluid mt-4">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4>News Management</h4>
-                <Link href="/admin/news/create" className="btn btn-primary">+ Create News</Link>
-            </div>
-
-            <Row className="mb-3 g-2">
-                <Col md={4}><Form.Control placeholder="Search news..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} /></Col>
-                <Col md={2}>
-                    <Form.Select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}>
-                        <option value="">All Status</option>
-                        <option value="published">Published</option>
-                        <option value="draft">Draft</option>
-                        <option value="scheduled">Scheduled</option>
-                    </Form.Select>
-                </Col>
-                <Col md={6}>
-                    <InputGroup>
-                        <Form.Select value={bulkAction} onChange={e => setBulkAction(e.target.value)}>
-                            <option value="">Bulk Actions</option>
-                            <option value="delete">Delete Selected</option>
-                        </Form.Select>
-                        <Button variant="outline-primary" onClick={handleBulk} disabled={!bulkAction || selected.length === 0}>Apply</Button>
-                    </InputGroup>
-                </Col>
-            </Row>
-
-            <Card className="shadow-sm">
-                <Card.Body className="p-0">
-                    <Table responsive hover className="mb-0">
-                        <thead className="table-dark">
-                            <tr>
-                                <th style={{width: '40px'}}><Form.Check checked={selected.length === news.length && news.length > 0} onChange={e => setSelected(e.target.checked ? news.map(n => n.id) : [])} /></th>
-                                <th>Headline</th><th>Type</th><th>Author</th><th>Status</th><th>Created</th><th className="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? <tr><td colSpan="7" className="text-center py-5"><Spinner animation="border" /></td></tr> : 
-                             news.map(n => (
-                                <tr key={n.id}>
-                                    <td><Form.Check checked={selected.includes(n.id)} onChange={e => setSelected(e.target.checked ? [...selected, n.id] : selected.filter(id => id !== n.id))} /></td>
-                                    <td><div className="fw-bold">{n.newsHeadline}</div><small className="text-muted">{n.newsHeadlineBangla}</small></td>
-                                    <td><Badge bg={n.newsType === 'photo' ? 'primary' : n.newsType === 'video' ? 'danger' : 'secondary'}>{n.newsType || 'standard'}</Badge></td>
-                                    <td>{n.Author?.name || n.author?.name || 'N/A'}</td>
-                                    <td>{getStatusBadge(n.status)}</td>
-                                    <td>{new Date(n.createdAt).toLocaleDateString()}</td>
-                                    <td className="text-center">
-                                        <div className="btn-group">
-                                            <Link href={n.newsType === 'photo' ? `/admin/photo-news/edit/${n.id}` : n.newsType === 'video' ? `/admin/video-news/edit/${n.id}` : `/admin/news/edit/${n.id}`} className="btn btn-sm btn-outline-primary">Edit</Link>
-                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(n.id)}>Del</Button>
-                                            <Link href={`/news/${n.slug}`} target="_blank" className="btn btn-sm btn-outline-info">View</Link>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {!loading && news.length === 0 && <tr><td colSpan="7" className="text-center py-4 text-muted">No news found</td></tr>}
-                        </tbody>
-                    </Table>
-                </Card.Body>
-            </Card>
-
-            {totalPages > 1 && (
-                <Pagination className="justify-content-center mt-3">
-                    <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)} />
-                    {[...Array(totalPages)].map((_, i) => (
-                        <Pagination.Item key={i} active={i + 1 === page} onClick={() => setPage(i + 1)}>{i + 1}</Pagination.Item>
-                    ))}
-                    <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)} />
-                </Pagination>
-            )}
-        </div>
+        <NewsListClient 
+            initialNews={news} 
+            initialTotalPages={totalPages} 
+            isAdmin={isAdmin} 
+        />
     );
-};
-
-export default NewsList;
+}

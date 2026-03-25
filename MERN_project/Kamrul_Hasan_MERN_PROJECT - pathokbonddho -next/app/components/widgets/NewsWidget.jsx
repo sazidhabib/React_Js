@@ -3,13 +3,21 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Badge, Spinner } from 'react-bootstrap';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const NewsWidget = ({ cell }) => {
-    const [news, setNews] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const API_BASE_URL = '';
+    const [news, setNews] = useState(cell.resolvedContent || null);
+    const [loading, setLoading] = useState(!cell.resolvedContent);
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
     useEffect(() => {
+        // Skip fetching if content is already resolved by the server
+        if (cell.resolvedContent) {
+            setNews(cell.resolvedContent);
+            setLoading(false);
+            return;
+        }
+
         const fetchNews = async () => {
             try {
                 if (!cell.contentId && !cell.tag) {
@@ -18,10 +26,11 @@ const NewsWidget = ({ cell }) => {
                 }
 
                 if (cell.contentId) {
-                    const response = await axios.get(`${API_BASE_URL}/api/news/${cell.contentId}`);
-                    setNews(response.data.data || response.data.news || response.data);
+                    const response = await axios.get(`${API_BASE_URL}/news/${cell.contentId}`);
+                    const data = response.data.data || response.data.news || response.data;
+                    setNews(data);
                 } else if (cell.tag) {
-                    const response = await axios.get(`${API_BASE_URL}/api/news?tag=${cell.tag}&limit=1`);
+                    const response = await axios.get(`${API_BASE_URL}/news?tag=${cell.tag}&limit=1`);
                     const newsItems = response.data.news || response.data.rows || [];
                     if (newsItems.length > 0) {
                         setNews(newsItems[0]);
@@ -35,16 +44,17 @@ const NewsWidget = ({ cell }) => {
         };
 
         fetchNews();
-    }, [cell.contentId, cell.tag, API_BASE_URL]);
+    }, [cell.contentId, cell.tag, cell.resolvedContent, API_BASE_URL]);
 
     const getImageUrl = (newsItem) => {
         if (!newsItem) return null;
-        const imagePath = newsItem.thumbImage || newsItem.leadImage || newsItem.metaImage;
+        let imagePath = newsItem.thumbImage || newsItem.leadImage || newsItem.metaImage;
         if (!imagePath) return null;
         if (imagePath.startsWith('http')) {
             return imagePath.replace(/^http:\/\//, 'https://');
         }
-        return `${API_BASE_URL}/${imagePath.replace(/^\//, '')}`;
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+        return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
     };
 
     const formatDate = (dateStr) => {
@@ -54,17 +64,15 @@ const NewsWidget = ({ cell }) => {
         });
     };
 
-    // Calculate dynamic image height based on cell merge span
     const getImageHeight = () => {
         const rowSpan = cell.rowSpan || 1;
         const colSpan = cell.colSpan || 1;
-        const baseHeight = 200;
+        const baseHeight = 240;
         return rowSpan > 1 || colSpan > 1
             ? baseHeight * rowSpan + (rowSpan - 1) * 20
             : baseHeight;
     };
 
-    // Render category badge content: icon for ছবি/ভিডিও, text for others
     const renderCategoryBadgeContent = (category) => {
         if (!category) return null;
         const name = category.name?.trim();
@@ -73,53 +81,49 @@ const NewsWidget = ({ cell }) => {
         return name;
     };
 
-    if (loading) {
+    if (loading && !news) {
         return <div className="text-center p-2"><Spinner animation="border" size="sm" /></div>;
     }
 
-    if (!news) {
-        return null;
-    }
+    if (!news) return null;
 
     const imageUrl = getImageUrl(news);
     const newsLink = `/news/${news._id || news.id}`;
-    const design = cell.design || 'title-image-top'; // default design
+    const design = cell.design || 'title-image-top';
     const imageHeight = getImageHeight();
 
-    // ─── DESIGN: text-inside-image ───
+    const NewsImage = ({ className }) => {
+        if (!imageUrl) {
+            return (
+                <div className={`${className} bg-light d-flex align-items-center justify-content-center text-muted`}>
+                    📰
+                </div>
+            );
+        }
+        return (
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                <Image
+                    src={imageUrl}
+                    alt={news.newsHeadline}
+                    fill
+                    className={`${className} object-fit-cover`}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={cell.rowSpan > 1 || cell.colSpan > 1} // Prioritize larger widgets
+                />
+            </div>
+        );
+    };
+
     if (design === 'text-inside-image') {
         return (
-            <div className="news-design-text-inside-image h-100 pb-2">
-                <Link href={newsLink} className="text-decoration-none">
-                    <div className="text-inside-image-wrapper">
-                        {imageUrl ? (
-                            <img
-                                src={imageUrl}
-                                alt={news.newsHeadline}
-                                className="text-inside-image-img"
-                                onError={(e) => {
-                                    const altPath = news.leadImage || news.thumbImage;
-                                    if (altPath && e.target.src.indexOf(altPath) === -1) {
-                                        e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
-                                    } else {
-                                        e.target.onerror = null;
-                                        e.target.style.display = 'none';
-                                    }
-                                }}
-                            />
-                        ) : (
-                            <div className="h-100 w-100 bg-secondary d-flex align-items-center justify-content-center">
-                                <span className="text-white" style={{ fontSize: '2rem' }}>📰</span>
-                            </div>
-                        )}
-                        <div className="text-inside-image-overlay">
-                            <h5 className="text-inside-image-title code-font-bangla">
-                                {news.alternativeHeadline || news.newsHeadline}
-                            </h5>
-                            <span className="text-inside-image-date">
-                                {formatDate(news.createdAt)}
-                            </span>
-                        </div>
+            <div className="news-design-text-inside-image h-100 pb-2 overflow-hidden position-relative rounded">
+                <Link href={newsLink} className="text-decoration-none h-100 d-block">
+                    <NewsImage className="text-inside-image-img h-100" />
+                    <div className="text-inside-image-overlay position-absolute bottom-0 start-0 end-0 p-3 bg-gradient-dark">
+                        <h5 className="text-white mb-1 font-bangla">
+                            {news.alternativeHeadline || news.newsHeadline}
+                        </h5>
+                        <small className="text-light opacity-75">{formatDate(news.createdAt)}</small>
                     </div>
                 </Link>
                 {news.Categories && news.Categories[0] && (
@@ -131,248 +135,92 @@ const NewsWidget = ({ cell }) => {
         );
     }
 
-    // ─── DESIGN: title-only ───
     if (design === 'title-only') {
         return (
-            <div className="news-design-title-only h-100">
+            <div className="news-design-title-only h-100 border-bottom pb-2">
                 <Link href={newsLink} className="text-decoration-none text-dark">
-                    <h5 className="fw-bold mb-2 code-font-bangla news-title-only-headline">
+                    <h5 className="fw-bold mb-1 font-bangla hover-primary">
                         {news.alternativeHeadline || news.newsHeadline}
                     </h5>
                 </Link>
+                <small className="text-muted">{formatDate(news.createdAt)}</small>
             </div>
         );
     }
 
-    // ─── DESIGN: title-image-left ───
-    if (design === 'title-image-left') {
+    if (design === 'title-image-left' || design === 'image-left') {
         return (
-            <div className="news-design-title-image-side h-100">
-                <Link href={newsLink} className="text-decoration-none text-dark">
-                    <h5 className="fw-bold mb-2 code-font-bangla">
-                        {news.alternativeHeadline || news.newsHeadline}
-                    </h5>
-                </Link>
-                <div className="d-flex gap-3">
-                    {imageUrl && (
-                        <div className="news-side-image-wrapper flex-shrink-0">
-                            {news.Categories && news.Categories[0] && (
-                                <Badge bg="danger" className="position-absolute start-0 m-2">{renderCategoryBadgeContent(news.Categories[0])}</Badge>
-                            )}
-                            <Link href={newsLink}>
-                                <img
-                                    src={imageUrl}
-                                    alt={news.newsHeadline}
-                                    className="news-side-image"
-                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
-                                />
-                            </Link>
-                        </div>
-                    )}
-                    <div className="flex-grow-1">
-                        {news.shortDescription && (
-                            <p className="small custom-font text-muted mb-2 code-font-bangla">{news.shortDescription}</p>
-                        )}
-                        <div className="small text-muted">{formatDate(news.createdAt)}</div>
-                    </div>
-                </div>
-
-            </div>
-        );
-    }
-
-    // ─── DESIGN: title-image-right ───
-    if (design === 'title-image-right') {
-        return (
-            <div className="news-design-title-image-side h-100">
-                <Link href={newsLink} className="text-decoration-none text-dark">
-                    <h5 className="fw-bold mb-2 code-font-bangla">
-                        {news.alternativeHeadline || news.newsHeadline}
-                    </h5>
-                </Link>
-                <div className="d-flex flex-row-reverse gap-3">
-
-                    {imageUrl && (
-                        <div className="news-side-image-wrapper flex-shrink-0">
-                            {news.Categories && news.Categories[0] && (
-                                <Badge bg="danger" className="position-absolute end-0 m-2">{renderCategoryBadgeContent(news.Categories[0])}</Badge>
-                            )}
-                            <Link href={newsLink}>
-                                <img
-                                    src={imageUrl}
-                                    alt={news.newsHeadline}
-                                    className="news-side-image"
-                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
-                                />
-                            </Link>
-                        </div>
-                    )}
-                    <div className="flex-grow-1">
-                        {news.shortDescription && (
-                            <p className="small custom-font text-muted mb-2 code-font-bangla">{news.shortDescription}</p>
-                        )}
-                        <div className="small text-muted">{formatDate(news.createdAt)}</div>
-                    </div>
-                </div>
-
-            </div>
-        );
-    }
-
-    // ─── DESIGN: image-top ───
-    if (design === 'image-top') {
-        return (
-            <Card className="h-100 border-0 news-widget news-design-image-top">
-                <div className="card-img-wrapper position-relative" style={{ height: `${imageHeight}px`, overflow: 'hidden' }}>
-                    <Link href={newsLink}>
-                        {imageUrl ? (
-                            <Card.Img
-                                variant="top"
-                                src={imageUrl}
-                                className="h-100 w-100 object-fit-cover"
-                                onError={(e) => {
-                                    const altPath = news.leadImage || news.thumbImage;
-                                    if (altPath && e.target.src.indexOf(altPath) === -1) {
-                                        e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
-                                    } else {
-                                        e.target.onerror = null;
-                                        e.target.style.display = 'none';
-                                    }
-                                }}
-                            />
-                        ) : (
-                            <div className="h-100 w-100 bg-light d-flex align-items-center justify-content-center">
-                                <span className="text-muted">📰</span>
-                            </div>
-                        )}
-                    </Link>
-                    {news.Categories && news.Categories[0] && (
-                        <Badge bg="danger" className="position-absolute top-0 start-0 m-2">
-                            {renderCategoryBadgeContent(news.Categories[0])}
-                        </Badge>
-                    )}
-                </div>
-                <Card.Body className='px-0 py-2'>
+            <div className="news-design-side-layout h-100 d-flex gap-3 border-bottom pb-3">
+                <div className="flex-grow-1">
                     <Link href={newsLink} className="text-decoration-none text-dark">
-                        <h5 className="fw-bold mb-1 code-font-bangla">
+                        <h5 className="fw-bold mb-2 font-bangla line-clamp-2">
                             {news.alternativeHeadline || news.newsHeadline}
                         </h5>
                     </Link>
-                    <div className="small text-muted">
-                        {formatDate(news.createdAt)}
-                    </div>
-                </Card.Body>
-            </Card>
-        );
-    }
-
-    // ─── DESIGN: image-left ───
-    if (design === 'image-left') {
-        return (
-            <div className="news-design-image-compact d-flex gap-3 h-100 align-items-start">
+                    {news.shortDescription && (
+                        <p className="small text-muted mb-2 line-clamp-2 d-none d-sm-block font-bangla">{news.shortDescription}</p>
+                    )}
+                    <small className="text-muted">{formatDate(news.createdAt)}</small>
+                </div>
                 {imageUrl && (
-                    <div className="news-compact-image-wrapper flex-shrink-0">
-                        {news.Categories && news.Categories[0] && (
-                            <Badge bg="danger" className="position-absolute start-0 m-2">
-                                {renderCategoryBadgeContent(news.Categories[0])}
-                            </Badge>
-                        )}
-                        <Link href={newsLink}>
-                            <img
-                                src={imageUrl}
-                                alt={news.newsHeadline}
-                                className="news-compact-image"
-                                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
-                            />
+                    <div className="side-image-container flex-shrink-0" style={{ width: '120px', height: '90px' }}>
+                        <Link href={newsLink} className="d-block h-100">
+                            <NewsImage className="rounded" />
                         </Link>
                     </div>
                 )}
-                <div className="flex-grow-1">
-                    <Link href={newsLink} className=" text-decoration-none text-dark">
-                        <h5 className="fw-bold mb-1 code-font-bangla">{news.alternativeHeadline || news.newsHeadline}</h5>
-                    </Link>
-                    <div className="small text-muted">{formatDate(news.createdAt)}</div>
-                </div>
             </div>
         );
     }
 
-    // ─── DESIGN: image-right ───
-    if (design === 'image-right') {
+    if (design === 'title-image-right' || design === 'image-right') {
         return (
-            <div className="news-design-image-compact d-flex flex-row-reverse gap-3 h-100 align-items-start">
-                {imageUrl && (
-                    <div className="news-compact-image-wrapper flex-shrink-0">
-                        {news.Categories && news.Categories[0] && (
-                            <Badge bg="danger" className="position-absolute top-0 end-0 m-2">
-                                {renderCategoryBadgeContent(news.Categories[0])}
-                            </Badge>
-                        )}
-                        <Link href={newsLink}>
-                            <img
-                                src={imageUrl}
-                                alt={news.newsHeadline}
-                                className="news-compact-image"
-                                onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
-                            />
-                        </Link>
-                    </div>
-                )}
+            <div className="news-design-side-layout h-100 d-flex flex-row-reverse gap-3 border-bottom pb-3">
                 <div className="flex-grow-1">
                     <Link href={newsLink} className="text-decoration-none text-dark">
-                        <h5 className="fw-bold mb-1 code-font-bangla">{news.alternativeHeadline || news.newsHeadline}</h5>
+                        <h5 className="fw-bold mb-2 font-bangla line-clamp-2">
+                            {news.alternativeHeadline || news.newsHeadline}
+                        </h5>
                     </Link>
-                    <div className="small text-muted">{formatDate(news.createdAt)}</div>
+                    {news.shortDescription && (
+                        <p className="small text-muted mb-2 line-clamp-2 d-none d-sm-block font-bangla">{news.shortDescription}</p>
+                    )}
+                    <small className="text-muted">{formatDate(news.createdAt)}</small>
                 </div>
+                {imageUrl && (
+                    <div className="side-image-container flex-shrink-0" style={{ width: '120px', height: '90px' }}>
+                        <Link href={newsLink} className="d-block h-100">
+                            <NewsImage className="rounded" />
+                        </Link>
+                    </div>
+                )}
             </div>
         );
     }
 
-    // ─── DESIGN: title-image-top (DEFAULT) ───
     return (
-        <Card className="h-100 border-0 news-widget">
-            <div className="card-img-wrapper position-relative" style={{ height: `${imageHeight}px`, overflow: 'hidden' }}>
-                <Link href={newsLink}>
-                    {imageUrl ? (
-                        <Card.Img
-                            variant="top"
-                            src={imageUrl}
-                            className="h-100 w-100 object-fit-cover"
-                            onError={(e) => {
-                                const altPath = news.leadImage || news.thumbImage;
-                                if (altPath && e.target.src.indexOf(altPath) === -1) {
-                                    e.target.src = `${API_BASE_URL}/${altPath.replace(/^\//, '')}`;
-                                } else {
-                                    e.target.onerror = null;
-                                    e.target.style.display = 'none';
-                                }
-                            }}
-                        />
-                    ) : (
-                        <div className="h-100 w-100 bg-light d-flex align-items-center justify-content-center">
-                            <span className="text-muted">📰</span>
-                        </div>
-                    )}
+        <Card className="h-100 border-0 news-widget-card group shadow-sm-hover transition-all">
+            <div className="card-img-wrapper position-relative overflow-hidden rounded mb-2" style={{ height: `${imageHeight}px` }}>
+                <Link href={newsLink} className="d-block h-100">
+                    <NewsImage className="card-img-top transition-transform group-hover-scale" />
                 </Link>
                 {news.Categories && news.Categories[0] && (
-                    <Badge bg="danger" className="position-absolute top-0 start-0 m-2">
+                    <Badge bg="danger" className="position-absolute top-0 start-0 m-2 shadow-sm">
                         {renderCategoryBadgeContent(news.Categories[0])}
                     </Badge>
                 )}
             </div>
-            <Card.Body className='px-0'>
+            <Card.Body className="p-0">
                 <Link href={newsLink} className="text-decoration-none text-dark">
-                    <Card.Title className="h5 fw-bold mb-2 code-font-bangla">
+                    <h5 className="fw-bold mb-2 font-bangla news-card-title">
                         {news.alternativeHeadline || news.newsHeadline}
-                    </Card.Title>
+                    </h5>
                 </Link>
-                {news.shortDescription && (
-                    <Card.Text className="small custom-font text-muted mb-2 code-font-bangla">
-                        {news.shortDescription}
-                    </Card.Text>
+                {cell.design !== 'image-top' && news.shortDescription && (
+                    <p className="small text-muted line-clamp-3 mb-2 font-bangla">{news.shortDescription}</p>
                 )}
-                <div className="d-flex justify-content-between align-items-center small text-muted">
-                    <span>{formatDate(news.createdAt)}</span>
+                <div className="text-muted small mt-auto">
+                    {formatDate(news.createdAt)}
                 </div>
             </Card.Body>
         </Card>

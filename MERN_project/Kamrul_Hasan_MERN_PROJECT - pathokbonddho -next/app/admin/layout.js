@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/app/providers/AuthProvider';
 
@@ -9,6 +9,7 @@ export default function AdminLayout({ children }) {
     const { user, loading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -37,7 +38,34 @@ export default function AdminLayout({ children }) {
         }
     }, [pathname]);
 
-    const isActiveRoute = (path) => pathname === path;
+    const isActiveRoute = (path) => {
+        if (!pathname) return false;
+        
+        // Remove trailing slash for comparison
+        const normalizedPathname = pathname.replace(/\/$/, '') || '/';
+        
+        // Split path and query
+        const [targetPath, targetQuery] = path.split('?');
+        const normalizedTargetPath = targetPath.replace(/\/$/, '') || '/';
+
+        // Check search params if target path has query
+        if (targetQuery) {
+            const params = new URLSearchParams(targetQuery);
+            const type = params.get('type');
+            if (normalizedPathname === normalizedTargetPath && searchParams.get('type') === type) {
+                return true;
+            }
+            return false;
+        }
+
+        // If target doesn't have query but current path does, and it's /admin/news
+        // we want to ensure "All News" is ONLY active if no type is set
+        if (normalizedTargetPath === '/admin/news' && searchParams.get('type')) {
+            return false;
+        }
+
+        return normalizedPathname === normalizedTargetPath;
+    };
 
     if (loading) {
         return (

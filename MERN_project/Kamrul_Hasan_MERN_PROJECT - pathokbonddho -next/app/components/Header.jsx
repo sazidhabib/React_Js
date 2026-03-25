@@ -1,33 +1,71 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { useMenu } from '../providers/MenuProvider';
 import { Spinner } from 'react-bootstrap';
 import axios from 'axios';
 
+const normalizePath = (path, includeQuery = false) => {
+  if (!path) return '/';
+  const [base, query] = path.split('?');
+  const normalizedBase = base.replace(/\/$/, '') || '/';
+  return includeQuery && query ? `${normalizedBase}?${query}` : normalizedBase;
+};
+
 const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
-  const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(false); // Fix 1: init to false
+  const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(false);
   const { menus, loading, getMenuByOrder } = useMenu();
-
-  const lastScrollY = useRef(0); // Fix 2: init to 0
+  const pathname = usePathname();
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  
+  const lastScrollY = useRef(0);
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
+  const normalizedPathname = normalizePath(pathname);
 
   // Render menu links dynamically
   const renderMenuLinks = (onClickHandler = null) => {
     if (loading) return <li>Loading menus...</li>;
 
-    return menus.sort((a, b) => a.order - b.order).map((menu, index) => (
-      <li className="nav-item" key={menu._id || index}>
-        <Link
-          href={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
-          className="nav-link text-white"
-          onClick={onClickHandler}
-        >
-          {menu.name}
-        </Link>
-      </li>
-    ));
+    return menus.sort((a, b) => a.order - b.order).map((menu, index) => {
+      const fullPath = menu.path.startsWith('/') ? menu.path : `/${menu.path}`;
+      const hasQuery = fullPath.includes('?');
+      
+      const menuPathNormalized = normalizePath(fullPath, false);
+      const isBasePathActive = normalizedPathname === menuPathNormalized;
+      
+      let isActive = isBasePathActive;
+      
+      // If menu path has query params, we need to check them too
+      if (hasQuery && isBasePathActive && searchParams) {
+        const targetParams = new URLSearchParams(fullPath.split('?')[1]);
+        isActive = Array.from(targetParams.entries()).every(([key, value]) => 
+          searchParams.get(key) === value
+        );
+      } else if (!hasQuery && isBasePathActive && searchParams && searchParams.toString()) {
+        // If this is a base path (like /news) but there are query params active
+        // we might NOT want to show it as active if there's a more specific menu item
+        // But for now, let's stick to the Admin pattern: 
+        // "All News" is not active if a specific type is selected.
+        if (menuPathNormalized === '/news' && searchParams.get('category')) {
+          isActive = false;
+        }
+      }
+
+      return (
+        <li className="nav-item" key={menu._id || index}>
+          <Link
+            href={fullPath}
+            className={`nav-link text-white ${isActive ? 'active' : ''}`}
+            onClick={onClickHandler}
+          >
+            {menu.name}
+          </Link>
+        </li>
+      );
+    });
   };
 
   const homeMenu = getMenuByOrder(1);
@@ -179,20 +217,32 @@ const Header = () => {
           <div className={`main-navbar-custom ${showScrollingNavbar ? 'sticky' : ''}`}>
             <div className="inside_main container">
               <Link href="/" className="logo-container">
-                <img src="/images/Logo.png" alt="Pathokbonddho Logo" className="logo-logo" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                <Image 
+                  src="/images/Logo.png" 
+                  alt="Pathokbonddho Logo" 
+                  width={150} 
+                  height={50} 
+                  className="logo-logo" 
+                  priority
+                  style={{ objectFit: 'contain' }}
+                />
                 <span style={{ display: 'none', color: '#006a60', fontSize: '28px', fontWeight: 'bold' }}>পাঠকবন্ধু</span>
               </Link>
               <ul className="nav-custom-links">
-                {menus.sort((a, b) => a.order - b.order).map((menu, index) => (
-                  <li key={menu._id || index}>
-                    <Link
-                      href={menu.path.startsWith('/') ? menu.path : `/${menu.path}`}
-                      className={`nav-link-custom ${typeof window !== 'undefined' && window.location.pathname === (menu.path.startsWith('/') ? menu.path : '/' + menu.path) ? 'active' : ''}`}
-                    >
-                      {menu.name}
-                    </Link>
-                  </li>
-                ))}
+                {menus.sort((a, b) => a.order - b.order).map((menu, index) => {
+                  const menuPath = normalizePath(menu.path.startsWith('/') ? menu.path : `/${menu.path}`);
+                  const isActive = normalizedPathname === menuPath;
+                  return (
+                    <li key={menu._id || index}>
+                      <Link
+                        href={menuPath}
+                        className={`nav-link-custom ${isActive ? 'active' : ''}`}
+                      >
+                        {menu.name}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>

@@ -17,6 +17,9 @@ const NewsList = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
     const [type, setType] = useState('');
+    const [status, setStatus] = useState('');
+    const [bulkAction, setBulkAction] = useState('');
+    const [selected, setSelected] = useState([]);
 
     const fetchNews = async () => {
         setLoading(true);

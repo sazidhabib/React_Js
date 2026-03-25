@@ -6,25 +6,30 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
+    "/admin/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/admin/layout.js"
     ],
-    "/[slug]/page": [
+    "/admin/news/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/[slug]/page.js"
-    ],
-    "/api/layout/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/layout/route.js"
+      "static/chunks/app/admin/news/page.js"
     ],
     "/api/menus/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/menus/route.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/api/layout/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/layout/route.js"
     ],
     "/api/layout/[id]/route": [
       "static/chunks/webpack.js",
@@ -52,45 +57,26 @@
       "static/css/app/about-us/page.css",
       "static/chunks/app/about-us/page.js"
     ],
-    "/api/news/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/news/route.js"
-    ],
     "/api/sections/[type]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/sections/[type]/route.js"
     ],
-    "/admin/layout": [
+    "/admin/hero-section/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/layout.js"
+      "static/chunks/app/admin/hero-section/page.js"
     ],
-    "/admin/page": [
+    "/admin/sections/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/page.js"
+      "static/chunks/app/admin/sections/page.js"
     ],
-    "/api/users/route": [
+    "/admin/articles/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/users/route.js"
-    ],
-    "/api/tags/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/tags/route.js"
-    ],
-    "/admin/page-layout/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/page-layout/page.js"
-    ],
-    "/admin/users/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/admin/users/page.js"
+      "static/css/app/admin/articles/page.css",
+      "static/chunks/app/admin/articles/page.js"
     ],
     "/admin/tags/page": [
       "static/chunks/webpack.js",
@@ -102,45 +88,55 @@
       "static/chunks/main-app.js",
       "static/chunks/app/admin/author/page.js"
     ],
-    "/api/authors/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/authors/route.js"
-    ],
     "/admin/ads/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/admin/ads/page.js"
     ],
-    "/api/ads/route": [
+    "/admin/design/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/ads/route.js"
+      "static/chunks/app/admin/design/page.js"
     ],
-    "/admin/photos/page": [
+    "/admin/news/create/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/photos/page.js"
+      "static/chunks/app/admin/news/create/page.js"
     ],
-    "/admin/album/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/album/page.js"
+      "static/chunks/app/login/page.js"
     ],
-    "/admin/video-news/create/page": [
+    "/admin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/video-news/create/page.js"
+      "static/chunks/app/admin/page.js"
     ],
-    "/admin/photo-news/create/page": [
+    "/admin/page-layout/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/photo-news/create/page.js"
+      "static/chunks/app/admin/page-layout/page.js"
     ],
-    "/admin/news/page": [
+    "/admin/users/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/admin/news/page.js"
+      "static/chunks/app/admin/users/page.js"
+    ],
+    "/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[slug]/page.js"
+    ],
+    "/api/news/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/news/route.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

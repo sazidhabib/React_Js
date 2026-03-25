@@ -5,14 +5,21 @@ import { Container, Spinner, Alert } from 'react-bootstrap';
 import GridSection from './GridSection';
 import LoadMoreNews from './LoadMoreNews';
 
-const PageRenderer = ({ pageId, slug }) => {
-    const [pageLayout, setPageLayout] = useState(null);
-    const [loading, setLoading] = useState(true);
+const PageRenderer = ({ pageId, slug, initialLayout }) => {
+    const [pageLayout, setPageLayout] = useState(initialLayout || null);
+    const [loading, setLoading] = useState(!initialLayout);
     const [error, setError] = useState(null);
 
-    const API_BASE_URL = '';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
     useEffect(() => {
+        // If we have initialLayout and it matches the current slug, we can skip the fetch
+        if (initialLayout && (!slug || initialLayout.name?.toLowerCase() === slug?.toLowerCase())) {
+            setPageLayout(initialLayout);
+            setLoading(false);
+            return;
+        }
+
         const fetchLayout = async () => {
             try {
                 setLoading(true);
@@ -20,52 +27,23 @@ const PageRenderer = ({ pageId, slug }) => {
 
                 // Resolve ID if not provided, using slug or defaulting to Home
                 if (!targetPageId) {
-                    // 1. Fetch all pages list
-                    const listResponse = await axios.get(`${API_BASE_URL}/api/layout`);
+                    const listResponse = await axios.get(`${API_BASE_URL}/layout`);
                     const allPages = listResponse.data;
 
                     if (Array.isArray(allPages) && allPages.length > 0) {
-                        let matchPage = null;
-
-                        // 2. Try to find page by slug (as name)
-                        if (slug) {
-                            matchPage = allPages.find(p => p.name.toLowerCase() === slug.toLowerCase());
-                        }
-
-                        // 3. Fallback to "Home" if no match found yet
-                        if (!matchPage) {
-                            matchPage = allPages.find(p => p.name.toLowerCase() === 'home');
-                        }
-
-                        // 4. Fallback to first available page if still no match
-                        if (!matchPage) {
-                            console.warn('No matching page found. Defaulting to first available.');
-                            matchPage = allPages[0];
-                        }
-
-                        if (matchPage) {
-                            targetPageId = matchPage.id;
-                        }
-
-                    } else {
-                        throw new Error('No pages found in the system. Please create a page in the Admin panel.');
+                        const matchPage = (slug && allPages.find(p => p.name.toLowerCase() === slug.toLowerCase())) ||
+                                        allPages.find(p => p.name.toLowerCase() === 'home') ||
+                                        allPages[0];
+                        targetPageId = matchPage?.id;
                     }
                 }
 
-                // If still no ID, we can't fetch anything
                 if (!targetPageId) {
                     throw new Error('Could not resolve a valid Page ID.');
                 }
 
-                // 5. Fetch the full layout details
-                const response = await axios.get(`${API_BASE_URL}/api/layout/${targetPageId}`);
-                const layoutData = response.data;
-
-                if (!layoutData) {
-                    throw new Error('Page layout not found');
-                }
-
-                setPageLayout(layoutData);
+                const response = await axios.get(`${API_BASE_URL}/layout/${targetPageId}`);
+                setPageLayout(response.data);
             } catch (err) {
                 console.error('Error fetching page layout:', err);
                 setError(err.message || 'Failed to load page layout');
@@ -75,9 +53,9 @@ const PageRenderer = ({ pageId, slug }) => {
         };
 
         fetchLayout();
-    }, [pageId, slug, API_BASE_URL]);
+    }, [pageId, slug, initialLayout, API_BASE_URL]);
 
-    if (loading) {
+    if (loading && !pageLayout) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
                 <Spinner animation="border" role="status">
@@ -87,16 +65,14 @@ const PageRenderer = ({ pageId, slug }) => {
         );
     }
 
-    if (error) {
+    if (error && !pageLayout) {
         return (
             <Container className="py-5">
                 <Alert variant="danger">
                     <Alert.Heading>Error Loading Content</Alert.Heading>
                     <p>{error}</p>
                     <hr />
-                    <p className="mb-0">
-                        Please ensure you have created a page named "Home" (or matching the requested slug) in the Admin Panel -&gt; Page Layout.
-                    </p>
+                    <p className="mb-0">Please ensure you have created a page named "Home" (or matching the requested slug) in the Admin Panel.</p>
                 </Alert>
             </Container>
         );
@@ -112,17 +88,11 @@ const PageRenderer = ({ pageId, slug }) => {
 
     const getExcludeIds = () => {
         if (!pageLayout?.PageSections) return [];
-        const ids = new Set();
-        pageLayout.PageSections.forEach(section => {
-            (section.Rows || section.rows || []).forEach(row => {
-                (row.Columns || row.columns || []).forEach(col => {
-                    if (col.contentType === 'news' && col.contentId) {
-                        ids.add(col.contentId);
-                    }
-                });
-            });
-        });
-        return Array.from(ids);
+        return pageLayout.PageSections.flatMap(section => 
+            (section.rows || section.Rows || []).flatMap(row => 
+                (row.columns || row.Columns || []).filter(col => col.contentType === 'news' && col.contentId).map(col => col.contentId)
+            )
+        );
     };
 
     return (

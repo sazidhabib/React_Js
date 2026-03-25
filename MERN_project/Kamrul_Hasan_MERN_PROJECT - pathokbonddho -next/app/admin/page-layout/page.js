@@ -1,78 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Container, Row, Col, Card, Button, Form, Modal, Alert, Tab, Nav, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, Modal, Tab, Nav, Spinner, Table } from 'react-bootstrap';
 import api from "@/app/lib/api";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { toast } from 'react-toastify';
+import { ExcelGridSection } from './components/ExcelGrid';
 
-const SortableSection = ({ section, sectionIndex, onDelete, onUpdate, onAddColumn, editPage, setEditPage }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id || `section-${sectionIndex}` });
-    const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
-    const rows = section.rows || [];
-    const firstRow = rows[0] || { columns: [] };
-    const columns = firstRow.columns || [];
-
-    return (
-        <Card ref={setNodeRef} style={style} className="mb-3">
-            <Card.Header {...attributes} {...listeners} style={{ cursor: isDragging ? 'grabbing' : 'grab' }}>
-                <div className="d-flex justify-content-between align-items-center">
-                    <span>Section {sectionIndex + 1} 🟰 (Drag here)</span>
-                    <Button variant="outline-danger" size="sm" onClick={() => onDelete(sectionIndex)}>Delete</Button>
-                </div>
-            </Card.Header>
-            <Card.Body>
-                <Form.Group className="mb-3">
-                    <Form.Label>Layout Type</Form.Label>
-                    <Form.Select value={section.layoutType || 'grid'} onChange={(e) => onUpdate(sectionIndex, 'layoutType', e.target.value)}>
-                        <option value="grid">Grid</option>
-                        <option value="flex">Flex</option>
-                    </Form.Select>
-                </Form.Group>
-                {columns.map((column, colIndex) => (
-                    <Row key={colIndex} className="mb-2">
-                        <Col md={4}>
-                            <Form.Group><Form.Label>Content Type</Form.Label>
-                                <Form.Select value={column.contentType || 'text'} onChange={(e) => {
-                                    const updatedSections = [...editPage.PageSections];
-                                    if (updatedSections[sectionIndex]?.rows[0]?.columns[colIndex]) {
-                                        updatedSections[sectionIndex].rows[0].columns[colIndex].contentType = e.target.value;
-                                        setEditPage({ ...editPage, PageSections: updatedSections });
-                                    }
-                                }}>
-                                    <option value="text">Text</option><option value="news">News</option><option value="image">Image</option><option value="video">Video</option><option value="ad">Ad</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col md={3}><Form.Group><Form.Label>Width (1-12)</Form.Label><Form.Control type="number" min="1" max="12" value={column.width || 12} onChange={(e) => {
-                            const updatedSections = [...editPage.PageSections];
-                            if (updatedSections[sectionIndex]?.rows[0]?.columns[colIndex]) {
-                                updatedSections[sectionIndex].rows[0].columns[colIndex].width = parseInt(e.target.value) || 12;
-                                setEditPage({ ...editPage, PageSections: updatedSections });
-                            }
-                        }}/></Form.Group></Col>
-                        <Col md={3}><Form.Group><Form.Label>Tag</Form.Label><Form.Control type="text" value={column.tag || ''} onChange={(e) => {
-                            const updatedSections = [...editPage.PageSections];
-                            if (updatedSections[sectionIndex]?.rows[0]?.columns[colIndex]) {
-                                updatedSections[sectionIndex].rows[0].columns[colIndex].tag = e.target.value;
-                                setEditPage({ ...editPage, PageSections: updatedSections });
-                            }
-                        }}/></Form.Group></Col>
-                        <Col md={2} className="d-flex align-items-end"><Button variant="outline-danger" size="sm" onClick={() => {
-                            const updatedSections = [...editPage.PageSections];
-                            if (updatedSections[sectionIndex]?.rows?.[0]?.columns) {
-                                updatedSections[sectionIndex].rows[0].columns = updatedSections[sectionIndex].rows[0].columns.filter((_, idx) => idx !== colIndex);
-                                setEditPage({ ...editPage, PageSections: updatedSections });
-                            }
-                        }}>Del</Button></Col>
-                    </Row>
-                ))}
-                <Button variant="outline-success" size="sm" onClick={() => onAddColumn(sectionIndex)}>+ Col</Button>
-            </Card.Body>
-        </Card>
-    );
+const createNewSection = (rows = 3, columns = 3) => {
+    const sectionRows = [];
+    for (let i = 0; i < rows; i++) {
+        const row = { rowOrder: i + 1, columns: [] };
+        for (let j = 0; j < columns; j++) {
+            row.columns.push({
+                colOrder: j + 1,
+                contentType: 'text',
+                tag: '',
+                width: Math.floor(12 / columns),
+                merged: false,
+                rowSpan: 1,
+                colSpan: 1
+            });
+        }
+        sectionRows.push(row);
+    }
+    return { layoutType: 'grid', name: `Section ${Date.now()}`, autoNewsSelection: false, rows: sectionRows };
 };
 
 const PageLayoutDashboard = () => {
@@ -84,105 +36,238 @@ const PageLayoutDashboard = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [editPage, setEditPage] = useState(null);
-    const [newPage, setNewPage] = useState({ name: '', sections: [{ layoutType: 'grid', rows: [{ rowOrder: 1, columns: [{ colOrder: 1, width: 12, contentType: 'text', tag: 'main' }] }] }] });
+    const [availableTags, setAvailableTags] = useState([]);
+    const [menus, setMenus] = useState([]);
+    const [newPage, setNewPage] = useState({ name: '', autoNewsSelection: false, sections: [createNewSection(3, 3)] });
 
-    const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-
-    const fetchPages = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/layout');
-            setPages(Array.isArray(res.data) ? res.data : []);
-        } catch (err) { toast.error("Failed to fetch layouts"); }
+            const [pagesRes, tagsRes, menusRes] = await Promise.all([
+                api.get('/layout'),
+                api.get('/tags'),
+                api.get('/menus')
+            ]);
+            setPages(Array.isArray(pagesRes.data) ? pagesRes.data : []);
+            setAvailableTags(tagsRes.data.tags || []);
+            setMenus(menusRes.data.data || []);
+        } catch (err) { toast.error("Failed to fetch data"); }
         finally { setLoading(false); }
     };
 
-    useEffect(() => { if (isAdmin) fetchPages(); }, [isAdmin]);
+    useEffect(() => { if (isAdmin) fetchData(); }, [isAdmin]);
 
-    const handleDragEnd = (event) => {
-        const { active, over } = event;
-        if (!over || active.id === over.id) return;
-        const oldIdx = editPage.PageSections.findIndex(s => s.id === active.id);
-        const newIdx = editPage.PageSections.findIndex(s => s.id === over.id);
-        const reordered = arrayMove(editPage.PageSections, oldIdx, newIdx).map((s, i) => ({ ...s, rows: (s.rows || []).map(r => ({ ...r, rowOrder: i + 1 })) }));
-        setEditPage({ ...editPage, PageSections: reordered });
+    const handleFetchForEdit = async (id) => {
+        try {
+            const res = await api.get(`/layout/${id}`);
+            const data = res.data;
+            if (data.PageSections) {
+                data.PageSections = data.PageSections.map(s => ({
+                    ...s,
+                    rows: (s.Rows || s.rows || []).map(r => ({
+                        ...r,
+                        columns: (r.Columns || r.columns || []).map(c => ({
+                            ...c,
+                            contentType: c.contentType || 'text',
+                            contentId: c.contentId || null,
+                            contentTitle: c.contentTitle || null,
+                            merged: c.merged || false,
+                            rowSpan: c.rowSpan || 1,
+                            colSpan: c.colSpan || 1
+                        }))
+                    }))
+                }));
+            }
+            setEditPage(data);
+            setShowEditModal(true);
+        } catch (err) { toast.error("Failed to load page"); }
     };
 
     const handleSave = async () => {
         try {
-            const data = { name: editPage.name, PageSections: editPage.PageSections.map((s, i) => ({ layoutType: s.layoutType || 'grid', rows: (s.rows || s.Rows || []).map((r, ri) => ({ rowOrder: i + 1, columns: (r.columns || r.Columns || []).map((c, ci) => ({ colOrder: ci + 1, width: c.width, contentType: c.contentType, tag: c.tag })) })) })) };
-            await api.patch(`/layout/${editPage.id}`, data);
-            toast.success("Saved");
+            await api.patch(`/layout/${editPage.id}`, editPage);
+            toast.success("Saved successfully");
             setShowEditModal(false);
-            fetchPages();
+            fetchData();
         } catch (err) { toast.error("Save failed"); }
     };
 
-    const handleCreate = async () => {
-        try {
-            await api.post('/layout', newPage);
-            toast.success("Created");
-            setShowCreateModal(false);
-            fetchPages();
-        } catch (err) { toast.error("Create failed"); }
+    const updateGridCell = (sIdx, rIdx, cIdx, field, value) => {
+        const newData = JSON.parse(JSON.stringify(editPage));
+        newData.PageSections[sIdx].rows[rIdx].columns[cIdx][field] = value;
+        setEditPage(newData);
     };
+
+    const updateCellContent = (sIdx, rIdx, cIdx, type, id, title) => {
+        const newData = JSON.parse(JSON.stringify(editPage));
+        const cell = newData.PageSections[sIdx].rows[rIdx].columns[cIdx];
+        cell.contentType = type;
+        cell.contentId = id;
+        cell.contentTitle = title;
+        setEditPage(newData);
+    };
+
+    const mergeGridCells = (sIdx, mergeData) => {
+        const newData = JSON.parse(JSON.stringify(editPage));
+        const section = newData.PageSections[sIdx];
+        if (mergeData.action === 'merge') {
+            const { startRow, startCol, endRow, endCol, cells } = mergeData;
+            const master = section.rows[startRow].columns[startCol];
+            master.merged = true; master.masterCell = true;
+            master.rowSpan = endRow - startRow + 1;
+            master.colSpan = endCol - startCol + 1;
+            master.mergedCells = cells.slice(1);
+            cells.slice(1).forEach(c => {
+                const cell = section.rows[c.row].columns[c.col];
+                cell.merged = true; cell.masterCell = false; cell.masterCellKey = `${startRow}-${startCol}`;
+            });
+        } else if (mergeData.action === 'split') {
+            const { row, col } = mergeData;
+            const master = section.rows[row].columns[col];
+            if (master.merged && master.masterCell) {
+                (master.mergedCells || []).forEach(c => {
+                    const cell = section.rows[c.row].columns[c.col];
+                    cell.merged = false; delete cell.masterCellKey;
+                });
+                master.merged = false; master.masterCell = false; master.rowSpan = 1; master.colSpan = 1; delete master.mergedCells;
+            }
+        }
+        setEditPage(newData);
+    };
+
+    const fetchAutoNewsForPage = async (pageData) => {
+        if (!pageData?.PageSections) return;
+        const tagCounts = {};
+        const cellMap = [];
+        pageData.PageSections.forEach((section, sIdx) => {
+            if (!section.autoNewsSelection) return;
+            section.rows?.forEach((row, rIdx) => {
+                row.columns?.forEach((col, cIdx) => {
+                    const tag = col.tag;
+                    if (tag) {
+                        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                        cellMap.push({ sIdx, rIdx, cIdx, tag });
+                    }
+                });
+            });
+        });
+
+        if (cellMap.length === 0) return;
+
+        try {
+            const fetchedNewsByTag = {};
+            await Promise.all(Object.keys(tagCounts).map(async (tag) => {
+                const res = await api.get('/news', { params: { tag, limit: tagCounts[tag] } });
+                fetchedNewsByTag[tag] = res.data.news || res.data.rows || [];
+            }));
+
+            const newData = JSON.parse(JSON.stringify(pageData));
+            const tagUsageCounter = {};
+            cellMap.forEach(({ sIdx, rIdx, cIdx, tag }) => {
+                const available = fetchedNewsByTag[tag] || [];
+                const usage = tagUsageCounter[tag] || 0;
+                const newsItem = available[usage] || null;
+                if (newsItem) {
+                    newData.PageSections[sIdx].rows[rIdx].columns[cIdx].contentId = newsItem.id;
+                    newData.PageSections[sIdx].rows[rIdx].columns[cIdx].contentTitle = newsItem.newsHeadline;
+                    tagUsageCounter[tag] = usage + 1;
+                }
+            });
+            setEditPage(newData);
+        } catch (error) { console.error("Auto news fetch failed:", error); }
+    };
+
+    useEffect(() => {
+        if (showEditModal && editPage?.PageSections?.some(s => s.autoNewsSelection)) {
+            fetchAutoNewsForPage(editPage);
+        }
+    }, [showEditModal]);
 
     if (!isAdmin) return <div className="p-4 text-center"><h4>Access Denied</h4></div>;
 
     return (
-        <div className="container fluid mt-4">
+        <div className="container-fluid mt-4">
             <Row>
-                <Col md={4}>
+                <Col md={3}>
                     <Card><Card.Header className="d-flex justify-content-between">Pages <Button size="sm" onClick={() => setShowCreateModal(true)}>+</Button></Card.Header>
                     <Card.Body>
                         <div className="list-group">
                             {pages.map(p => (
-                                <div key={p.id} className={`list-group-item d-flex justify-content-between ${selectedPage?.id === p.id ? 'active' : ''}`} onClick={() => api.get(`/layout/${p.id}`).then(r => setSelectedPage(r.data))}>
-                                    {p.name}
+                                <div key={p.id} className={`list-group-item d-flex justify-content-between align-items-center ${selectedPage?.id === p.id ? 'active' : ''}`} onClick={() => api.get(`/layout/${p.id}`).then(r => setSelectedPage(r.data))}>
+                                    <span className="text-truncate" style={{maxWidth: '120px'}}>{p.name}</span>
                                     <div>
-                                        <Button size="sm" variant="outline-light" className="me-1" onClick={(e) => { e.stopPropagation(); api.get(`/layout/${p.id}`).then(r => { const d = r.data; d.PageSections = d.PageSections.map((s, i) => ({ ...s, id: s.id || `s-${i}`, rows: s.Rows || s.rows || [] })); setEditPage(d); setShowEditModal(true); }); }}>Edit</Button>
-                                        <Button size="sm" variant="outline-danger" onClick={(e) => { e.stopPropagation(); if (confirm('Delete?')) api.delete(`/layout/${p.id}`).then(() => fetchPages()); }}>X</Button>
+                                        <Button size="sm" variant="outline-primary" className="me-1" onClick={(e) => { e.stopPropagation(); handleFetchForEdit(p.id); }}>Edit</Button>
+                                        <Button size="sm" variant="outline-danger" onClick={(e) => { e.stopPropagation(); if (confirm('Delete?')) api.delete(`/layout/${p.id}`).then(() => fetchData()); }}>×</Button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </Card.Body></Card>
                 </Col>
-                <Col md={8}>
+                <Col md={9}>
                     {selectedPage ? (
                         <Card><Card.Body>
-                        <h5>{selectedPage.name}</h5>
-                        {selectedPage.PageSections?.map((s, i) => (
-                            <div key={i} className="border p-2 mb-2 bg-light">
-                                <h6>Section {i+1} ({s.layoutType})</h6>
-                                {(s.Rows || s.rows)?.map((r, ri) => (
-                                    <Row key={ri} className="g-1">
-                                        {(r.Columns || r.columns)?.map((c, ci) => (
-                                            <Col key={ci} md={c.width}><div className="border bg-white p-1 text-center small">{c.contentType}:{c.tag}</div></Col>
-                                        ))}
-                                    </Row>
-                                ))}
-                            </div>
-                        ))}
+                            <h5 className="mb-4">{selectedPage.name}</h5>
+                            {selectedPage.PageSections?.map((s, si) => (
+                                <div key={si} className="mb-4 p-3 border rounded bg-light">
+                                    <h6 className="border-bottom pb-2 mb-3">{s.name || `Section ${si+1}`} ({s.layoutType})</h6>
+                                    <div className="table-responsive">
+                                        <Table bordered size="sm" className="bg-white">
+                                            <tbody>
+                                                {(s.Rows || s.rows)?.map((r, ri) => (
+                                                    <tr key={ri}>
+                                                        {(r.Columns || r.columns)?.map((c, ci) => (
+                                                            !c.merged || c.masterCell ? (
+                                                                <td key={ci} rowSpan={c.rowSpan} colSpan={c.colSpan} className="p-2 text-center align-middle" style={{minWidth: '80px', height: '60px'}}>
+                                                                    <div className="small font-weight-bold">{c.contentType}</div>
+                                                                    <div className="text-truncate small text-muted">{c.contentTitle || c.tag}</div>
+                                                                </td>
+                                                            ) : null
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
+                                </div>
+                            ))}
                         </Card.Body></Card>
-                    ) : <div className="text-center p-5 border text-muted">Select a page</div>}
+                    ) : <div className="text-center p-5 border rounded bg-light text-muted">Select a page to preview</div>}
                 </Col>
             </Row>
 
-            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl">
-                <Modal.Header closeButton><Modal.Title>Edit {editPage?.name}</Modal.Title></Modal.Header>
-                <Modal.Body>
-                    <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control value={editPage?.name || ''} onChange={e => setEditPage({...editPage, name: e.target.value})}/></Form.Group>
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={editPage?.PageSections?.map(s => s.id) || []} strategy={verticalListSortingStrategy}>
-                            {editPage?.PageSections?.map((s, si) => (
-                                <SortableSection key={s.id} section={s} sectionIndex={si} editPage={editPage} setEditPage={setEditPage} onDelete={idx => setEditPage({...editPage, PageSections: editPage.PageSections.filter((_, i) => i !== idx)})} onUpdate={(idx, f, v) => { const ss = [...editPage.PageSections]; ss[idx][f] = v; setEditPage({...editPage, PageSections: ss}); }} onAddColumn={idx => { const ss = [...editPage.PageSections]; if (!ss[idx].rows[0]) ss[idx].rows = [{columns: []}]; ss[idx].rows[0].columns.push({width: 6, contentType: 'text', tag: 'col'}); setEditPage({...editPage, PageSections: ss}); }}/>
-                            ))}
-                        </SortableContext>
-                    </DndContext>
-                    <Button variant="outline-primary" onClick={() => setEditPage({...editPage, PageSections: [...(editPage.PageSections || []), { id: `s-${Date.now()}`, layoutType: 'grid', rows: [{columns: [{width: 12, contentType: 'text', tag: 'new'}]}] }]})}>+ Add Section</Button>
+            <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="xl" fullscreen="lg-down">
+                <Modal.Header closeButton><Modal.Title>Edit Layout: {editPage?.name}</Modal.Title></Modal.Header>
+                <Modal.Body className="bg-light">
+                    <Form.Group className="mb-4"><Form.Label>Page Name</Form.Label><Form.Control value={editPage?.name || ''} onChange={e => setEditPage({...editPage, name: e.target.value})}/></Form.Group>
+                    {editPage?.PageSections?.map((s, si) => (
+                        <ExcelGridSection
+                            key={s.id || si}
+                            section={s}
+                            sectionIndex={si}
+                            onUpdateSection={(idx, f, v) => { const ss = [...editPage.PageSections]; if (typeof f === 'object') ss[idx] = {...ss[idx], ...f}; else ss[idx][f] = v; setEditPage({...editPage, PageSections: ss}); }}
+                            onAddRow={idx => { const ss = [...editPage.PageSections]; const cols = ss[idx].rows[0]?.columns?.length || 3; ss[idx].rows.push({rowOrder: ss[idx].rows.length+1, columns: Array.from({length: cols}, (_, i) => ({colOrder: i+1, contentType: 'text', width: Math.floor(12/cols)}))}); setEditPage({...editPage, PageSections: ss}); }}
+                            onAddColumn={idx => { const ss = [...editPage.PageSections]; ss[idx].rows.forEach(r => r.columns.push({colOrder: r.columns.length+1, contentType: 'text', width: Math.floor(12/(r.columns.length+1))})); setEditPage({...editPage, PageSections: ss}); }}
+                            onDeleteRow={(si, ri) => { const ss = [...editPage.PageSections]; ss[si].rows.splice(ri, 1); setEditPage({...editPage, PageSections: ss}); }}
+                            onDeleteColumn={(si, ci) => { const ss = [...editPage.PageSections]; ss[si].rows.forEach(r => r.columns.splice(ci, 1)); setEditPage({...editPage, PageSections: ss}); }}
+                            onUpdateCell={updateGridCell}
+                            onUpdateCellContent={updateCellContent}
+                            onMergeCells={mergeGridCells}
+                            availableTags={availableTags}
+                            menus={menus}
+                        />
+                    ))}
+                    <Button variant="primary" className="mt-2" onClick={() => setEditPage({...editPage, PageSections: [...(editPage.PageSections || []), createNewSection()]})}>+ Add New Section</Button>
                 </Modal.Body>
-                <Modal.Footer><Button variant="primary" onClick={handleSave}>Save</Button></Modal.Footer>
+                <Modal.Footer><Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button><Button variant="success" onClick={handleSave}>Save Layout</Button></Modal.Footer>
+            </Modal>
+
+            <Modal show={showCreateModal} onHide={() => setShowCreateModal(false)}>
+                <Modal.Header closeButton><Modal.Title>Create New Page</Modal.Title></Modal.Header>
+                <Modal.Body>
+                    <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control value={newPage.name} onChange={e => setNewPage({...newPage, name: e.target.value})}/></Form.Group>
+                </Modal.Body>
+                <Modal.Footer><Button variant="primary" onClick={() => api.post('/layout', newPage).then(() => { setShowCreateModal(false); fetchData(); })}>Create</Button></Modal.Footer>
             </Modal>
         </div>
     );

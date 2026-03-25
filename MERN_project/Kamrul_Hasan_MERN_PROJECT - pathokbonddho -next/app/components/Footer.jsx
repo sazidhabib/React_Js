@@ -2,6 +2,7 @@
 import React from 'react';
 import { MdEmail } from 'react-icons/md';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useMenu } from '../providers/MenuProvider';
 
 const Footer = () => {
@@ -14,7 +15,14 @@ const Footer = () => {
                     {/* Brand Column */}
                     <div className="col-lg-4 col-md-6 mb-4 mb-lg-0">
                         <Link href="/" className="text-decoration-none d-inline-block mb-3">
-                            <img src="/images/Logo.png" alt="Pathokbonddho Logo" height="80" className=" bg-white rounded p-1" />
+                            <Image 
+                              src="/images/Logo.png" 
+                              alt="Pathokbonddho Logo" 
+                              width={120} 
+                              height={80} 
+                              className="bg-white rounded p-1"
+                              style={{ objectFit: 'contain' }}
+                            />
                         </Link>
                         <p className="text-light opacity-75 medium lh-lg">
                             সত্য, বস্তুনিষ্ঠ ও নিরপেক্ষ সংবাদ পরিবেশনে অঙ্গীকারবদ্ধ।

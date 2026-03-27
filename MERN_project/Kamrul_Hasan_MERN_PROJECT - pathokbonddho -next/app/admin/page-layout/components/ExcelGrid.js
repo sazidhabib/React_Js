@@ -7,8 +7,17 @@ import api from "@/app/lib/api";
 
 const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
+// Helper to build a correct image URL
+const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    // Remove leading slashes and duplicate "uploads/"
+    const cleaned = path.replace(/^\/+/, '').replace(/^uploads\//, '');
+    return `${UPLOADS_BASE_URL}/uploads/${cleaned}`;
+};
+
 // Preview Cell Content Component
-const PreviewCellContent = ({ contentType, contentId, contentTitle }) => {
+export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +32,7 @@ const PreviewCellContent = ({ contentType, contentId, contentTitle }) => {
                 let res;
                 if (contentType === 'news') res = await api.get(`/news/${contentId}`);
                 else if (contentType === 'ad') res = await api.get(`/ads/${contentId}`);
-                
+
                 if (res) setData(res.data.data || res.data.news || res.data);
                 else setData({ id: contentId, title: contentTitle });
             } catch (err) {
@@ -39,20 +48,84 @@ const PreviewCellContent = ({ contentType, contentId, contentTitle }) => {
     if (loading) return <Spinner animation="border" size="sm" />;
     if (contentType === 'text') return <div className="small text-muted">{contentTitle || 'Text Content'}</div>;
 
-    const imgSrc = contentType === 'news' ? (data?.thumbImage || data?.image) : (contentType === 'image' ? contentId : (contentType === 'ad' ? data?.image : null));
-    const finalImgSrc = imgSrc ? (imgSrc.startsWith('http') ? imgSrc : `${UPLOADS_BASE_URL}/${imgSrc.replace(/^\//, '')}`) : null;
+    // News preview
+    if (contentType === 'news') {
+        const newsImage = data?.thumbImage || data?.leadImage || data?.metaImage || data?.image || data?.thumbnail;
+        const headline = data?.newsHeadline || contentTitle;
+        const imgSrc = getImageUrl(newsImage);
+        return (
+            <div className="preview-news-cell">
+                {imgSrc && (
+                    <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
+                        <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                    </div>
+                )}
+                {headline && (
+                    <div className="small fw-bold" style={{ fontSize: '0.75rem', lineHeight: '1.2', maxHeight: '2.4em', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {headline}
+                    </div>
+                )}
+                {data?.category?.name && <Badge bg="danger" style={{ fontSize: '0.55rem' }} className="mt-1">{data.category.name}</Badge>}
+            </div>
+        );
+    }
 
-    return (
-        <div className="preview-cell">
-            {finalImgSrc && <div style={{ height: '40px', overflow: 'hidden', borderRadius: '4px' }}><img src={finalImgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>}
-            <div className="small fw-bold text-truncate" style={{ fontSize: '0.7rem' }}>{contentTitle || data?.newsHeadline || data?.title || 'Selected'}</div>
-        </div>
-    );
+    // Image preview
+    if (contentType === 'image') {
+        const imgSrc = getImageUrl(contentId);
+        return (
+            <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
+                {imgSrc && <img src={imgSrc} alt={contentTitle || 'Image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/300x200?text=Image'; }} />}
+            </div>
+        );
+    }
+
+    // Video preview
+    if (contentType === 'video') {
+        const videoTitle = contentTitle || 'Video';
+        let youtubeId = null;
+        if (contentId) {
+            const match = String(contentId).match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&\n?#]+)/);
+            if (match) youtubeId = match[1];
+        }
+        return (
+            <div>
+                {youtubeId ? (
+                    <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px', position: 'relative' }}>
+                        <img src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`} alt={videoTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '1.5rem', color: 'white', textShadow: '0 0 6px rgba(0,0,0,0.7)' }}>▶</div>
+                    </div>
+                ) : (
+                    <div className="bg-dark text-white text-center rounded py-2" style={{ fontSize: '0.7rem' }}>🎥 {videoTitle}</div>
+                )}
+            </div>
+        );
+    }
+
+    // Ad preview
+    if (contentType === 'ad') {
+        const adImage = data?.image;
+        const adTitle = data?.title || data?.name || contentTitle || 'Ad';
+        const imgSrc = adImage ? getImageUrl(`ads/${adImage}`) : null;
+        return (
+            <div>
+                {imgSrc && (
+                    <div style={{ height: '60px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
+                        <img src={imgSrc} alt={adTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                    </div>
+                )}
+                <div className="small text-truncate" style={{ fontSize: '0.7rem' }}>{adTitle}</div>
+            </div>
+        );
+    }
+
+    // Fallback
+    return contentTitle ? <div className="small text-muted text-truncate" style={{ fontSize: '0.7rem' }}>{contentTitle}</div> : null;
 };
 
 // Grid Cell Component
 const GridCell = ({
-    cell, rowIndex, colIndex, onUpdate, isMerged, isSelected, onCellSelect, 
+    cell, rowIndex, colIndex, onUpdate, isMerged, isSelected, onCellSelect,
     rowSpan, colSpan, isMasterCell, onContentSelect, onMouseDown, onMouseEnter,
     availableTags = [], availableDesigns = [], isAutoNewsMode = false, autoNewsItem = null
 }) => {
@@ -60,16 +133,29 @@ const GridCell = ({
 
     const cellStyle = {
         minWidth: '120px',
-        height: '100px',
-        backgroundColor: isMerged ? '#f8f9fa' : isSelected ? '#e7f1ff' : 'white',
+        height: isAutoNewsMode ? '120px' : '100px',
+        backgroundColor: isMerged ? '#e3f2fd' : isSelected ? '#fff3cd' : 'white',
         cursor: 'pointer',
         position: 'relative',
-        border: isSelected ? '2px solid #0d6efd' : '1px solid #dee2e6',
+        border: isSelected ? '2px solid #007bff' : '1px solid #dee2e6',
         verticalAlign: 'top',
         padding: '8px'
     };
 
     if (isMerged && !isMasterCell) return null;
+
+    const handleContentTypeChange = (newContentType) => {
+        if (cell.contentType && cell.contentType !== 'text' && newContentType !== cell.contentType) {
+            onUpdate(rowIndex, colIndex, 'contentId', null);
+            onUpdate(rowIndex, colIndex, 'contentTitle', null);
+        }
+        onUpdate(rowIndex, colIndex, 'contentType', newContentType);
+        if (newContentType !== 'text' && onContentSelect) {
+            setTimeout(() => onContentSelect(rowIndex, colIndex, newContentType), 100);
+        } else {
+            setIsEditing(false);
+        }
+    };
 
     return (
         <td
@@ -81,40 +167,140 @@ const GridCell = ({
             onMouseEnter={() => onMouseEnter(rowIndex, colIndex)}
             onDoubleClick={() => !isAutoNewsMode && setIsEditing(true)}
         >
-            <Badge bg="secondary" className="position-absolute top-0 start-0" style={{fontSize: '0.6rem'}}>
+            <Badge bg="secondary" className="position-absolute top-0 start-0" style={{ fontSize: '0.6rem' }}>
                 {String.fromCharCode(65 + colIndex)}{rowIndex + 1}
             </Badge>
+
+            {isSelected && (
+                <div className="position-absolute top-0 end-0 p-1"><Badge bg="success">✓</Badge></div>
+            )}
 
             <div className="d-flex flex-column h-100 mt-2">
                 {isEditing ? (
                     <div onClick={e => e.stopPropagation()}>
-                        <Form.Select size="sm" value={cell.contentType || 'text'} onChange={e => onUpdate(rowIndex, colIndex, 'contentType', e.target.value)}>
+                        <Form.Select size="sm" value={cell.contentType || 'text'} onChange={e => handleContentTypeChange(e.target.value)}>
                             <option value="text">📝 Text</option>
                             <option value="news">📰 News</option>
                             <option value="image">🖼️ Image</option>
                             <option value="video">🎥 Video</option>
                             <option value="ad">📢 Ad</option>
                         </Form.Select>
-                        <Form.Control size="sm" placeholder="Tag" value={cell.tag || ''} onChange={e => onUpdate(rowIndex, colIndex, 'tag', e.target.value)} className="mt-1" />
+
+                        {/* Tag Input with Datalist */}
+                        <Form.Control
+                            size="sm" type="text" placeholder="Tag"
+                            value={cell.tag || ''}
+                            list={`tag-list-${rowIndex}-${colIndex}`}
+                            onChange={e => onUpdate(rowIndex, colIndex, 'tag', e.target.value)}
+                            onClick={e => e.stopPropagation()}
+                            className="mt-1" autoComplete="off"
+                        />
+                        <datalist id={`tag-list-${rowIndex}-${colIndex}`}>
+                            {availableTags.map(tag => (
+                                <option key={tag.id} value={tag.name} />
+                            ))}
+                        </datalist>
+
+                        {/* Design Input with Datalist */}
+                        <Form.Control
+                            size="sm" type="text" placeholder="Design"
+                            value={cell.design || ''}
+                            list={`design-list-${rowIndex}-${colIndex}`}
+                            onChange={e => onUpdate(rowIndex, colIndex, 'design', e.target.value)}
+                            onClick={e => e.stopPropagation()}
+                            className="mt-1" autoComplete="off"
+                        />
+                        <datalist id={`design-list-${rowIndex}-${colIndex}`}>
+                            {availableDesigns.map(design => (
+                                <option key={design.id || design.slug} value={design.slug || design.name} />
+                            ))}
+                        </datalist>
+
+                        {/* Content select button for non-text */}
+                        {cell.contentType && cell.contentType !== 'text' && (
+                            <>
+                                <Button size="sm" variant="outline-primary" className="mt-1 w-100" style={{ fontSize: '0.7rem' }}
+                                    onClick={(e) => { e.stopPropagation(); onContentSelect(rowIndex, colIndex, cell.contentType); }}>
+                                    {cell.contentId ? 'Change Selection' : 'Select Content'}
+                                </Button>
+                                {cell.contentId && (
+                                    <div className="mt-1 p-1 bg-light border rounded small">
+                                        <div className="fw-bold text-success" style={{ fontSize: '0.7rem' }}>✓ Selected:</div>
+                                        <div className="text-truncate" style={{ fontSize: '0.7rem' }} title={cell.contentTitle}>
+                                            {cell.contentTitle || `ID: ${String(cell.contentId).substring(0, 8)}...`}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
                         <Button size="sm" variant="link" className="p-0 mt-1" onClick={() => setIsEditing(false)}>Done</Button>
                     </div>
                 ) : (
-                    <div className="text-center overflow-hidden">
+                    <div className="text-center p-1" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%', overflow: 'hidden', opacity: isAutoNewsMode && !cell.tag ? 0.5 : 1 }}>
                         {isAutoNewsMode ? (
-                            <div>
-                                <Badge bg="info">{cell.tag || 'No Tag'}</Badge>
-                                {autoNewsItem && <div className="small mt-1 text-truncate">{autoNewsItem.newsHeadline}</div>}
-                            </div>
-                        ) : (
+                            /* Auto News Mode Display */
                             <>
-                                <div className="small fw-bold mb-1">{cell.contentType === 'text' ? '📝' : cell.contentType === 'news' ? '📰' : cell.contentType === 'image' ? '🖼️' : cell.contentType === 'video' ? '🎥' : '📢'}</div>
-                                {cell.contentType !== 'text' && (
-                                    <Button size="sm" variant="outline-primary" style={{fontSize: '0.6rem'}} onClick={(e) => { e.stopPropagation(); onContentSelect(rowIndex, colIndex, cell.contentType); }}>
-                                        {cell.contentId ? 'Change' : 'Select'}
-                                    </Button>
+                                <div className="small fw-bold border-bottom mb-1 pb-1">
+                                    {cell.tag ? (
+                                        <Badge bg="info" className="text-truncate" style={{ maxWidth: '100%' }}>{cell.tag}</Badge>
+                                    ) : (
+                                        <Badge bg="danger">MISSING TAG</Badge>
+                                    )}
+                                </div>
+                                {cell.design && <Badge bg="warning" text="dark" className="small d-block mb-1" style={{ fontSize: '0.6rem' }}>Design: {cell.design}</Badge>}
+                                <div className="flex-grow-1 d-flex align-items-center justify-content-center overflow-hidden">
+                                    {!cell.tag ? (
+                                        <div className="text-danger small" style={{ fontSize: '0.7rem' }}>⚠️ Select Tag</div>
+                                    ) : autoNewsItem ? (
+                                        <div className="w-100">
+                                            {autoNewsItem.thumbImage && (
+                                                <div className="mb-1" style={{ height: '30px', overflow: 'hidden' }}>
+                                                    <img src={getImageUrl(autoNewsItem.thumbImage)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                                                </div>
+                                            )}
+                                            <div className="text-truncate small" style={{ fontSize: '0.65rem' }} title={autoNewsItem.newsHeadline}>
+                                                {autoNewsItem.newsHeadline}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-muted small" style={{ fontSize: '0.7rem' }}>No news found</div>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            /* Standard Editing Mode Display */
+                            <>
+                                <div className="small fw-bold" style={{ marginBottom: '4px' }}>
+                                    {cell.contentType === 'text' && '📝 Text'}
+                                    {cell.contentType === 'news' && '📰 News'}
+                                    {cell.contentType === 'image' && '🖼️ Image'}
+                                    {cell.contentType === 'video' && '🎥 Video'}
+                                    {cell.contentType === 'ad' && '📢 Ad'}
+                                    {!cell.contentType && '📝 Text'}
+                                </div>
+
+                                {cell.tag && <Badge bg="info" className="small" style={{ marginBottom: '4px' }}>Tag: {cell.tag}</Badge>}
+                                {cell.design && <Badge bg="warning" text="dark" className="small" style={{ marginBottom: '4px' }}>Design: {cell.design}</Badge>}
+
+                                {cell.contentType && cell.contentType !== 'text' && (
+                                    <div style={{ marginTop: 'auto', overflow: 'hidden', maxHeight: '50px' }}>
+                                        {cell.contentId ? (
+                                            <>
+                                                <Badge bg="success" className="small d-block mb-1">✓ {cell.contentType}</Badge>
+                                                <div className="small text-break" style={{ fontSize: '0.7rem', backgroundColor: '#e8f4f8', padding: '3px', borderRadius: '3px', maxHeight: '35px', overflow: 'hidden', lineHeight: '1.1', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }} title={cell.contentTitle || `Selected ${cell.contentType} - ID: ${cell.contentId}`}>
+                                                    <strong>{cell.contentType}: </strong>
+                                                    {cell.contentTitle ? (typeof cell.contentTitle === 'string' ? cell.contentTitle.substring(0, 40) + (cell.contentTitle.length > 40 ? '...' : '') : String(cell.contentTitle)) : `ID: ${String(cell.contentId).substring(0, 8)}...`}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <Button size="sm" variant="outline-primary" className="w-100" style={{ fontSize: '0.7rem', padding: '4px 2px', marginTop: '5px' }}
+                                                onClick={e => { e.stopPropagation(); onContentSelect(rowIndex, colIndex, cell.contentType); }}>
+                                                Select {cell.contentType}
+                                            </Button>
+                                        )}
+                                    </div>
                                 )}
-                                <div className="small text-truncate mt-1" style={{fontSize: '0.65rem'}}>{cell.contentTitle || cell.tag || ''}</div>
-                                {cell.design && <Badge bg="warning" text="dark" className="ms-1" style={{fontSize: '0.5rem'}}>{cell.design}</Badge>}
                             </>
                         )}
                     </div>
@@ -125,14 +311,22 @@ const GridCell = ({
 };
 
 // Merge Controls
-const MergeControls = ({ selectedCells, onMerge, onClearSelection }) => {
+const MergeControls = ({ selectedCells, selectedRange, onMerge, onClearSelection }) => {
     if (selectedCells.size === 0) return null;
+    const cellCount = selectedCells.size;
     return (
         <Card className="mb-3 bg-light border-primary">
             <Card.Body className="py-2 d-flex justify-content-between align-items-center">
-                <Badge bg="primary">{selectedCells.size} Cells Selected</Badge>
                 <div>
-                    {selectedCells.size > 1 && <Button variant="primary" size="sm" className="me-2" onClick={() => onMerge('merge')}>🔗 Merge</Button>}
+                    <Badge bg="primary" className="me-2">{cellCount} {cellCount === 1 ? 'Cell' : 'Cells'} Selected</Badge>
+                    {selectedRange && (
+                        <small className="text-muted">
+                            Range: {String.fromCharCode(65 + selectedRange.startCol)}{selectedRange.startRow + 1} to {String.fromCharCode(65 + selectedRange.endCol)}{selectedRange.endRow + 1}
+                        </small>
+                    )}
+                </div>
+                <div>
+                    {cellCount > 1 && <Button variant="success" size="sm" className="me-2" onClick={() => onMerge('merge')}>🔗 Merge {cellCount} Cells</Button>}
                     <Button variant="warning" size="sm" className="me-2" onClick={() => onMerge('split')}>🔓 Split</Button>
                     <Button variant="outline-secondary" size="sm" onClick={onClearSelection}>Clear</Button>
                 </div>
@@ -144,7 +338,8 @@ const MergeControls = ({ selectedCells, onMerge, onClearSelection }) => {
 // Excel Grid Section
 export const ExcelGridSection = ({
     section, sectionIndex, onUpdateSection, onAddRow, onAddColumn, onDeleteRow, onDeleteColumn,
-    onUpdateCell, onUpdateCellContent, onMergeCells, availableTags, availableDesigns, menus = []
+    onUpdateCell, onUpdateCellContent, onMergeCells, availableTags, availableDesigns = [], menus = [],
+    globalAutoNewsSelection = false, autoNewsData = {}
 }) => {
     const [selectedCells, setSelectedCells] = useState(new Set());
     const [selectionStart, setSelectionStart] = useState(null);
@@ -153,6 +348,55 @@ export const ExcelGridSection = ({
 
     const rows = section.rows || [];
     const columns = rows[0]?.columns || [];
+
+    const isAutoNewsMode = globalAutoNewsSelection || section.autoNewsSelection;
+
+    const getSelectedRange = () => {
+        if (selectedCells.size === 0) return null;
+        const cellsArray = Array.from(selectedCells).map(key => {
+            const [row, col] = key.split('-').map(Number);
+            return { row, col };
+        });
+        const rowsArr = cellsArray.map(cell => cell.row);
+        const colsArr = cellsArray.map(cell => cell.col);
+        return {
+            startRow: Math.min(...rowsArr), startCol: Math.min(...colsArr),
+            endRow: Math.max(...rowsArr), endCol: Math.max(...colsArr),
+            cells: cellsArray
+        };
+    };
+
+    const handleCellSelect = (rowIndex, colIndex, event) => {
+        const cellKey = `${rowIndex}-${colIndex}`;
+        if (event.shiftKey && selectionStart) {
+            handleRangeSelection(rowIndex, colIndex);
+        } else if (event.ctrlKey || event.metaKey) {
+            setSelectedCells(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(cellKey)) newSet.delete(cellKey);
+                else newSet.add(cellKey);
+                return newSet;
+            });
+        } else {
+            setSelectedCells(new Set([cellKey]));
+            setSelectionStart({ r: rowIndex, c: colIndex });
+        }
+    };
+
+    const handleRangeSelection = (endRow, endCol) => {
+        if (!selectionStart) return;
+        const newSelected = new Set();
+        const startR = Math.min(selectionStart.r, endRow);
+        const endR = Math.max(selectionStart.r, endRow);
+        const startC = Math.min(selectionStart.c, endCol);
+        const endC = Math.max(selectionStart.c, endCol);
+        for (let i = startR; i <= endR; i++) {
+            for (let j = startC; j <= endC; j++) {
+                newSelected.add(`${i}-${j}`);
+            }
+        }
+        setSelectedCells(newSelected);
+    };
 
     const handleMouseDown = (r, c, e) => {
         setIsSelecting(true);
@@ -168,7 +412,6 @@ export const ExcelGridSection = ({
         const endR = Math.max(selectionStart.r, r);
         const startC = Math.min(selectionStart.c, c);
         const endC = Math.max(selectionStart.c, c);
-
         for (let i = startR; i <= endR; i++) {
             for (let j = startC; j <= endC; j++) {
                 newSelected.add(`${i}-${j}`);
@@ -193,10 +436,8 @@ export const ExcelGridSection = ({
             const cIdxs = cells.map(c => c.col);
             onMergeCells(sectionIndex, {
                 action: 'merge',
-                startRow: Math.min(...rIdxs),
-                endRow: Math.max(...rIdxs),
-                startCol: Math.min(...cIdxs),
-                endCol: Math.max(...cIdxs),
+                startRow: Math.min(...rIdxs), endRow: Math.max(...rIdxs),
+                startCol: Math.min(...cIdxs), endCol: Math.max(...cIdxs),
                 cells
             });
         } else if (action === 'split') {
@@ -214,7 +455,7 @@ export const ExcelGridSection = ({
             <Card.Header className="d-flex justify-content-between align-items-center bg-white">
                 <div className="d-flex align-items-center">
                     <h6 className="mb-0 me-3">{section.name || `Section ${sectionIndex + 1}`}</h6>
-                    <Form.Check type="switch" label="Auto News" checked={section.autoNewsSelection} onChange={e => onUpdateSection(sectionIndex, 'autoNewsSelection', e.target.checked)} />
+                    <Form.Check type="switch" label="Auto News" checked={section.autoNewsSelection || false} onChange={e => onUpdateSection(sectionIndex, 'autoNewsSelection', e.target.checked)} />
                 </div>
                 <div>
                     <Button variant="outline-primary" size="sm" className="me-2" onClick={() => onAddRow(sectionIndex)}>+ Row</Button>
@@ -222,7 +463,31 @@ export const ExcelGridSection = ({
                 </div>
             </Card.Header>
             <Card.Body>
-                <MergeControls selectedCells={selectedCells} onMerge={handleMerge} onClearSelection={() => setSelectedCells(new Set())} />
+                {/* Section Name from Menu Selection - like old React project */}
+                <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">Section Name (Menu Category)</Form.Label>
+                    <Form.Select
+                        value={section.name || ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val) {
+                                const selectedMenu = menus.find(m => m.name === val);
+                                onUpdateSection(sectionIndex, { name: val, menuSlug: selectedMenu?.path || selectedMenu?.slug || '' });
+                            } else {
+                                onUpdateSection(sectionIndex, { name: '', menuSlug: '' });
+                            }
+                        }}
+                    >
+                        <option value="">No menu selection</option>
+                        {menus.map((menu) => (
+                            <option key={menu.id} value={menu.name}>
+                                {menu.name}
+                            </option>
+                        ))}
+                    </Form.Select>
+                </Form.Group>
+
+                <MergeControls selectedCells={selectedCells} selectedRange={getSelectedRange()} onMerge={handleMerge} onClearSelection={() => setSelectedCells(new Set())} />
                 <div className="table-responsive">
                     <Table bordered className="mb-0" style={{ borderCollapse: 'separate' }}>
                         <thead>
@@ -243,25 +508,31 @@ export const ExcelGridSection = ({
                                         {ri + 1}
                                         <Button variant="link" size="sm" className="p-0 position-absolute bottom-0 text-danger" onClick={() => onDeleteRow(sectionIndex, ri)}>×</Button>
                                     </td>
-                                    {row.columns.map((cell, ci) => (
-                                        <GridCell
-                                            key={`${ri}-${ci}`}
-                                            cell={cell}
-                                            rowIndex={ri}
-                                            colIndex={ci}
-                                            onUpdate={(r, c, f, v) => onUpdateCell(sectionIndex, r, c, f, v)}
-                                            isSelected={selectedCells.has(`${ri}-${ci}`)}
-                                            onCellSelect={() => {}} 
-                                            onMouseDown={handleMouseDown}
-                                            onMouseEnter={handleMouseEnter}
-                                            onContentSelect={(r, c, type) => setContentModal({ show: true, contentType: type, rowIndex: r, colIndex: c })}
-                                            isMerged={cell.merged}
-                                            isMasterCell={cell.masterCell}
-                                            rowSpan={cell.rowSpan}
-                                            colSpan={cell.colSpan}
-                                            isAutoNewsMode={section.autoNewsSelection}
-                                        />
-                                    ))}
+                                    {row.columns.map((cell, ci) => {
+                                        const autoNewsKey = `${sectionIndex}-${ri}-${ci}`;
+                                        return (
+                                            <GridCell
+                                                key={`${ri}-${ci}`}
+                                                cell={cell}
+                                                rowIndex={ri}
+                                                colIndex={ci}
+                                                onUpdate={(r, c, f, v) => onUpdateCell(sectionIndex, r, c, f, v)}
+                                                isSelected={selectedCells.has(`${ri}-${ci}`)}
+                                                onCellSelect={handleCellSelect}
+                                                onMouseDown={handleMouseDown}
+                                                onMouseEnter={handleMouseEnter}
+                                                onContentSelect={(r, c, type) => setContentModal({ show: true, contentType: type, rowIndex: r, colIndex: c })}
+                                                isMerged={cell.merged}
+                                                isMasterCell={cell.masterCell}
+                                                rowSpan={cell.rowSpan}
+                                                colSpan={cell.colSpan}
+                                                isAutoNewsMode={isAutoNewsMode}
+                                                autoNewsItem={autoNewsData[autoNewsKey] || null}
+                                                availableTags={availableTags}
+                                                availableDesigns={availableDesigns}
+                                            />
+                                        );
+                                    })}
                                 </tr>
                             ))}
                         </tbody>
@@ -270,10 +541,10 @@ export const ExcelGridSection = ({
             </Card.Body>
             {contentModal.show && (
                 <>
-                    {contentModal.contentType === 'news' && <NewsSelectionModal show={true} onClose={() => setContentModal({show: false})} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'news', data.id, data.newsHeadline); setContentModal({show: false}); }} />}
-                    {contentModal.contentType === 'image' && <ImageSelectionModal show={true} onClose={() => setContentModal({show: false})} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'image', data.imageUrl || data.image, data.filename); setContentModal({show: false}); }} />}
-                    {contentModal.contentType === 'video' && <VideoSelectionModal show={true} onClose={() => setContentModal({show: false})} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'video', data.id, data.newsHeadline); setContentModal({show: false}); }} />}
-                    {contentModal.contentType === 'ad' && <AdSelectionModal show={true} onClose={() => setContentModal({show: false})} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'ad', data.id, data.title || data.name); setContentModal({show: false}); }} />}
+                    {contentModal.contentType === 'news' && <NewsSelectionModal show={true} onClose={() => setContentModal({ show: false })} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'news', data.id, data.newsHeadline); setContentModal({ show: false }); }} />}
+                    {contentModal.contentType === 'image' && <ImageSelectionModal show={true} onClose={() => setContentModal({ show: false })} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'image', data.imageUrl || data.image, data.filename); setContentModal({ show: false }); }} />}
+                    {contentModal.contentType === 'video' && <VideoSelectionModal show={true} onClose={() => setContentModal({ show: false })} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'video', data.id, data.newsHeadline); setContentModal({ show: false }); }} />}
+                    {contentModal.contentType === 'ad' && <AdSelectionModal show={true} onClose={() => setContentModal({ show: false })} onSelect={data => { onUpdateCellContent(sectionIndex, contentModal.rowIndex, contentModal.colIndex, 'ad', data.id, data.title || data.name); setContentModal({ show: false }); }} />}
                 </>
             )}
         </Card>

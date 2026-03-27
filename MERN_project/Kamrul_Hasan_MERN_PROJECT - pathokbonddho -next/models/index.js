@@ -5,9 +5,8 @@ const Page = require('./page');
 const PageSection = require('./pageSection');
 const Row = require('./row');
 const Column = require('./column');
+const About = require('./about-model');
 const User = require('./user-model');
-const Article = require('./article-model');
-const Blog = require('./blog-model');
 
 // Import your new models
 const Tag = require('./tag-model');
@@ -138,24 +137,6 @@ NewsGalleryItem.belongsTo(News, {
 });
 
 // Add after other associations
-ImageRegistry.belongsTo(Article, {
-    foreignKey: 'sourceId',
-    constraints: false,
-    as: 'article',
-    scope: {
-        sourceType: 'article'
-    }
-});
-
-ImageRegistry.belongsTo(Blog, {
-    foreignKey: 'sourceId',
-    constraints: false,
-    as: 'blog',
-    scope: {
-        sourceType: 'blog'
-    }
-});
-
 ImageRegistry.belongsTo(Photo, {
     foreignKey: 'sourceId',
     constraints: false,
@@ -184,4 +165,5 @@ module.exports = {
     NewsTag,
     NewsCategory,
     ImageRegistry,
+    About,
 };

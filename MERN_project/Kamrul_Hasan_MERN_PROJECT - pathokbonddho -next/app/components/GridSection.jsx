@@ -154,8 +154,9 @@ const GridSection = ({ section }) => {
                     style={{
                         display: 'grid',
                         gridTemplateColumns: gridTemplateColumns,
-                        gridTemplateRows: `repeat(${sortedRows.length}, auto)`,
+                        gridTemplateRows: `repeat(${sortedRows.length}, minmax(0, auto))`,
                         gap: '20px',
+                        alignItems: 'stretch',
                     }}
                 >
                     {gridCells.map(({ col, gridRow, gridColumn, key }, index) => {
@@ -175,6 +176,7 @@ const GridSection = ({ section }) => {
                                     gridRow,
                                     gridColumn,
                                     minHeight: '0',
+                                    height: '100%',
                                     position: 'relative'
                                 }}
                             >

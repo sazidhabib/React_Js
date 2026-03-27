@@ -13,12 +13,14 @@ const About = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_URL = `${''}/api/sections/about`;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const FETCH_URL = `${API_URL}/about`;
 
   useEffect(() => {
     const fetchAboutData = async () => {
       try {
-        const response = await axios.get(API_URL);
+        const response = await axios.get(FETCH_URL);
         setAboutData(response.data);
       } catch (err) {
         console.error("Error fetching about data:", err);
@@ -55,7 +57,7 @@ const About = () => {
             <div className="col-lg-6 text-center text-lg-end">
               <img
                 src={aboutData?.imageUrl
-                  ? `${''}/uploads/${aboutData.imageUrl.replace(/^\/+/, "")}`
+                  ? `${BASE_URL}/uploads/${aboutData.imageUrl.replace(/^\/+/, "").replace(/^uploads\//, "")}`
                   : "/images/kamrul_hasan_bio2.jpg"}
                 alt="kamrulhasan_bio"
                 className="img-fluid profile-image"

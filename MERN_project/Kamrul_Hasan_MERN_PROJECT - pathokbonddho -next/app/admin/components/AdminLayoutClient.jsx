@@ -52,6 +52,12 @@ export default function AdminLayoutClient({ children, user }) {
         return normalizedPathname === normalizedTargetPath;
     };
 
+    useEffect(() => {
+        if (!loading && (!user || !user.isAdmin)) {
+            router.push('/login');
+        }
+    }, [user, loading, router]);
+
     if (loading) {
         return (
             <div className="d-flex justify-content-center align-items-center min-vh-100">
@@ -111,23 +117,13 @@ export default function AdminLayoutClient({ children, user }) {
                             </Link>
                         </li>
 
-                        <li className={`nav-item py-1 ${isActiveRoute('/admin/hero-section') ? 'bg-secondary rounded' : ''}`}>
-                            <Link href="/admin/hero-section" className="nav-link text-white px-3">
-                                Hero Section
+
+                        <li className={`nav-item py-1 ${isActiveRoute('/admin/about') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/about" className="nav-link text-white px-3">
+                                About
                             </Link>
                         </li>
 
-                        <li className={`nav-item py-1 ${isActiveRoute('/admin/sections') ? 'bg-secondary rounded' : ''}`}>
-                            <Link href="/admin/sections" className="nav-link text-white px-3">
-                                Sections
-                            </Link>
-                        </li>
-
-                        <li className={`nav-item py-1 ${isActiveRoute('/admin/articles') ? 'bg-secondary rounded' : ''}`}>
-                            <Link href="/admin/articles" className="nav-link text-white px-3">
-                                Article
-                            </Link>
-                        </li>
 
                         <li className={`nav-item py-1 ${isActiveRoute('/admin/tags') ? 'bg-secondary rounded' : ''}`}>
                             <Link href="/admin/tags" className="nav-link text-white px-3">
@@ -153,11 +149,6 @@ export default function AdminLayoutClient({ children, user }) {
                             </Link>
                         </li>
 
-                        <li className={`nav-item py-1 ${isActiveRoute('/admin/blog') ? 'bg-secondary rounded' : ''}`}>
-                            <Link href="/admin/blog" className="nav-link text-white px-3">
-                                Blog
-                            </Link>
-                        </li>
 
                         {/* News Sections (collapsible) */}
                         <li className="nav-item py-1">
@@ -237,17 +228,7 @@ export default function AdminLayoutClient({ children, user }) {
                             </div>
                         </li>
 
-                        <li className={`nav-item py-1 ${isActiveRoute('/admin/songs') ? 'bg-secondary rounded' : ''}`}>
-                            <Link href="/admin/songs" className="nav-link text-white px-3">
-                                Songs
-                            </Link>
-                        </li>
 
-                        <li className={`nav-item py-1 ${isActiveRoute('/admin/videos') ? 'bg-secondary rounded' : ''}`}>
-                            <Link href="/admin/videos" className="nav-link text-white px-3">
-                                Videos
-                            </Link>
-                        </li>
 
                         <li className={`nav-item py-1 ${isActiveRoute('/admin/page-layout') ? 'bg-secondary rounded' : ''}`}>
                             <Link href="/admin/page-layout" className="nav-link text-white px-3">

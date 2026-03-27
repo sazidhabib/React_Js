@@ -40,12 +40,7 @@ const newsRouter = require('./router/news-router');
 // Routes
 app.use("/api/menus", menuRoutes);
 app.use("/api/auth", require("./router/auth-router"));
-app.use("/api/articles", require("./router/article-router"));
-app.use("/api/blogs", require("./router/blog-router"));
-app.use("/api/songs", require("./router/songsRoutes"));
-app.use("/api/hero-section", require("./router/heroSectionRoutes"));
-app.use("/api/sections", require("./router/sectionRoutes"));
-app.use("/api/v1/videos", require("./router/videoRoutes"));
+app.use("/api/about", require("./router/about-router"));
 app.use("/api/layout", require("./router/layoutRouters"));
 app.use('/api/tags', tagRoutes);
 app.use('/api/authors', authorRoutes);
@@ -101,7 +96,7 @@ const startServer = async () => {
     console.log("✅ Database tables:", tableNames);
 
     // Check if our layout tables exist
-    const layoutTables = ['pages', 'page_sections', 'rows', 'columns'];
+    const layoutTables = ['pages', 'page_sections', 'rows', 'columns', 'abouts'];
     const missingTables = layoutTables.filter(table => !tableNames.includes(table));
 
     if (missingTables.length > 0) {

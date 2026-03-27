@@ -4,8 +4,6 @@ const Photo = require('../models/photo');
 const Album = require('../models/album');
 const ImageRegistry = require('../models/imageRegistry');
 const ImageService = require('../services/imageService');
-const Article = require('../models/article-model');
-const Blog = require('../models/blog-model');
 const News = require('../models/news-model');
 
 // NEW: Get all images from all sources
@@ -43,19 +41,7 @@ exports.getAllImages = async (req, res, next) => {
             let sourceTitle = '';
 
             try {
-                if (img.sourceType === 'article') {
-                    const article = await Article.findByPk(img.sourceId);
-                    if (article) {
-                        relatedInfo.title = article.title;
-                        sourceTitle = `Article: ${article.title}`;
-                    }
-                } else if (img.sourceType === 'blog') {
-                    const blog = await Blog.findByPk(img.sourceId);
-                    if (blog) {
-                        relatedInfo.title = blog.title;
-                        sourceTitle = `Blog: ${blog.title}`;
-                    }
-                } else if (img.sourceType === 'news') { // ADD THIS
+                if (img.sourceType === 'news') { // ADD THIS
                     const news = await News.findByPk(img.sourceId);
                     if (news) {
                         relatedInfo.title = news.newsHeadline;
@@ -105,8 +91,6 @@ exports.getAllImages = async (req, res, next) => {
                 isManaged: img.sourceType === 'photo',
                 sourceTitle: sourceTitle,
                 relatedEntity: {
-                    article: img.sourceType === 'article' ? { id: img.sourceId, title: relatedInfo.title } : null,
-                    blog: img.sourceType === 'blog' ? { id: img.sourceId, title: relatedInfo.title } : null,
                     news: img.sourceType === 'news' ? { id: img.sourceId, title: relatedInfo.title } : null, // ADD THIS
                     photo: img.sourceType === 'photo' ? { id: img.sourceId, caption: relatedInfo.caption } : null
                 },
@@ -428,9 +412,7 @@ exports.scanExistingImages = async (req, res, next) => {
 
         await ImageService.scanAndRegisterExistingImages();
 
-        // Also register images from articles and blogs
-        await registerArticlesImages();
-        await registerBlogsImages();
+        // Also register images from news
         await registerNewsImages();
 
         res.status(200).json({
@@ -446,46 +428,6 @@ exports.scanExistingImages = async (req, res, next) => {
     }
 };
 
-// Helper functions to register existing articles and blogs images
-async function registerArticlesImages() {
-    try {
-        const articles = await Article.findAll();
-        for (const article of articles) {
-            if (article.image) {
-                const filename = path.basename(article.image);
-                await ImageService.registerImage(
-                    filename,
-                    article.image,
-                    'article',
-                    article.id
-                );
-            }
-        }
-        console.log(`✅ Registered ${articles.length} article images`);
-    } catch (error) {
-        console.error('Error registering article images:', error);
-    }
-}
-
-async function registerBlogsImages() {
-    try {
-        const blogs = await Blog.findAll();
-        for (const blog of blogs) {
-            if (blog.image) {
-                const filename = path.basename(blog.image);
-                await ImageService.registerImage(
-                    filename,
-                    blog.image,
-                    'blog',
-                    blog.id
-                );
-            }
-        }
-        console.log(`✅ Registered ${blogs.length} blog images`);
-    } catch (error) {
-        console.error('Error registering blog images:', error);
-    }
-}
 
 async function registerNewsImages() {
     try {

@@ -769,9 +769,12 @@ body {
     object-fit: cover;
 }
 
-/* Allow news widget images in merged cells to scale beyond 200px */
-.news-widget .card-img-wrapper img {
-    max-height: 100%;
+/* Allow news widget card images to fill their container fully */
+.news-widget-card .card-img-wrapper img,
+.news-widget-card .card-img-wrapper span img {
+    max-height: none !important;
+    height: 100% !important;
+    width: 100% !important;
     object-fit: cover;
 }
 

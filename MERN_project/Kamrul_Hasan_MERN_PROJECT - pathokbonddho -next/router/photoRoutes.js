@@ -22,8 +22,8 @@ router.get('/albums', albumController.getAllAlbums);
 
 // ========== PHOTO ROUTES ==========
 // Photo CRUD (Admin only)
-router.post('/upload', authMiddleware, upload.array('images', 20), convertToWebp, photoController.uploadMultiplePhotos);
-router.patch('/:id', authMiddleware, upload.single('image'), convertToWebp, photoController.updatePhoto);
+router.post('/upload', authMiddleware, upload.array('images', 20), convertToWebp(), photoController.uploadMultiplePhotos);
+router.patch('/:id', authMiddleware, upload.single('image'), convertToWebp(), photoController.updatePhoto);
 router.delete('/:id', authMiddleware, photoController.deletePhoto);
 
 // Photo GET - no auth required

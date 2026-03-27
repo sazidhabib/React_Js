@@ -6,7 +6,7 @@ import AboutUsPage from '../components/AboutUsPage';
 async function getAboutData() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
   try {
-    const res = await fetch(`${API_URL}/sections/about`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/about`, { cache: 'no-store' });
     if (!res.ok) return null;
     return await res.json();
   } catch (err) {

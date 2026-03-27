@@ -1,6 +1,4 @@
 const ImageRegistry = require('../models/imageRegistry');
-const Article = require('../models/article-model');
-const Blog = require('../models/blog-model');
 const Photo = require('../models/photo');
 const Album = require('../models/album');
 
@@ -19,18 +17,6 @@ exports.getAllImages = async (req, res) => {
             offset: parseInt(offset),
             order: [['createdAt', 'DESC']],
             include: [
-                {
-                    model: Article,
-                    as: 'article',
-                    attributes: ['id', 'title'],
-                    required: false
-                },
-                {
-                    model: Blog,
-                    as: 'blog',
-                    attributes: ['id', 'title'],
-                    required: false
-                },
                 {
                     model: Photo,
                     as: 'photo',
@@ -63,8 +49,6 @@ exports.getImage = async (req, res) => {
         const { id } = req.params;
         const image = await ImageRegistry.findByPk(id, {
             include: [
-                { model: Article, as: 'article', attributes: ['id', 'title'] },
-                { model: Blog, as: 'blog', attributes: ['id', 'title'] },
                 {
                     model: Photo,
                     as: 'photo',

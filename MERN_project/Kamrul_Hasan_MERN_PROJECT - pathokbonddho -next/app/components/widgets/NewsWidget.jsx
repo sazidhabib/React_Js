@@ -198,9 +198,17 @@ const NewsWidget = ({ cell }) => {
         );
     }
 
+    const isMerged = (cell.rowSpan || 1) > 1 || (cell.colSpan || 1) > 1;
+
     return (
-        <Card className="h-100 border-0 news-widget-card group shadow-sm-hover transition-all">
-            <div className="card-img-wrapper position-relative overflow-hidden rounded mb-2" style={{ height: `${imageHeight}px` }}>
+        <Card className="h-100 border-0 news-widget-card group shadow-sm-hover transition-all" style={{ display: 'flex', flexDirection: 'column' }}>
+            <div
+                className="card-img-wrapper position-relative overflow-hidden rounded mb-2"
+                style={isMerged
+                    ? { flex: '1 1 0%', minHeight: '0' }
+                    : { height: `${imageHeight}px` }
+                }
+            >
                 <Link href={newsLink} className="d-block h-100">
                     <NewsImage className="card-img-top transition-transform group-hover-scale" />
                 </Link>
@@ -210,7 +218,7 @@ const NewsWidget = ({ cell }) => {
                     </Badge>
                 )}
             </div>
-            <Card.Body className="p-0">
+            <Card.Body className="p-0" style={isMerged ? { flex: '0 0 auto' } : {}}>
                 <Link href={newsLink} className="text-decoration-none text-dark">
                     <h5 className="fw-bold mb-2 font-bangla news-card-title">
                         {news.alternativeHeadline || news.newsHeadline}

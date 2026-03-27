@@ -30,8 +30,8 @@ router.get("/", getAllTags);
 router.get("/:id", getTag);
 
 // Protected routes (require authentication)
-router.post("/", authMiddleware, debugMiddleware, upload.single("image"), convertToWebp, createTag);
-router.patch("/:id", authMiddleware, debugMiddleware, upload.single("image"), convertToWebp, updateTag);
+router.post("/", authMiddleware, debugMiddleware, upload.single("image"), convertToWebp(), createTag);
+router.patch("/:id", authMiddleware, debugMiddleware, upload.single("image"), convertToWebp(), updateTag);
 router.delete("/:id", authMiddleware, deleteTag);
 router.post("/bulk-delete", authMiddleware, bulkDeleteTags);
 

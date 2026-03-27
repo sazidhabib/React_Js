@@ -1,25 +1,24 @@
 import { headers } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
-import HeroSectionListClient from './HeroSectionListClient';
+import AboutListClient from './AboutListClient';
 
-async function getInitialHeroSections(token) {
+async function getInitialAbout(token) {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
     try {
-        const res = await fetch(`${API_URL}/hero-section`, {
+        const res = await fetch(`${API_URL}/about`, {
             headers: { 'Authorization': `Bearer ${token}` },
             next: { revalidate: 0 }
         });
-        if (!res.ok) return [];
+        if (!res.ok) return null;
         const data = await res.json();
-        const heroData = data.data || data || [];
-        return Array.isArray(heroData) ? heroData : (heroData ? [heroData] : []);
+        return data;
     } catch (err) {
-        console.error("Fetch hero section error (server):", err);
-        return [];
+        console.error("Fetch about error (server):", err);
+        return null;
     }
 }
 
-export default async function HeroSectionDashboardPage() {
+export default async function AboutDashboardPage() {
     const headersList = await headers();
     const cookieHeader = headersList.get('cookie') || '';
     const token = cookieHeader.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
@@ -32,15 +31,15 @@ export default async function HeroSectionDashboardPage() {
             user = jwtDecode(token);
             isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.isAdmin;
         } catch (e) {
-            console.error("JWT decode error (server hero):", e);
+            console.error("JWT decode error (server about):", e);
         }
     }
 
-    const heroSections = isAdmin ? await getInitialHeroSections(token) : [];
+    const aboutData = isAdmin ? await getInitialAbout(token) : null;
 
     return (
-        <HeroSectionListClient 
-            initialHeroSections={heroSections} 
+        <AboutListClient 
+            initialAbout={aboutData} 
             isAdmin={isAdmin} 
         />
     );

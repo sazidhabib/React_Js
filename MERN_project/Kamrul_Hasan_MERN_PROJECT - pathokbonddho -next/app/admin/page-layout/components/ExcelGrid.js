@@ -10,10 +10,9 @@ const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localho
 // Helper to build a correct image URL
 const getImageUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith('http')) return path;
-    // Remove leading slashes and duplicate "uploads/"
-    const cleaned = path.replace(/^\/+/, '').replace(/^uploads\//, '');
-    return `${UPLOADS_BASE_URL}/uploads/${cleaned}`;
+    if (path.startsWith('http')) return path.replace(/^http:\/\//, 'https://');
+    // Remove leading slashes only, matching frontend widget behavior
+    return `${UPLOADS_BASE_URL}/${path.replace(/^\/+/, '')}`;
 };
 
 // Preview Cell Content Component
@@ -32,6 +31,7 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
                 let res;
                 if (contentType === 'news') res = await api.get(`/news/${contentId}`);
                 else if (contentType === 'ad') res = await api.get(`/ads/${contentId}`);
+                else if (contentType === 'image') res = await api.get(`/photos/${contentId}`);
 
                 if (res) setData(res.data.data || res.data.news || res.data);
                 else setData({ id: contentId, title: contentTitle });
@@ -72,10 +72,10 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
 
     // Image preview
     if (contentType === 'image') {
-        const imgSrc = getImageUrl(contentId);
+        const imgSrc = getImageUrl(data?.imageUrl || contentId);
         return (
             <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
-                {imgSrc && <img src={imgSrc} alt={contentTitle || 'Image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/300x200?text=Image'; }} />}
+                {imgSrc && <img src={imgSrc} alt={data?.title || contentTitle || 'Image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/300x200?text=Image'; }} />}
             </div>
         );
     }

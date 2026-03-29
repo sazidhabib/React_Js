@@ -1,12 +1,7 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
+import React from 'react';
 
 const VideoWidget = ({ cell }) => {
-    const [videoData, setVideoData] = useState(null);
-    const API_BASE_URL = '';
-
     // Try to extract YouTube video ID from URL
     const getYoutubeId = (url) => {
         if (!url) return null;

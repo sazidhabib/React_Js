@@ -8,8 +8,8 @@ import { MenuProvider } from './providers/MenuProvider';
 import { ToastContainer } from 'react-toastify';
 
 export const metadata = {
-  title: 'কামরুল হাসান',
-  description: 'Kamrul Hasan - News Portal',
+  title: 'পাঠকবন্ধু - Home',
+  description: 'Welcome to পাঠকবন্ধু, the news portal.',
 };
 
 export default function RootLayout({ children }) {

@@ -13,16 +13,26 @@ export default async function AdminLayout({ children }) {
     }
 
     let user = null;
+
     try {
-        user = jwtDecode(token);
-        const isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.isAdmin;
-        if (!isAdmin) {
-            redirect('/');
+        if (token) {
+            user = jwtDecode(token);
+            
+            // Check expiry and admin status
+            const isExpired = user.exp && user.exp * 1000 < Date.now();
+            const isAdmin = user.role === 'admin' || user.role === 'superadmin' || user.isAdmin;
+            
+            if (isExpired || !isAdmin) {
+                // We don't redirect here to prevent ERR_TOO_MANY_REDIRECTS.
+                // AdminLayoutClient will handle the redirection.
+                user = null; 
+            } else {
+                user.isAdmin = isAdmin;
+            }
         }
-        user.isAdmin = isAdmin;
     } catch (e) {
         console.error("JWT decode error in AdminLayout:", e);
-        redirect('/login');
+        user = null;
     }
 
     return (

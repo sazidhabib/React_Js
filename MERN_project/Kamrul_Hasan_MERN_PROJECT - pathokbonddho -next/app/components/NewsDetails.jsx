@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
+import api from '@/app/lib/api';
 import { Container, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
+import Image from 'next/image';
 
 const NewsDetails = ({ id, initialData, initialAds }) => {
     const [news, setNews] = useState(initialData || null);
@@ -30,7 +31,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
         const fetchNewsDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`${API_BASE_URL}/news/${id}`);
+                const response = await api.get(`/news/${id}`);
                 const articleData = response.data.data || response.data.news || response.data;
 
                 if (!articleData) throw new Error("Article not found");
@@ -56,7 +57,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
         }
 
         try {
-            const relatedRes = await axios.get(`${API_BASE_URL}/news`, { params: relatedParams });
+            const relatedRes = await api.get('/news', { params: relatedParams });
             setRelatedNews(relatedRes.data.news || relatedRes.data.rows || []);
         } catch (e) {
             console.error('Error fetching related news:', e);
@@ -67,16 +68,16 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
             [...(initialAds.header || []), ...(initialAds.sidebar || []), ...(initialAds.footer || [])].forEach(ad => {
                 const adId = ad.id || ad._id;
                 if (adId) {
-                    axios.post(`${API_BASE_URL}/ads/${adId}/impression`).catch(() => { });
+                    api.post(`/ads/${adId}/impression`).catch(() => { });
                 }
             });
         } else {
             // Fetch ads if not provided
             try {
                 const [headerRes, sidebarRes, footerRes] = await Promise.all([
-                    axios.get(`${API_BASE_URL}/ads/position`, { params: { position: 'header', page: 'details' } }),
-                    axios.get(`${API_BASE_URL}/ads/position`, { params: { position: 'sidebar', page: 'details' } }),
-                    axios.get(`${API_BASE_URL}/ads/position`, { params: { position: 'footer', page: 'details' } })
+                    api.get('/ads/position', { params: { position: 'header', page: 'details' } }),
+                    api.get('/ads/position', { params: { position: 'sidebar', page: 'details' } }),
+                    api.get('/ads/position', { params: { position: 'footer', page: 'details' } })
                 ]);
                 setSidebarAds(sidebarRes.data || []);
                 setHeaderAds(headerRes.data || []);
@@ -156,16 +157,20 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                     onClick={() => {
                                         const adId = ad.id || ad._id;
                                         if (adId) {
-                                            axios.post(`${API_BASE_URL}/ads/${adId}/click`).catch(() => { });
+                                            api.post(`/ads/${adId}/click`).catch(() => { });
                                         }
                                     }}
                                 >
-                                    <img
-                                        src={ad.image.startsWith('http') ? ad.image : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${ad.image}`}
-                                        alt={ad.name || 'Advertisement'}
-                                        className="img-fluid rounded shadow-sm"
-                                        style={{ maxHeight: '120px', width: 'auto' }}
-                                    />
+                                    <div style={{ position: 'relative', height: '120px', width: '100%', maxWidth: '728px', margin: '0 auto' }}>
+                                        <Image
+                                            src={ad.image.startsWith('http') ? ad.image : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${ad.image}`}
+                                            alt={ad.name || 'Advertisement'}
+                                            fill
+                                            className="rounded shadow-sm"
+                                            style={{ objectFit: 'contain' }}
+                                            sizes="(max-width: 768px) 100vw, 728px"
+                                        />
+                                    </div>
                                 </a>
                             )
                         )}
@@ -274,12 +279,15 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
 
                             return leadImageUrl && (
                                 <div className="mb-4">
-                                    <div className="hero-image-wrapper rounded shadow-sm overflow-hidden bg-light" style={{ maxHeight: '500px' }}>
-                                        <img
+                                    <div className="hero-image-wrapper rounded shadow-sm overflow-hidden bg-light" style={{ position: 'relative', width: '100%', height: 'auto', minHeight: '300px', maxHeight: '500px' }}>
+                                        <Image
                                             src={leadImageUrl}
                                             alt={news.imageCaption || news.newsHeadline}
-                                            className="w-100 object-fit-cover"
-                                            style={{ maxHeight: '500px', display: 'block' }}
+                                            width={800}
+                                            height={500}
+                                            className="w-100 h-auto object-fit-cover"
+                                            priority
+                                            sizes="(max-width: 800px) 100vw, 800px"
                                         />
                                     </div>
                                     {news.imageCaption && (
@@ -317,11 +325,16 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                     <div key={item.id || idx} className="gallery-item mb-5 bg-light p-3 rounded shadow-sm">
                                         {item.imageUrl && (
                                             <div className="text-center mb-3">
-                                                <img
-                                                    src={getImageUrl(item.imageUrl)}
-                                                    alt={item.caption || `Gallery image ${idx + 1}`}
-                                                    className="img-fluid rounded shadow-sm w-100"
-                                                />
+                                                <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: '300px' }}>
+                                                    <Image
+                                                        src={getImageUrl(item.imageUrl)}
+                                                        alt={item.caption || `Gallery image ${idx + 1}`}
+                                                        width={800}
+                                                        height={500}
+                                                        className="img-fluid rounded shadow-sm w-100 h-auto"
+                                                        sizes="(max-width: 800px) 100vw, 800px"
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                         {item.caption && (
@@ -371,11 +384,20 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                                         onClick={() => {
                                                             const adId = ad.id || ad._id;
                                                             if (adId) {
-                                                                axios.post(`${API_BASE_URL}/ads/${adId}/click`).catch(() => { });
+                                                                api.post(`/ads/${adId}/click`).catch(() => { });
                                                             }
                                                         }}
                                                     >
-                                                        <img src={imgSrc} alt={ad.name || 'Advertisement'} className="w-100 img-fluid rounded shadow-sm" style={{ objectFit: 'contain' }} />
+                                                    <div style={{ position: 'relative', height: '250px', width: '100%' }}>
+                                                        <Image 
+                                                            src={imgSrc} 
+                                                            alt={ad.name || 'Advertisement'} 
+                                                            fill 
+                                                            className="rounded shadow-sm" 
+                                                            style={{ objectFit: 'contain' }}
+                                                            sizes="(max-width: 992px) 0vw, 350px"
+                                                        />
+                                                    </div>
                                                     </a>
                                                 )
                                             )}
@@ -400,9 +422,15 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                     return (
                                         <div key={item.id || idx} className="d-flex align-items-start gap-3 mb-4 pb-3 border-bottom hover-bg-light transition rounded p-2">
                                             {rImg && (
-                                                <div className="flex-shrink-0" style={{ width: '100px', height: '70px', overflow: 'hidden', borderRadius: '4px' }}>
-                                                    <Link href={`/news/${item.id || item._id}`}>
-                                                        <img src={rImg} alt={item.newsHeadline} className="w-100 h-100 object-fit-cover hover-zoom" />
+                                                <div className="flex-shrink-0" style={{ width: '100px', height: '70px', overflow: 'hidden', borderRadius: '4px', position: 'relative' }}>
+                                                    <Link href={`/news/${item.id || item._id}`} className="d-block w-100 h-100">
+                                                        <Image
+                                                            src={rImg}
+                                                            alt={item.newsHeadline}
+                                                            fill
+                                                            className="object-fit-cover hover-zoom"
+                                                            sizes="100px"
+                                                        />
                                                     </Link>
                                                 </div>
                                             )}
@@ -440,16 +468,20 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                     onClick={() => {
                                         const adId = ad.id || ad._id;
                                         if (adId) {
-                                            axios.post(`${API_BASE_URL}/ads/${adId}/click`).catch(() => { });
+                                            api.post(`/ads/${adId}/click`).catch(() => { });
                                         }
                                     }}
                                 >
-                                    <img
-                                        src={ad.image.startsWith('http') ? ad.image : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${ad.image}`}
-                                        alt={ad.name || 'Advertisement'}
-                                        className="img-fluid rounded shadow-sm"
-                                        style={{ maxHeight: '120px', width: 'auto' }}
-                                    />
+                                    <div style={{ position: 'relative', height: '120px', width: '100%', maxWidth: '728px', margin: '0 auto' }}>
+                                        <Image
+                                            src={ad.image.startsWith('http') ? ad.image : `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/ads/${ad.image}`}
+                                            alt={ad.name || 'Advertisement'}
+                                            fill
+                                            className="rounded shadow-sm"
+                                            style={{ objectFit: 'contain' }}
+                                            sizes="(max-width: 768px) 100vw, 728px"
+                                        />
+                                    </div>
                                 </a>
                             )
                         )}

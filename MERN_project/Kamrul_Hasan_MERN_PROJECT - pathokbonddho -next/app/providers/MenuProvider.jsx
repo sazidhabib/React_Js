@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
 
 const MenuContext = createContext();
 
@@ -11,8 +11,8 @@ export const MenuProvider = ({ children }) => {
 
     const fetchMenus = async () => {
         try {
-            const response = await axios.get('/api/menus');
-            setMenus(response.data);
+            const response = await api.get('/menus');
+            setMenus(response.data.data || response.data || []);
         } catch (error) {
             console.error('Error fetching menus:', error);
         } finally {

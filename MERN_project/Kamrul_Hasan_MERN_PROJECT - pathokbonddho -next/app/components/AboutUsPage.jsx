@@ -4,7 +4,7 @@ import { Spinner } from "react-bootstrap";
 import Link from 'next/link';
 import Image from 'next/image';
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import axios from "axios";
+import api from '@/app/lib/api';
 
 const AboutUsPage = ({ initialData }) => {
   const [aboutData, setAboutData] = useState(initialData || null);
@@ -12,9 +12,6 @@ const AboutUsPage = ({ initialData }) => {
   const [error, setError] = useState(null);
   const [visibleSections, setVisibleSections] = useState(new Set());
   const sectionRefs = useRef([]);
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-  const FETCH_URL = `${API_URL}/about`;
 
   useEffect(() => {
     if (initialData) {
@@ -25,7 +22,7 @@ const AboutUsPage = ({ initialData }) => {
 
     const fetchAboutData = async () => {
       try {
-        const response = await axios.get(FETCH_URL);
+        const response = await api.get('/about');
         setAboutData(response.data);
       } catch (err) {
         console.error("Error fetching about data:", err);
@@ -35,7 +32,7 @@ const AboutUsPage = ({ initialData }) => {
       }
     };
     fetchAboutData();
-  }, [initialData, API_URL]);
+  }, [initialData]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {

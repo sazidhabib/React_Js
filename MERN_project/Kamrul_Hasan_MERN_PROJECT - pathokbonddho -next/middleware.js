@@ -19,6 +19,9 @@ export function middleware(request) {
     }
 
     // Redirect /login to /admin if already logged in
+    // Removed to prevent infinite redirect loops if the token exists but is expired.
+    // Let the login page handle redirection if needed.
+    /*
     if (pathname === '/login') {
         const token = request.cookies.get('token')?.value;
         if (token) {
@@ -26,6 +29,7 @@ export function middleware(request) {
             return NextResponse.redirect(url);
         }
     }
+    */
 
     return NextResponse.next();
 }

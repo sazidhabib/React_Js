@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Form, Badge, OverlayTrigger, Tooltip, Spinner, Table } from 'react-bootstrap';
 import { NewsSelectionModal, ImageSelectionModal, VideoSelectionModal, AdSelectionModal } from './ContentSelectionModals';
 import api from "@/app/lib/api";
+import Image from 'next/image';
 
 const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 
@@ -56,8 +57,14 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
         return (
             <div className="preview-news-cell">
                 {imgSrc && (
-                    <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
-                        <img src={imgSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                    <div style={{ position: 'relative', height: '80px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
+                        <Image
+                            src={imgSrc}
+                            alt={headline || 'News Thumbnail'}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            sizes="150px"
+                        />
                     </div>
                 )}
                 {headline && (
@@ -74,8 +81,16 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
     if (contentType === 'image') {
         const imgSrc = getImageUrl(data?.imageUrl || contentId);
         return (
-            <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
-                {imgSrc && <img src={imgSrc} alt={data?.title || contentTitle || 'Image'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/300x200?text=Image'; }} />}
+            <div style={{ position: 'relative', height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
+                {imgSrc && (
+                    <Image
+                        src={imgSrc}
+                        alt={data?.title || contentTitle || 'Image'}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        sizes="150px"
+                    />
+                )}
             </div>
         );
     }
@@ -92,8 +107,14 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
             <div>
                 {youtubeId ? (
                     <div style={{ height: '80px', overflow: 'hidden', borderRadius: '4px', position: 'relative' }}>
-                        <img src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`} alt={videoTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '1.5rem', color: 'white', textShadow: '0 0 6px rgba(0,0,0,0.7)' }}>▶</div>
+                        <Image
+                            src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                            alt={videoTitle}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            sizes="150px"
+                        />
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '1.5rem', color: 'white', textShadow: '0 0 6px rgba(0,0,0,0.7)', zIndex: 1 }}>▶</div>
                     </div>
                 ) : (
                     <div className="bg-dark text-white text-center rounded py-2" style={{ fontSize: '0.7rem' }}>🎥 {videoTitle}</div>
@@ -110,8 +131,14 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
         return (
             <div>
                 {imgSrc && (
-                    <div style={{ height: '60px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
-                        <img src={imgSrc} alt={adTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                    <div style={{ position: 'relative', height: '60px', overflow: 'hidden', borderRadius: '4px', marginBottom: '4px' }}>
+                        <Image
+                            src={imgSrc}
+                            alt={adTitle}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            sizes="150px"
+                        />
                     </div>
                 )}
                 <div className="small text-truncate" style={{ fontSize: '0.7rem' }}>{adTitle}</div>
@@ -255,8 +282,14 @@ const GridCell = ({
                                     ) : autoNewsItem ? (
                                         <div className="w-100">
                                             {autoNewsItem.thumbImage && (
-                                                <div className="mb-1" style={{ height: '30px', overflow: 'hidden' }}>
-                                                    <img src={getImageUrl(autoNewsItem.thumbImage)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => e.target.style.display = 'none'} />
+                                                <div className="mb-1" style={{ position: 'relative', height: '30px', overflow: 'hidden' }}>
+                                                    <Image
+                                                        src={getImageUrl(autoNewsItem.thumbImage)}
+                                                        alt={autoNewsItem.newsHeadline || ''}
+                                                        fill
+                                                        style={{ objectFit: 'cover' }}
+                                                        sizes="100px"
+                                                    />
                                                 </div>
                                             )}
                                             <div className="text-truncate small" style={{ fontSize: '0.65rem' }} title={autoNewsItem.newsHeadline}>

@@ -10,6 +10,14 @@ const nextConfig = {
         protocol: 'http',
         hostname: 'localhost',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
     ],
   },
   serverExternalPackages: ['mysql2', 'sequelize', 'bcryptjs'],

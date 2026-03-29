@@ -4,8 +4,8 @@ import ScrollToSection from './components/ScrollToSection';
 import PageRenderer from './components/PageRenderer';
 
 export const metadata = {
-  title: 'কামরুল হাসান - Home',
-  description: 'Welcome to Kamrul Hasan, the news portal.',
+  title: 'পাঠকবন্ধু - Home',
+  description: 'Welcome to পাঠকবন্ধু, the news portal.',
 };
 
 async function getPageData(slug = 'home') {
@@ -15,11 +15,11 @@ async function getPageData(slug = 'home') {
     const listRes = await fetch(`${API_URL}/layout`, { next: { revalidate: 60 } });
     if (!listRes.ok) return null;
     const allPages = await listRes.json();
-    
-    const matchPage = allPages.find(p => p.name.toLowerCase() === slug.toLowerCase()) || 
-                      allPages.find(p => p.name.toLowerCase() === 'home') || 
-                      allPages[0];
-    
+
+    const matchPage = allPages.find(p => p.name.toLowerCase() === slug.toLowerCase()) ||
+      allPages.find(p => p.name.toLowerCase() === 'home') ||
+      allPages[0];
+
     if (!matchPage) return null;
 
     // 2. Fetch full layout details
@@ -89,7 +89,7 @@ async function getPageData(slug = 'home') {
 
 export default async function HomePage() {
   const initialData = await getPageData('home');
-  
+
   return (
     <>
       <ScrollToSection />

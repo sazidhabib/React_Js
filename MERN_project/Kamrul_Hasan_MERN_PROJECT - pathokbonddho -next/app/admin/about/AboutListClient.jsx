@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, Spinner, Image, Form, Card, Row, Col, Tabs, Tab, InputGroup } from "react-bootstrap";
 import { toast } from "react-toastify";
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
 
-const IMG_URL = `${process.env.NEXT_PUBLIC_API_URL || ''}/uploads`;
+const IMG_URL = STATIC_URL;
+
 
 const AboutListClient = ({ initialAbout, isAdmin }) => {
     const [about, setAbout] = useState(initialAbout);

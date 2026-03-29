@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Table, Button, Modal, Form, Badge, Card } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import api from "@/app/lib/api";
+import useSWR, { mutate } from 'swr';
+import { fetcher } from "@/app/lib/swr-config";
 
 const PERMISSION_SECTIONS = [
     { key: 'dashboard', label: 'Dashboard' }, { key: 'menu', label: 'Menu' },
@@ -21,8 +23,13 @@ PERMISSION_SECTIONS.forEach(s => { DEFAULT_PERMISSIONS[s.key] = { view: false, e
 DEFAULT_PERMISSIONS.dashboard = { view: true, edit: false, delete: false };
 
 const UsersListClient = ({ initialUsers, isAdmin, isSuperAdmin }) => {
-    const [users, setUsers] = useState(initialUsers || []);
-    const [loading, setLoading] = useState(false);
+    const swrKey = isAdmin ? '/users' : null;
+    const { data: swrData, error, isLoading: loading } = useSWR(swrKey, fetcher, {
+        fallbackData: { users: initialUsers },
+        keepPreviousData: true
+    });
+
+    const users = swrData?.users || [];
     const [saving, setSaving] = useState(false);
     const [modals, setModals] = useState({ create: false, edit: false, perm: false, reset: false, delete: false });
     const [selectedUser, setSelectedUser] = useState(null);
@@ -33,14 +40,7 @@ const UsersListClient = ({ initialUsers, isAdmin, isSuperAdmin }) => {
         reset: ''
     });
 
-    const fetchUsers = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('/users');
-            setUsers(res.data.users || []);
-        } catch (err) { toast.error("Failed to load users"); }
-        finally { setLoading(false); }
-    };
+    const refreshData = () => mutate(swrKey);
 
     const handleAction = async (type, payload) => {
         setSaving(true);
@@ -53,7 +53,7 @@ const UsersListClient = ({ initialUsers, isAdmin, isSuperAdmin }) => {
             
             toast.success("Success");
             setModals({ create: false, edit: false, perm: false, reset: false, delete: false });
-            fetchUsers();
+            refreshData();
         } catch (err) { toast.error(err.response?.data?.message || "Operation failed"); }
         finally { setSaving(false); }
     };

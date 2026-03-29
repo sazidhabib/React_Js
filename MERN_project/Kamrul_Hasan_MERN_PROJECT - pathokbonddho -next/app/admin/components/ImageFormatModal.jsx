@@ -1,7 +1,6 @@
-'use client';
-
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
+import { STATIC_URL } from "@/app/lib/api";
 
 const ImageFormatModal = ({ show, onHide, onConfirm, photo }) => {
     const [format, setFormat] = useState(photo?.format || 'full-width');
@@ -20,7 +19,7 @@ const ImageFormatModal = ({ show, onHide, onConfirm, photo }) => {
             <Modal.Body className="p-4 text-center">
                 <div className="mb-4">
                     <img 
-                        src={photo ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/${photo.imageUrl}` : ''} 
+                        src={photo ? `${STATIC_URL}/${photo.imageUrl}` : ''} 
                         alt="Preview" 
                         style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', objectFit: 'contain' }}
                     />

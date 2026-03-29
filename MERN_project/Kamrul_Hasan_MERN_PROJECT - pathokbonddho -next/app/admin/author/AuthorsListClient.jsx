@@ -1,61 +1,47 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button, Table, Spinner, Form, Card, Row, Col, Modal, Badge, Pagination } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
+import NextImage from 'next/image';
+import useSWR, { mutate } from 'swr';
+import { fetcher } from "@/app/lib/swr-config";
 
-const IMG_URL = `${process.env.NEXT_PUBLIC_API_URL || ''}/uploads`;
+const IMG_URL = `${STATIC_URL}/uploads`;
 
 const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
-    const [authors, setAuthors] = useState(initialAuthors || []);
-    const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [editingAuthor, setEditingAuthor] = useState(null);
     const [selectedAuthors, setSelectedAuthors] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterSpecial, setFilterSpecial] = useState('');
-    const [pagination, setPagination] = useState(initialPagination || {
-        currentPage: 1, totalPages: 1, totalCount: 0, hasNext: false, hasPrev: false
-    });
+    const [page, setPage] = useState(initialPagination?.currentPage || 1);
 
     const [formData, setFormData] = useState({ name: '', description: '', websiteLink: '', isSpecialAuthor: false });
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
 
-    const fetchAuthors = async (page = pagination.currentPage) => {
-        setLoading(true);
-        try {
-            const params = {
-                page: page,
-                limit: 10,
-                ...(searchTerm && { search: searchTerm }),
-                ...(filterSpecial && { isSpecialAuthor: filterSpecial })
-            };
-            const response = await api.get('/authors', { params });
-            const data = response.data || {};
-            const authorsList = data.authors || data.data || data || [];
-            setAuthors(Array.isArray(authorsList) ? authorsList : []);
-            setPagination({
-                currentPage: data.currentPage || data.page || 1,
-                totalPages: data.totalPages || 1,
-                totalCount: data.totalCount || data.count || authorsList.length || 0,
-                hasNext: data.hasNext || false,
-                hasPrev: data.hasPrev || false
-            });
-        } catch (error) {
-            toast.error('Failed to fetch authors');
-        } finally {
-            setLoading(false);
-        }
+    const swrKey = isAdmin ? `/authors?page=${page}&limit=10${searchTerm ? `&search=${searchTerm}` : ''}${filterSpecial ? `&isSpecialAuthor=${filterSpecial}` : ''}` : null;
+
+    const { data: swrData, error, isLoading: loading } = useSWR(swrKey, fetcher, {
+        fallbackData: page === 1 && !searchTerm && !filterSpecial ? {
+            authors: initialAuthors,
+            ...initialPagination
+        } : undefined,
+        keepPreviousData: true
+    });
+
+    const authors = swrData?.authors || swrData?.data || [];
+    const pagination = {
+        currentPage: swrData?.currentPage || page,
+        totalPages: swrData?.totalPages || 1,
+        totalCount: swrData?.totalCount || 0,
+        hasNext: swrData?.hasNext || false,
+        hasPrev: swrData?.hasPrev || false
     };
 
-    // Trigger fetch on filter changes
-    const isFirstRun = React.useRef(true);
-    useEffect(() => {
-        if (isFirstRun.current) { isFirstRun.current = false; return; }
-        fetchAuthors(1);
-    }, [searchTerm, filterSpecial]);
+    const refreshData = () => mutate(swrKey);
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -94,9 +80,8 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
             }
             setShowModal(false);
             resetForm();
-            fetchAuthors(pagination.currentPage);
+            refreshData();
         } catch (error) { toast.error(error.response?.data?.message || 'Operation failed'); }
-        finally { setLoading(false); }
     };
 
     const handleDelete = async (id) => {
@@ -104,7 +89,7 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
         try {
             await api.delete(`/authors/${id}`);
             toast.success('Author deleted');
-            fetchAuthors(pagination.currentPage);
+            refreshData();
         } catch (error) { toast.error('Delete failed'); }
     };
 
@@ -159,7 +144,16 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                                     <td><Form.Check checked={selectedAuthors.includes(author.id)} onChange={() => setSelectedAuthors(prev => prev.includes(author.id) ? prev.filter(aid => aid !== author.id) : [...prev, author.id])} /></td>
                                     <td>
                                         {author.image ? (
-                                            <img src={`${IMG_URL}/${author.image}`} alt="" className="rounded-circle shadow-sm" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                            <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+                                                <NextImage 
+                                                    src={`${IMG_URL}/${author.image}`} 
+                                                    alt={author.name} 
+                                                    fill 
+                                                    className="rounded-circle shadow-sm" 
+                                                    style={{ objectFit: 'cover' }}
+                                                    sizes="40px"
+                                                />
+                                            </div>
                                         ) : (
                                             <div className="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center" style={{width: 40, height: 40}}><i className="fas fa-user"></i></div>
                                         )}
@@ -186,11 +180,11 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
 
             {pagination.totalPages > 1 && (
                 <Pagination className="justify-content-center mt-4">
-                    <Pagination.Prev disabled={!pagination.hasPrev} onClick={() => fetchAuthors(pagination.currentPage - 1)} />
+                    <Pagination.Prev disabled={!pagination.hasPrev} onClick={() => setPage(pagination.currentPage - 1)} />
                     {[...Array(pagination.totalPages)].map((_, i) => (
-                        <Pagination.Item key={i} active={i + 1 === pagination.currentPage} onClick={() => fetchAuthors(i + 1)}>{i + 1}</Pagination.Item>
+                        <Pagination.Item key={i} active={i + 1 === pagination.currentPage} onClick={() => setPage(i + 1)}>{i + 1}</Pagination.Item>
                     ))}
-                    <Pagination.Next disabled={!pagination.hasNext} onClick={() => fetchAuthors(pagination.currentPage + 1)} />
+                    <Pagination.Next disabled={!pagination.hasNext} onClick={() => setPage(pagination.currentPage + 1)} />
                 </Pagination>
             )}
 
@@ -213,7 +207,13 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                                     <Form.Label className="fw-bold">Profile Photo</Form.Label>
                                     <Form.Control type="file" onChange={handleImageChange} className="border-0 shadow-sm" />
                                 </Form.Group>
-                                {imagePreview && <div className="text-center mt-2 border rounded p-2 bg-white"><img src={imagePreview} alt="Preview" className="img-thumbnail border-0" style={{ maxHeight: '120px' }} /></div>}
+                                {imagePreview && (
+                                    <div className="text-center mt-2 border rounded p-2 bg-white">
+                                        <div style={{ position: 'relative', height: '120px', width: '100%' }}>
+                                            <NextImage src={imagePreview} alt="Preview" fill className="img-thumbnail border-0" style={{ objectFit: 'contain' }} />
+                                        </div>
+                                    </div>
+                                )}
                             </Col>
                             <Col md={6}>
                                 <Form.Group className="mb-3">

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useMenu } from '../providers/MenuProvider';
 import { Spinner } from 'react-bootstrap';
-import axios from 'axios';
 
 const normalizePath = (path, includeQuery = false) => {
   if (!path) return '/';

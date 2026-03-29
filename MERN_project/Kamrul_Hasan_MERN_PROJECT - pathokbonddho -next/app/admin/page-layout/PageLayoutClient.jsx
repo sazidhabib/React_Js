@@ -5,6 +5,8 @@ import { Container, Row, Col, Card, Button, Form, Modal, Table, Spinner, Badge, 
 import api from "@/app/lib/api";
 import { toast } from 'react-toastify';
 import { ExcelGridSection, PreviewCellContent } from './components/ExcelGrid';
+import useSWR, { mutate } from 'swr';
+import { fetcher } from "@/app/lib/swr-config";
 
 const createNewSection = (rows = 3, columns = 3) => {
     const sectionRows = [];
@@ -27,11 +29,15 @@ const createNewSection = (rows = 3, columns = 3) => {
 };
 
 const PageLayoutClient = ({ initialPages, initialTags, initialMenus, initialDesigns, isAdmin }) => {
-    const [pages, setPages] = useState(initialPages || []);
+    const { data: swrPages, error, isLoading: loading } = useSWR(isAdmin ? '/layout' : null, fetcher, {
+        fallbackData: initialPages,
+        revalidateOnFocus: false
+    });
+    
+    const pages = Array.isArray(swrPages) ? swrPages : (swrPages?.data || []);
     const [selectedPage, setSelectedPage] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [editPage, setEditPage] = useState(null);
     const [availableTags] = useState(initialTags || []);
     const [availableDesigns] = useState(initialDesigns || []);
@@ -39,14 +45,7 @@ const PageLayoutClient = ({ initialPages, initialTags, initialMenus, initialDesi
     const [autoNewsData, setAutoNewsData] = useState({});
     const [newPage, setNewPage] = useState({ name: '', autoNewsSelection: false, sections: [createNewSection(3, 3)] });
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('/layout');
-            setPages(Array.isArray(res.data) ? res.data : []);
-        } catch (err) { toast.error("Failed to fetch layouts"); }
-        finally { setLoading(false); }
-    };
+    const refreshData = () => mutate('/layout');
 
     const handleFetchForEdit = async (id) => {
         try {
@@ -181,7 +180,7 @@ const PageLayoutClient = ({ initialPages, initialTags, initialMenus, initialDesi
             await api.patch(`/layout/${saveData.id}`, cleanPayload);
             toast.success("Saved successfully");
             setShowEditModal(false);
-            fetchData();
+            refreshData();
             // Also refresh the selected page preview so grid preview updates
             try {
                 const res = await api.get(`/layout/${saveData.id}`);
@@ -257,7 +256,7 @@ const PageLayoutClient = ({ initialPages, initialTags, initialMenus, initialDesi
                                         <span className="text-truncate" style={{maxWidth: '120px'}}>{p.name}</span>
                                         <div className="btn-group">
                                             <Button size="sm" variant={selectedPage?.id === p.id ? "light" : "outline-primary"} onClick={(e) => { e.stopPropagation(); handleFetchForEdit(p.id); }}>Edit</Button>
-                                            <Button size="sm" variant={selectedPage?.id === p.id ? "light" : "outline-danger"} onClick={(e) => { e.stopPropagation(); if (confirm('Delete?')) api.delete(`/layout/${p.id}`).then(() => fetchData()); }}>×</Button>
+                                            <Button size="sm" variant={selectedPage?.id === p.id ? "light" : "outline-danger"} onClick={(e) => { e.stopPropagation(); if (confirm('Delete?')) api.delete(`/layout/${p.id}`).then(() => refreshData()); }}>×</Button>
                                         </div>
                                     </div>
                                 ))}
@@ -445,7 +444,7 @@ const PageLayoutClient = ({ initialPages, initialTags, initialMenus, initialDesi
                 <Modal.Body>
                     <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control value={newPage.name} onChange={e => setNewPage({...newPage, name: e.target.value})}/></Form.Group>
                 </Modal.Body>
-                <Modal.Footer><Button variant="secondary" onClick={() => setShowCreateModal(false)}>Cancel</Button><Button variant="primary" onClick={() => api.post('/layout', newPage).then(() => { setShowCreateModal(false); fetchData(); })}>Create</Button></Modal.Footer>
+                <Modal.Footer><Button variant="secondary" onClick={() => setShowCreateModal(false)}>Cancel</Button><Button variant="primary" onClick={() => api.post('/layout', newPage).then(() => { setShowCreateModal(false); refreshData(); })}>Create</Button></Modal.Footer>
             </Modal>
         </div>
     );

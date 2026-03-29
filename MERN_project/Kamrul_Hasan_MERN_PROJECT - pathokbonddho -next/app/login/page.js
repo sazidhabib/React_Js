@@ -1,18 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../providers/AuthProvider';
 import { toast } from 'react-toastify';
 import api from '../lib/api';
 
-export default function LoginPage() {
+function LoginContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { login } = useAuth();
+
+    useEffect(() => {
+        const expired = searchParams.get('expired');
+        if (expired) {
+            toast.warning('Your session has expired. Please log in again.');
+        }
+    }, [searchParams]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,7 +31,10 @@ export default function LoginPage() {
             if (response.data.msg === 'Login success') {
                 login(response.data.token);
                 toast.success('Login successful!');
-                router.push('/admin');
+                
+                // Redirect to previous page if available, otherwise to admin
+                const redirectTo = searchParams.get('redirectTo');
+                router.push(redirectTo || '/admin');
             } else {
                 toast.error(response.data.msg || 'Login failed');
             }
@@ -74,5 +85,19 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+                <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }

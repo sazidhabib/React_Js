@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Table, Form, Button, Card, Spinner, Pagination, Modal, Image, Badge, Row, Col } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Table, Form, Button, Card, Spinner, Pagination, Modal, Badge, Row, Col, Image as BSImage } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
+import NextImage from 'next/image';
+import useSWR from 'swr';
+import { fetcher } from "@/app/lib/swr-config";
 
-const IMG_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const IMG_URL = STATIC_URL;
 
 const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, initialTotalCount, isAdmin }) => {
-    const [images, setImages] = useState(initialImages || []);
-    const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [editPhoto, setEditPhoto] = useState(null);
     const [albums, setAlbums] = useState(initialAlbums || []);
@@ -17,36 +18,26 @@ const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, ini
     const [imageToDelete, setImageToDelete] = useState(null);
     const [deleteFromFS, setDeleteFromFS] = useState(false);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
-    const [totalCount, setTotalCount] = useState(initialTotalCount || 0);
     const [sourceFilter, setSourceFilter] = useState("");
 
     const [formData, setFormData] = useState({ albumId: '', status: 'active', caption: '', images: null });
     const [previews, setPreviews] = useState([]);
 
-    const fetchAllImages = async () => {
-        setLoading(true);
-        try {
-            const params = { page, limit: 20, sourceType: sourceFilter };
-            const res = await api.get('/all/images', { params });
-            setImages(res.data.images || []);
-            setTotalPages(res.data.pagination?.totalPages || 1);
-            setTotalCount(res.data.pagination?.totalCount || 0);
-        } catch (err) {
-            toast.error("Failed to fetch images");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const swrKey = isAdmin ? `/all/images?page=${page}&limit=20&sourceType=${sourceFilter}` : null;
+    
+    const { data: swrData, error, isLoading: loading } = useSWR(swrKey, fetcher, {
+        fallbackData: page === 1 && sourceFilter === "" ? { 
+            images: initialImages, 
+            pagination: { totalPages: initialTotalPages, totalCount: initialTotalCount } 
+        } : undefined,
+        keepPreviousData: true
+    });
 
-    const isFirstRun = useRef(true);
-    useEffect(() => {
-        if (isFirstRun.current) {
-            isFirstRun.current = false;
-            return;
-        }
-        if (isAdmin) fetchAllImages();
-    }, [page, sourceFilter, isAdmin]);
+    const images = swrData?.images || [];
+    const totalPages = swrData?.pagination?.totalPages || 1;
+    const totalCount = swrData?.pagination?.totalCount || 0;
+
+    const refreshData = () => mutate(swrKey);
 
     const handleShowModal = (photo = null) => {
         if (photo) {
@@ -86,7 +77,7 @@ const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, ini
                 toast.success("Uploaded successfully");
             }
             setShowModal(false);
-            fetchAllImages();
+            refreshData();
         } catch (err) {
             toast.error(err.response?.data?.message || "Operation failed");
         }
@@ -96,7 +87,7 @@ const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, ini
         try {
             await api.delete(`/registry/${imageToDelete.id}`, { data: { deleteFromFS } });
             toast.success("Deleted successfully");
-            fetchAllImages();
+            refreshData();
         } catch (err) { toast.error("Delete failed"); }
         finally { setShowConfirm(false); setDeleteFromFS(false); }
     };
@@ -105,7 +96,7 @@ const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, ini
         try {
             await api.post('/convert-to-photo', { registryId: image.id, caption: image.caption || '', albumId: null });
             toast.success("Converted to gallery photo");
-            fetchAllImages();
+            refreshData();
         } catch (err) { toast.error("Conversion failed"); }
     };
 
@@ -146,7 +137,18 @@ const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, ini
                             <tbody>
                                 {images.map(img => (
                                     <tr key={img.id}>
-                                        <td><Image src={getImageUrl(img.imageUrl)} thumbnail style={{ width: '80px', height: '60px', objectFit: 'cover' }} /></td>
+                                        <td>
+                                            <div style={{ position: 'relative', width: '80px', height: '60px' }}>
+                                                <NextImage 
+                                                    src={getImageUrl(img.imageUrl)} 
+                                                    alt={img.filename}
+                                                    fill
+                                                    className="rounded thumbnail-img"
+                                                    style={{ objectFit: 'cover' }}
+                                                    sizes="80px"
+                                                />
+                                            </div>
+                                        </td>
                                         <td>
                                             <div className="text-truncate fw-bold" style={{maxWidth: '150px'}}>{img.filename}</div>
                                             <small className="text-muted text-truncate d-block" style={{maxWidth: '150px'}}>{img.imageUrl}</small>
@@ -193,7 +195,11 @@ const PhotosListClient = ({ initialImages, initialAlbums, initialTotalPages, ini
                             <Form.Control type="file" multiple onChange={handleFileChange} />
                         </Form.Group>
                         <div className="d-flex flex-wrap gap-2 mb-3">
-                            {previews.map((p, i) => <Image key={i} src={p} style={{ width: '80px', height: '60px', objectFit: 'cover' }} />)}
+                            {previews.map((p, i) => (
+                                <div key={i} style={{ position: 'relative', width: '80px', height: '60px' }}>
+                                    <NextImage src={p} alt="preview" fill style={{ objectFit: 'cover' }} className="rounded" />
+                                </div>
+                            ))}
                         </div>
                         <Form.Group className="mb-3"><Form.Label>Caption</Form.Label><Form.Control value={formData.caption} onChange={e => setFormData({ ...formData, caption: e.target.value })} /></Form.Group>
                         <Form.Group className="mb-3">

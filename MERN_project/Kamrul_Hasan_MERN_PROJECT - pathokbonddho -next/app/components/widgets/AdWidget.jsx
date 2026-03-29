@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
+import Image from 'next/image';
 
 const AdWidget = ({ cell }) => {
     const [ad, setAd] = useState(cell.resolvedContent || null);
@@ -59,7 +60,7 @@ const AdWidget = ({ cell }) => {
                 return;
             }
             try {
-                const response = await axios.get(`${API_BASE_URL}/ads/${cell.contentId}`);
+                const response = await api.get(`/ads/${cell.contentId}`);
                 setAd(response.data.data || response.data);
             } catch (err) {
                 console.error('Error fetching ad widget data:', err);
@@ -74,7 +75,7 @@ const AdWidget = ({ cell }) => {
     // Fire impression tracking
     useEffect(() => {
         if (ad && ad.id && shouldShowAd) {
-            axios.post(`${API_BASE_URL}/ads/${ad.id}/impression`).catch(() => { });
+            api.post(`/ads/${ad.id}/impression`).catch(() => { });
         }
     }, [ad, API_BASE_URL, shouldShowAd]);
 
@@ -101,17 +102,16 @@ const AdWidget = ({ cell }) => {
     }
 
     const content = (
-        <div className="ad-widget h-100 overflow-hidden" style={{ backgroundColor: '#ffffffff' }}>
+        <div className="ad-widget h-100 w-100 overflow-hidden position-relative" style={{ backgroundColor: '#ffffffff', minHeight: '100px' }}>
             {imgSrc && (
-                <div style={{ overflow: 'hidden' }}>
-                    <img
-                        src={imgSrc}
-                        alt={adTitle}
-                        className="w-100"
-                        style={{ objectFit: 'cover' }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                </div>
+                <Image
+                    src={imgSrc}
+                    alt={adTitle}
+                    fill
+                    className="w-100"
+                    style={{ objectFit: 'contain' }}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
             )}
         </div>
     );
@@ -125,7 +125,7 @@ const AdWidget = ({ cell }) => {
                 className="text-decoration-none"
                 onClick={() => {
                     if (ad && ad.id) {
-                        axios.post(`${API_BASE_URL}/ads/${ad.id}/click`).catch(() => { });
+                        api.post(`/ads/${ad.id}/click`).catch(() => { });
                     }
                 }}
             >

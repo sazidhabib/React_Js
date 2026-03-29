@@ -3,9 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Table, Spinner, Form, Card, Row, Col, Modal, Badge, Pagination } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
+import NextImage from 'next/image';
+import useSWR, { mutate } from 'swr';
+import { fetcher } from "@/app/lib/swr-config";
 
-const IMG_URL = `${process.env.NEXT_PUBLIC_API_URL || ''}/uploads/ads`;
+const IMG_URL = `${STATIC_URL}/uploads/ads`;
+
 
 const AdFilters = ({ filters, onFilterChange, loading }) => {
     const handleFilterChange = (key, value) => onFilterChange({ ...filters, [key]: value });
@@ -136,7 +140,13 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
                     {formData.type === 'image' ? (
                         <Row>
                             <Col md={6}><Form.Group className="mb-3"><Form.Label>Image</Form.Label><Form.Control type="file" accept="image/*" onChange={handleImageChange} /></Form.Group><Form.Group className="mb-3"><Form.Label>Click URL</Form.Label><Form.Control name="imageUrl" value={formData.imageUrl} onChange={handleInputChange} /></Form.Group></Col>
-                            <Col md={6}>{imagePreview && <img src={imagePreview} alt="Preview" className="img-thumbnail" style={{ maxHeight: '150px' }} />}</Col>
+                            <Col md={6}>
+                                {imagePreview && (
+                                    <div style={{ position: 'relative', height: '150px', width: '100%' }}>
+                                        <NextImage src={imagePreview} alt="Preview" fill className="img-thumbnail" style={{ objectFit: 'contain' }} />
+                                    </div>
+                                )}
+                            </Col>
                         </Row>
                     ) : (
                         <Row>
@@ -158,45 +168,37 @@ const AdForm = ({ ad, onClose, onSuccess }) => {
 };
 
 const AdsListClient = ({ initialAds, initialTotalCount, isAdmin }) => {
-    const [ads, setAds] = useState(initialAds || []);
-    const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [editingAd, setEditingAd] = useState(null);
     const [selectedAds, setSelectedAds] = useState([]);
     const [filters, setFilters] = useState({ search: '', type: '', position: '', isActive: '' });
-    const [pagination, setPagination] = useState({ page: 1, limit: 10, totalCount: initialTotalCount || 0, totalPages: Math.ceil((initialTotalCount || 0) / 10) });
+    const [page, setPage] = useState(1);
+    const limit = 10;
 
-    const fetchAds = async () => {
-        setLoading(true);
-        try {
-            const params = { page: pagination.page, limit: pagination.limit, ...filters };
-            const response = await api.get('/ads', { params });
-            const adsData = response.data.ads || [];
-            const totalCount = response.data.totalCount || 0;
-            setAds(adsData);
-            setPagination(prev => ({ ...prev, totalCount, totalPages: Math.ceil(totalCount / prev.limit) }));
-        } catch (error) {
-            toast.error('Failed to fetch ads');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const queryString = new URLSearchParams({
+        page,
+        limit,
+        ...Object.fromEntries(Object.entries(filters).filter(([_, v]) => v !== ''))
+    }).toString();
 
-    const isFirstRun = useRef(true);
-    useEffect(() => {
-        if (isFirstRun.current) {
-            isFirstRun.current = false;
-            return;
-        }
-        if (isAdmin) fetchAds();
-    }, [pagination.page, filters, isAdmin]);
+    const swrKey = isAdmin ? `/ads?${queryString}` : null;
+    const { data: swrData, error, isLoading: loading } = useSWR(swrKey, fetcher, {
+        fallbackData: page === 1 && Object.values(filters).every(v => v === '') ? { ads: initialAds, totalCount: initialTotalCount } : undefined,
+        keepPreviousData: true
+    });
+
+    const ads = swrData?.ads || [];
+    const totalCount = swrData?.totalCount || 0;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const refreshData = () => mutate(swrKey);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this ad?')) return;
         try {
             await api.delete(`/ads/${id}`);
             toast.success('Ad deleted');
-            fetchAds();
+            refreshData();
         } catch (error) { toast.error('Delete failed'); }
     };
 
@@ -206,7 +208,7 @@ const AdsListClient = ({ initialAds, initialTotalCount, isAdmin }) => {
             await api.post('/ads/bulk-delete', { adIds: selectedAds });
             toast.success('Ads deleted');
             setSelectedAds([]);
-            fetchAds();
+            refreshData();
         } catch (error) { toast.error('Bulk delete failed'); }
     };
 
@@ -220,7 +222,7 @@ const AdsListClient = ({ initialAds, initialTotalCount, isAdmin }) => {
             </div>
 
             {showForm ? (
-                <AdForm ad={editingAd} onClose={() => setShowForm(false)} onSuccess={() => { setShowForm(false); fetchAds(); }} />
+                <AdForm ad={editingAd} onClose={() => setShowForm(false)} onSuccess={() => { setShowForm(false); refreshData(); }} />
             ) : (
                 <Card className="shadow-sm">
                     <Card.Body>
@@ -245,7 +247,18 @@ const AdsListClient = ({ initialAds, initialTotalCount, isAdmin }) => {
                                             <td><Form.Check checked={selectedAds.includes(ad.id)} onChange={(e) => setSelectedAds(prev => e.target.checked ? [...prev, ad.id] : prev.filter(id => id !== ad.id))} /></td>
                                             <td>
                                                 <div className="d-flex align-items-center">
-                                                    {ad.type === 'image' && ad.image && <img src={`${IMG_URL}/${ad.image}`} alt="" className="rounded me-2" style={{ width: '50px', height: '30px', objectFit: 'cover' }} />}
+                                                    {ad.type === 'image' && ad.image && (
+                                                        <div style={{ position: 'relative', width: '50px', height: '30px', marginRight: '0.5rem' }}>
+                                                            <NextImage 
+                                                                src={`${IMG_URL}/${ad.image}`} 
+                                                                alt={ad.name} 
+                                                                fill 
+                                                                className="rounded" 
+                                                                style={{ objectFit: 'cover' }}
+                                                                sizes="50px"
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <div><strong>{ad.name}</strong><br /><small className="text-muted">{ad.slug}</small></div>
                                                 </div>
                                             </td>
@@ -265,11 +278,11 @@ const AdsListClient = ({ initialAds, initialTotalCount, isAdmin }) => {
                                 </tbody>
                             </Table>
                         </div>
-                        {pagination.totalPages > 1 && (
+                        {totalPages > 1 && (
                             <Pagination className="justify-content-center mt-3">
-                                <Pagination.Prev disabled={pagination.page === 1} onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))} />
-                                {[...Array(pagination.totalPages)].map((_, i) => <Pagination.Item key={i} active={i + 1 === pagination.page} onClick={() => setPagination(p => ({ ...p, page: i + 1 }))}>{i + 1}</Pagination.Item>)}
-                                <Pagination.Next disabled={pagination.page === pagination.totalPages} onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))} />
+                                <Pagination.Prev disabled={page === 1} onClick={() => setPage(p => p - 1)} />
+                                {[...Array(totalPages)].map((_, i) => <Pagination.Item key={i} active={i + 1 === page} onClick={() => setPage(i + 1)}>{i + 1}</Pagination.Item>)}
+                                <Pagination.Next disabled={page === totalPages} onClick={() => setPage(p => p + 1)} />
                             </Pagination>
                         )}
                     </Card.Body>

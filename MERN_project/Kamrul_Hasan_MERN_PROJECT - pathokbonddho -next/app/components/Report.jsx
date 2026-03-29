@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-
-
+import api from '@/app/lib/api';
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -108,14 +106,13 @@ const Report = () => {
     setSelectedReport(null);
   };
 
-  const API_URL = `${''}/api/blogs`;
-  const fullImageUrl = `${''}/uploads/`;
+  const fullImageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000'}/uploads/`;
 
   useEffect(() => {
     const fetchPublishedReports = async () => {
       try {
-        const response = await axios.get(API_URL);
-        const publishedReports = response.data.filter(report => report.status === true);
+        const response = await api.get('/blogs');
+        const publishedReports = (response.data.data || response.data || []).filter(report => report.status === true);
         const sortedReports = publishedReports.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -169,7 +166,7 @@ const Report = () => {
             }}
           >
             {reports.map((report) => (
-              <SwiperSlide key={report._id}>
+              <SwiperSlide key={report._id || report.id}>
                 <ReportCard
                   title={report.title}
                   date={report.publishDate}

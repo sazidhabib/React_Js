@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
 import Image from 'next/image';
 
 const ImageWidget = ({ cell }) => {
@@ -22,7 +22,7 @@ const ImageWidget = ({ cell }) => {
                 return;
             }
             try {
-                const response = await axios.get(`${API_BASE_URL}/photos/${cell.contentId}`);
+                const response = await api.get(`/photos/${cell.contentId}`);
                 setImageData(response.data);
             } catch (err) {
                 console.error('Error fetching image widget data:', err);
@@ -42,7 +42,7 @@ const ImageWidget = ({ cell }) => {
     if (!imageUrl) return null;
 
     return (
-        <div className="image-widget h-100 position-relative border-0 rounded overflow-hidden">
+        <div className="image-widget h-100 position-relative border-0 rounded overflow-hidden" style={{ minHeight: '200px' }}>
             <Image
                 src={imageUrl}
                 alt={imageData?.title || cell.title || "Image content"}

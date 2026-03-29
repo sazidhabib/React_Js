@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
 import { Card, Badge, Spinner } from 'react-bootstrap';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -26,11 +26,11 @@ const NewsWidget = ({ cell }) => {
                 }
 
                 if (cell.contentId) {
-                    const response = await axios.get(`${API_BASE_URL}/news/${cell.contentId}`);
+                    const response = await api.get(`/news/${cell.contentId}`);
                     const data = response.data.data || response.data.news || response.data;
                     setNews(data);
                 } else if (cell.tag) {
-                    const response = await axios.get(`${API_BASE_URL}/news?tag=${cell.tag}&limit=1`);
+                    const response = await api.get('/news', { params: { tag: cell.tag, limit: 1 } });
                     const newsItems = response.data.news || response.data.rows || [];
                     if (newsItems.length > 0) {
                         setNews(newsItems[0]);
@@ -92,7 +92,7 @@ const NewsWidget = ({ cell }) => {
     const design = cell.design || 'title-image-top';
     const imageHeight = getImageHeight();
 
-    const NewsImage = ({ className }) => {
+    const NewsImage = ({ className, currentDesign }) => {
         if (!imageUrl) {
             return (
                 <div className={`${className} bg-light d-flex align-items-center justify-content-center text-muted`}>
@@ -100,8 +100,14 @@ const NewsWidget = ({ cell }) => {
                 </div>
             );
         }
+
+        // Side layout images are smaller (90px), top layout images are taller (180px)
+        const minHeight = (currentDesign === 'title-image-left' || currentDesign === 'image-left' || currentDesign === 'title-image-right' || currentDesign === 'image-right')
+            ? '90px'
+            : '180px';
+
         return (
-            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+            <div className="news-image-container" style={{ position: 'relative', width: '100%', height: '100%', minHeight }}>
                 <Image
                     src={imageUrl}
                     alt={news.newsHeadline}
@@ -118,7 +124,7 @@ const NewsWidget = ({ cell }) => {
         return (
             <div className="news-design-text-inside-image h-100 pb-2 overflow-hidden position-relative rounded">
                 <Link href={newsLink} className="text-decoration-none h-100 d-block">
-                    <NewsImage className="text-inside-image-img h-100" />
+                    <NewsImage className="text-inside-image-img h-100" currentDesign={design} />
                     <div className="text-inside-image-overlay position-absolute bottom-0 start-0 end-0 p-3 bg-gradient-dark">
                         <h5 className="text-white mb-1 font-bangla">
                             {news.alternativeHeadline || news.newsHeadline}
@@ -150,7 +156,7 @@ const NewsWidget = ({ cell }) => {
 
     if (design === 'title-image-left' || design === 'image-left') {
         return (
-            <div className="news-design-side-layout h-100 d-flex gap-3 border-bottom pb-3">
+            <div className="news-design-side-layout d-flex gap-3 border-bottom pb-3">
                 <div className="flex-grow-1">
                     <Link href={newsLink} className="text-decoration-none text-dark">
                         <h5 className="fw-bold mb-2 font-bangla line-clamp-2">
@@ -165,7 +171,7 @@ const NewsWidget = ({ cell }) => {
                 {imageUrl && (
                     <div className="side-image-container flex-shrink-0" style={{ width: '120px', height: '90px' }}>
                         <Link href={newsLink} className="d-block h-100">
-                            <NewsImage className="rounded" />
+                            <NewsImage className="rounded" currentDesign={design} />
                         </Link>
                     </div>
                 )}
@@ -175,7 +181,7 @@ const NewsWidget = ({ cell }) => {
 
     if (design === 'title-image-right' || design === 'image-right') {
         return (
-            <div className="news-design-side-layout h-100 d-flex flex-row-reverse gap-3 border-bottom pb-3">
+            <div className="news-design-side-layout d-flex flex-row-reverse gap-3 border-bottom pb-3">
                 <div className="flex-grow-1">
                     <Link href={newsLink} className="text-decoration-none text-dark">
                         <h5 className="fw-bold mb-2 font-bangla line-clamp-2">
@@ -190,7 +196,7 @@ const NewsWidget = ({ cell }) => {
                 {imageUrl && (
                     <div className="side-image-container flex-shrink-0" style={{ width: '120px', height: '90px' }}>
                         <Link href={newsLink} className="d-block h-100">
-                            <NewsImage className="rounded" />
+                            <NewsImage className="rounded" currentDesign={design} />
                         </Link>
                     </div>
                 )}
@@ -205,12 +211,12 @@ const NewsWidget = ({ cell }) => {
             <div
                 className="card-img-wrapper position-relative overflow-hidden rounded mb-2"
                 style={isMerged
-                    ? { flex: '1 1 0%', minHeight: '0' }
-                    : { height: `${imageHeight}px` }
+                    ? { flex: '1 1 auto', minHeight: '200px', display: 'flex', flexDirection: 'column' }
+                    : { height: `${imageHeight}px`, display: 'flex', flexDirection: 'column' }
                 }
             >
                 <Link href={newsLink} className="d-block h-100">
-                    <NewsImage className="card-img-top transition-transform group-hover-scale" />
+                    <NewsImage className="card-img-top transition-transform group-hover-scale" currentDesign={design} />
                 </Link>
                 {news.Categories && news.Categories[0] && (
                     <Badge bg="danger" className="position-absolute top-0 start-0 m-2 shadow-sm">

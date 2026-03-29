@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import GridSection from './GridSection';
 import LoadMoreNews from './LoadMoreNews';
@@ -27,13 +27,13 @@ const PageRenderer = ({ pageId, slug, initialLayout }) => {
 
                 // Resolve ID if not provided, using slug or defaulting to Home
                 if (!targetPageId) {
-                    const listResponse = await axios.get(`${API_BASE_URL}/layout`);
-                    const allPages = listResponse.data;
+                    const listResponse = await api.get('/layout');
+                    const allPages = listResponse.data.data || listResponse.data || [];
 
                     if (Array.isArray(allPages) && allPages.length > 0) {
                         const matchPage = (slug && allPages.find(p => p.name.toLowerCase() === slug.toLowerCase())) ||
-                                        allPages.find(p => p.name.toLowerCase() === 'home') ||
-                                        allPages[0];
+                                         allPages.find(p => p.name.toLowerCase() === 'home') ||
+                                         allPages[0];
                         targetPageId = matchPage?.id;
                     }
                 }
@@ -42,8 +42,8 @@ const PageRenderer = ({ pageId, slug, initialLayout }) => {
                     throw new Error('Could not resolve a valid Page ID.');
                 }
 
-                const response = await axios.get(`${API_BASE_URL}/layout/${targetPageId}`);
-                setPageLayout(response.data);
+                const response = await api.get(`/layout/${targetPageId}`);
+                setPageLayout(response.data.data || response.data);
             } catch (err) {
                 console.error('Error fetching page layout:', err);
                 setError(err.message || 'Failed to load page layout');

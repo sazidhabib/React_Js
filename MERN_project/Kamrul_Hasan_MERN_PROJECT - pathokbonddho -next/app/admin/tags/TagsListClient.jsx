@@ -3,9 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Table, Spinner, Badge, Form, Card, Row, Col } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
+import NextImage from 'next/image';
+import useSWR, { mutate } from 'swr';
+import { fetcher } from "@/app/lib/swr-config";
 
-const IMG_URL = `${process.env.NEXT_PUBLIC_API_URL || ''}/uploads`;
+const IMG_URL = `${STATIC_URL}/uploads`;
 
 const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
     const [formData, setFormData] = useState({
@@ -130,7 +133,9 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
                     </Row>
                     {imagePreview && (
                         <div className="mb-3">
-                            <img src={imagePreview} alt="Preview" className="img-thumbnail" style={{ maxHeight: '100px' }} />
+                            <div style={{ position: 'relative', height: '100px', width: '150px' }}>
+                                <NextImage src={imagePreview} alt="Preview" fill className="img-thumbnail" style={{ objectFit: 'contain' }} />
+                            </div>
                         </div>
                     )}
                     <Card className="mt-3 bg-light border-0">
@@ -161,24 +166,18 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
 };
 
 const TagsListClient = ({ initialTags, isAdmin }) => {
-    const [tags, setTags] = useState(initialTags || []);
     const [editingTag, setEditingTag] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const [loading, setLoading] = useState(false);
 
-    const loadTags = async () => {
-        setLoading(true);
-        try {
-            const response = await api.get('/tags');
-            const data = Array.isArray(response.data) ? response.data : (response.data.tags || response.data.data || []);
-            setTags(data);
-        } catch (error) {
-            console.error('Error loading tags:', error);
-            toast.error('Failed to load tags');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const swrKey = isAdmin ? '/tags' : null;
+    const { data: swrData, error, isLoading: loading } = useSWR(swrKey, fetcher, {
+        fallbackData: initialTags,
+        keepPreviousData: true
+    });
+
+    const tags = Array.isArray(swrData) ? swrData : (swrData?.tags || swrData?.data || []);
+
+    const refreshData = () => mutate(swrKey);
 
     const handleSubmit = async (formData) => {
         setLoading(true);
@@ -190,13 +189,11 @@ const TagsListClient = ({ initialTags, isAdmin }) => {
                 await api.post('/tags', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
                 toast.success('Tag created');
             }
-            loadTags();
+            refreshData();
             setShowForm(false);
             setEditingTag(null);
         } catch (error) {
             toast.error('Operation failed');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -205,7 +202,7 @@ const TagsListClient = ({ initialTags, isAdmin }) => {
             try {
                 await api.delete(`/tags/${tagId}`);
                 toast.success('Tag deleted');
-                loadTags();
+                refreshData();
             } catch (error) {
                 toast.error('Delete failed');
             }
@@ -252,7 +249,16 @@ const TagsListClient = ({ initialTags, isAdmin }) => {
                                         <td>
                                             <div className="d-flex align-items-center">
                                                 {tag.image && (
-                                                    <img src={tag.image.startsWith('http') ? tag.image : `${IMG_URL}/${tag.image}`} alt="" className="rounded me-2" style={{ width: '30px', height: '30px', objectFit: 'cover' }} />
+                                                    <div style={{ position: 'relative', width: '30px', height: '30px', marginRight: '0.5rem' }}>
+                                                        <NextImage 
+                                                            src={tag.image.startsWith('http') ? tag.image : `${IMG_URL}/${tag.image}`} 
+                                                            alt="" 
+                                                            fill 
+                                                            className="rounded" 
+                                                            style={{ objectFit: 'cover' }}
+                                                            sizes="30px"
+                                                        />
+                                                    </div>
                                                 )}
                                                 {tag.name}
                                             </div>

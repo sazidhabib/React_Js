@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
 import { Container, Button, Spinner, Badge } from 'react-bootstrap';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const LoadMoreNews = ({ slug, excludeIds }) => {
     const [news, setNews] = useState([]);
@@ -26,7 +27,7 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
             setLoading(true);
             const excludeIdsParam = excludeIds && excludeIds.length > 0 ? excludeIds.join(',') : '';
 
-            const response = await axios.get(`${API_BASE_URL}/api/news`, {
+            const response = await api.get('/news', {
                 params: {
                     categories: slug,
                     limit: 10,
@@ -107,12 +108,13 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
                                         {imageUrl && (
                                             <div className="news-side-image-wrapper flex-shrink-0 position-relative" style={{ width: '140px', height: '95px' }}>
 
-                                                <Link href={newsLink}>
-                                                    <img
+                                                <Link href={newsLink} className="d-block w-100 h-100">
+                                                    <Image
                                                         src={imageUrl}
                                                         alt={item.newsHeadline}
-                                                        className="w-100 h-100 object-fit-cover rounded news-side-image"
-                                                        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                                                        fill
+                                                        className="object-fit-cover rounded news-side-image"
+                                                        sizes="140px"
                                                     />
                                                 </Link>
                                             </div>
@@ -135,12 +137,13 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
                                 <div className="d-flex d-md-none flex-column h-100 p-2 border rounded shadow-sm bg-white hover-shadow transition" style={{ transition: 'all 0.3s ease' }}>
                                     {imageUrl && (
                                         <div className="mb-2 w-100 position-relative" style={{ aspectRatio: '16/9' }}>
-                                            <Link href={newsLink}>
-                                                <img
+                                            <Link href={newsLink} className="d-block w-100 h-100">
+                                                <Image
                                                     src={imageUrl}
                                                     alt={item.newsHeadline}
-                                                    className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover rounded"
-                                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                                                    fill
+                                                    className="object-fit-cover rounded"
+                                                    sizes="(max-width: 768px) 50vw, 33vw"
                                                 />
                                             </Link>
                                         </div>

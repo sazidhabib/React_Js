@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/app/lib/api';
 import {
     Container, Row, Col, Card, ListGroup, Spinner,
     Button, Pagination
 } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import PhotoModal from './PhotoModal';
 import { useMenu } from '../providers/MenuProvider';
 import ResponsivePagination from './ResponsivePagination';
@@ -38,10 +38,6 @@ const PhotoGallery = () => {
     const albumsPerPage = 12;
     const photosPerPage = 12;
 
-    const API_BASE_URL = '';
-    const ALBUM_API = `${API_BASE_URL}/api/albums`;
-    const PHOTO_API = `${API_BASE_URL}/api/photos`;
-
     // Calculate pagination indexes
     const indexOfLastAlbum = currentAlbumPage * albumsPerPage;
     const indexOfFirstAlbum = indexOfLastAlbum - albumsPerPage;
@@ -66,8 +62,8 @@ const PhotoGallery = () => {
                     albumData = JSON.parse(cached);
                     setAlbums(albumData);
                 } else {
-                    const res = await axios.get(`${ALBUM_API}?status=active`);
-                    albumData = res.data;
+                    const res = await api.get('/albums', { params: { status: 'active' } });
+                    albumData = res.data.data || res.data || [];
                     setAlbums(albumData);
                     localStorage.setItem('prefetchedAlbums', JSON.stringify(albumData));
                 }
@@ -75,15 +71,17 @@ const PhotoGallery = () => {
                 const counts = {};
                 for (const album of albumData) {
                     try {
-                        const photosRes = await axios.get(`${PHOTO_API}/${album.id}?limit=1`);
-                        counts[album.id] = photosRes.data.length;
+                        const photosRes = await api.get(`/photos/${album.id}`, { params: { limit: 1 } });
+                        const photoData = photosRes.data.data || photosRes.data || [];
+                        counts[album.id] = photoData.length;
 
                         if (albumData.length > 0 && !selectedAlbumId) {
                             setSelectedAlbumId(albumData[0].id);
                             // Prefetch first album's photos
-                            axios.get(`${PHOTO_API}/${albumData[0].id}`)
+                            api.get(`/photos/${albumData[0].id}`)
                                 .then(res => {
-                                    sessionStorage.setItem(`album_${albumData[0].id}`, JSON.stringify(res.data));
+                                    const dataToCache = res.data.data || res.data || [];
+                                    sessionStorage.setItem(`album_${albumData[0].id}`, JSON.stringify(dataToCache));
                                 });
                         }
                     } catch (err) {
@@ -118,9 +116,10 @@ const PhotoGallery = () => {
                         setPhotoLoading(false);
                     }
 
-                    const res = await axios.get(`${PHOTO_API}/${selectedAlbumId}`);
-                    setPhotos(res.data);
-                    sessionStorage.setItem(`album_${selectedAlbumId}`, JSON.stringify(res.data));
+                    const res = await api.get(`/photos/${selectedAlbumId}`);
+                    const finalPhotoData = res.data.data || res.data || [];
+                    setPhotos(finalPhotoData);
+                    sessionStorage.setItem(`album_${selectedAlbumId}`, JSON.stringify(finalPhotoData));
                 } catch (err) {
                     toast.error('Failed to load photos');
                     console.error('Error fetching photos:', err);
@@ -142,10 +141,6 @@ const PhotoGallery = () => {
         const album = albums.find(a => a.id === selectedAlbumId);
         return album ? album.name : 'Selected Album';
     };
-
-    // Pagination controls
-
-
 
     return (
         <div className='custom-bgcolor photography' id={photoGalleryMenu?.path || 'photography'}>
@@ -183,7 +178,6 @@ const PhotoGallery = () => {
                                     totalPages={totalAlbumPages}
                                     onPageChange={setCurrentAlbumPage}
                                     maxVisible={3}
-                                // Adjust based on your needs
                                 />
                             </>
                         )}
@@ -204,28 +198,33 @@ const PhotoGallery = () => {
                                 ) : photos.length > 0 ? (
                                     <>
                                         <Row>
-                                            {currentPhotos.map((photo, index) => (
-                                                <Col
-                                                    key={photo.id}
-                                                    xs={6}
-                                                    sm={6}
-                                                    md={4}
-                                                    lg={3}
-                                                    className="mb-4"
-                                                >
-                                                    <Card className="h-100" onClick={() => handlePhotoClick(index)}>
-                                                        <LazyLoadImage
-                                                            src={`${API_BASE_URL}/${photo.imageUrl}`}
-                                                            effect="blur"
-                                                            placeholderSrc={`${API_BASE_URL}/placeholder.jpg`}
-                                                            width="100%"
-                                                            height="180px"
-                                                            style={{ objectFit: 'cover', cursor: 'pointer' }}
-                                                            wrapperClassName="lazy-wrapper"
-                                                        />
-                                                    </Card>
-                                                </Col>
-                                            ))}
+                                            {currentPhotos.map((photo, index) => {
+                                                const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+                                                const imageUrl = photo.imageUrl.startsWith('http') ? photo.imageUrl : `${baseUrl}/${photo.imageUrl.replace(/^\//, '')}`;
+                                                return (
+                                                    <Col
+                                                        key={photo.id}
+                                                        xs={6}
+                                                        sm={6}
+                                                        md={4}
+                                                        lg={3}
+                                                        className="mb-4"
+                                                    >
+                                                        <Card className="h-100 shadow-sm border-0 overflow-hidden" onClick={() => handlePhotoClick(index)} style={{ cursor: 'pointer' }}>
+                                                            <div style={{ position: 'relative', height: '180px', width: '100%' }}>
+                                                                <LazyLoadImage
+                                                                    src={imageUrl}
+                                                                    effect="blur"
+                                                                    width="100%"
+                                                                    height="180px"
+                                                                    style={{ objectFit: 'cover' }}
+                                                                    wrapperClassName="w-100 h-100"
+                                                                />
+                                                            </div>
+                                                        </Card>
+                                                    </Col>
+                                                );
+                                            })}
                                         </Row>
                                         <ResponsivePagination
                                             currentPage={currentPhotoPage}

@@ -122,11 +122,11 @@ const NewsWidget = ({ cell }) => {
 
     if (design === 'text-inside-image') {
         return (
-            <div className="news-design-text-inside-image h-100 pb-2 overflow-hidden position-relative rounded">
+            <div className="custom-font news-design-text-inside-image h-100 pb-2 overflow-hidden position-relative">
                 <Link href={newsLink} className="text-decoration-none h-100 d-block">
                     <NewsImage className="text-inside-image-img h-100" currentDesign={design} />
                     <div className="text-inside-image-overlay position-absolute bottom-0 start-0 end-0 p-3 bg-gradient-dark">
-                        <h5 className="text-white mb-1 font-bangla">
+                        <h5 className="text-white mb-1 fw-bold font-bangla">
                             {news.alternativeHeadline || news.newsHeadline}
                         </h5>
                         <small className="text-light opacity-75">{formatDate(news.createdAt)}</small>
@@ -143,7 +143,7 @@ const NewsWidget = ({ cell }) => {
 
     if (design === 'title-only') {
         return (
-            <div className="news-design-title-only h-100 border-bottom pb-2">
+            <div className="custom-font news-design-title-only h-100 pb-2">
                 <Link href={newsLink} className="text-decoration-none text-dark">
                     <h5 className="fw-bold mb-1 font-bangla hover-primary">
                         {news.alternativeHeadline || news.newsHeadline}
@@ -156,7 +156,7 @@ const NewsWidget = ({ cell }) => {
 
     if (design === 'title-image-left' || design === 'image-left') {
         return (
-            <div className="news-design-side-layout d-flex gap-3 border-bottom pb-3">
+            <div className="custom-font news-design-side-layout d-flex gap-3 pb-3">
                 <div className="flex-grow-1">
                     <Link href={newsLink} className="text-decoration-none text-dark">
                         <h5 className="fw-bold mb-2 font-bangla line-clamp-2">
@@ -171,7 +171,7 @@ const NewsWidget = ({ cell }) => {
                 {imageUrl && (
                     <div className="side-image-container flex-shrink-0" style={{ width: '120px', height: '90px' }}>
                         <Link href={newsLink} className="d-block h-100">
-                            <NewsImage className="rounded" currentDesign={design} />
+                            <NewsImage className="" currentDesign={design} />
                         </Link>
                     </div>
                 )}
@@ -181,7 +181,7 @@ const NewsWidget = ({ cell }) => {
 
     if (design === 'title-image-right' || design === 'image-right') {
         return (
-            <div className="news-design-side-layout d-flex flex-row-reverse gap-3 border-bottom pb-3">
+            <div className="custom-font news-design-side-layout d-flex flex-row-reverse gap-3 pb-3">
                 <div className="flex-grow-1">
                     <Link href={newsLink} className="text-decoration-none text-dark">
                         <h5 className="fw-bold mb-2 font-bangla line-clamp-2">
@@ -196,7 +196,7 @@ const NewsWidget = ({ cell }) => {
                 {imageUrl && (
                     <div className="side-image-container flex-shrink-0" style={{ width: '120px', height: '90px' }}>
                         <Link href={newsLink} className="d-block h-100">
-                            <NewsImage className="rounded" currentDesign={design} />
+                            <NewsImage className="  " currentDesign={design} />
                         </Link>
                     </div>
                 )}
@@ -207,16 +207,16 @@ const NewsWidget = ({ cell }) => {
     const isMerged = (cell.rowSpan || 1) > 1 || (cell.colSpan || 1) > 1;
 
     return (
-        <Card className="h-100 border-0 news-widget-card group shadow-sm-hover transition-all" style={{ display: 'flex', flexDirection: 'column' }}>
+        <Card className="h-100 custom-font border-0 news-widget-card group shadow-sm-hover transition-all" style={{ display: 'flex', flexDirection: 'column' }}>
             <div
-                className="card-img-wrapper position-relative overflow-hidden rounded mb-2"
+                className="card-img-wrapper position-relative overflow-hidden mb-2"
                 style={isMerged
                     ? { flex: '1 1 auto', minHeight: '200px', display: 'flex', flexDirection: 'column' }
                     : { height: `${imageHeight}px`, display: 'flex', flexDirection: 'column' }
                 }
             >
                 <Link href={newsLink} className="d-block h-100">
-                    <NewsImage className="card-img-top transition-transform group-hover-scale" currentDesign={design} />
+                    <NewsImage className="transition-transform group-hover-scale" currentDesign={design} />
                 </Link>
                 {news.Categories && news.Categories[0] && (
                     <Badge bg="danger" className="position-absolute top-0 start-0 m-2 shadow-sm">

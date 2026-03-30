@@ -1365,13 +1365,13 @@ footer {
 .news-design-text-inside-image {
     position: relative;
     overflow: hidden;
-    border-radius: 4px;
+
 }
 
 .text-inside-image-wrapper {
     position: relative;
     overflow: hidden;
-    border-radius: 4px;
+
 }
 
 .text-inside-image-img {
@@ -1436,7 +1436,7 @@ footer {
     width: 120px;
     height: 80px;
     overflow: hidden;
-    border-radius: 4px;
+
     flex-shrink: 0;
 }
 
@@ -1471,7 +1471,7 @@ footer {
     width: 100px;
     height: 70px;
     overflow: hidden;
-    border-radius: 4px;
+
     flex-shrink: 0;
 }
 
@@ -2280,6 +2280,7 @@ footer {
 
 /* Responsive Grid and Widgets */
 @media (max-width: 767.98px) {
+
     /* Hide grid separators on mobile (desktop grid is d-none d-md-grid) */
     .grid-separator-v,
     .grid-separator-h {

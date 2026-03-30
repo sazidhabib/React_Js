@@ -1,21 +1,22 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '@/app/lib/api';
+import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 
 const AdWidget = ({ cell }) => {
+    const pathname = usePathname();
     const [ad, setAd] = useState(cell.resolvedContent || null);
     const [loading, setLoading] = useState(!cell.resolvedContent);
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-    // Detect current page context safely
+    // Detect current page context reactively
     const currentPage = useMemo(() => {
-        if (typeof window === 'undefined') return 'home';
-        const path = window.location.pathname;
-        if (path === '/') return 'home';
-        if (path.startsWith('/news/')) return 'details';
-        return path.split('/')[1] || 'unknown';
-    }, []);
+        if (!pathname) return 'home';
+        if (pathname === '/') return 'home';
+        if (pathname.startsWith('/news/')) return 'details';
+        return pathname.split('/')[1] || 'unknown';
+    }, [pathname]);
 
     // Parse displayPages from the ad data
     const displayPages = useMemo(() => {

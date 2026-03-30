@@ -213,35 +213,35 @@ const GridCell = ({
                             <option value="ad">📢 Ad</option>
                         </Form.Select>
 
-                        {/* Tag Input with Datalist */}
-                        <Form.Control
-                            size="sm" type="text" placeholder="Tag"
+                        {/* Tag Input with Form.Select */}
+                        <Form.Select
+                            size="sm"
                             value={cell.tag || ''}
-                            list={`tag-list-${rowIndex}-${colIndex}`}
                             onChange={e => onUpdate(rowIndex, colIndex, 'tag', e.target.value)}
                             onClick={e => e.stopPropagation()}
-                            className="mt-1" autoComplete="off"
-                        />
-                        <datalist id={`tag-list-${rowIndex}-${colIndex}`}>
+                            className="mt-1"
+                        >
+                            <option value="">No Tag</option>
                             {availableTags.map(tag => (
-                                <option key={tag.id} value={tag.name} />
+                                <option key={tag.id} value={tag.name}>{tag.name}</option>
                             ))}
-                        </datalist>
+                        </Form.Select>
 
-                        {/* Design Input with Datalist */}
-                        <Form.Control
-                            size="sm" type="text" placeholder="Design"
+                        {/* Design Input with Form.Select */}
+                        <Form.Select
+                            size="sm"
                             value={cell.design || ''}
-                            list={`design-list-${rowIndex}-${colIndex}`}
                             onChange={e => onUpdate(rowIndex, colIndex, 'design', e.target.value)}
                             onClick={e => e.stopPropagation()}
-                            className="mt-1" autoComplete="off"
-                        />
-                        <datalist id={`design-list-${rowIndex}-${colIndex}`}>
+                            className="mt-1"
+                        >
+                            <option value="">No Design</option>
                             {availableDesigns.map(design => (
-                                <option key={design.id || design.slug} value={design.slug || design.name} />
+                                <option key={design.id || design.slug} value={design.slug || design.name}>
+                                    {design.name || design.slug}
+                                </option>
                             ))}
-                        </datalist>
+                        </Form.Select>
 
                         {/* Content select button for non-text */}
                         {cell.contentType && cell.contentType !== 'text' && (

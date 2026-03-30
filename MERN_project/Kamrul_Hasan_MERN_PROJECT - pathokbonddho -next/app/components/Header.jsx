@@ -19,7 +19,7 @@ const Header = () => {
   const { menus, loading, getMenuByOrder } = useMenu();
   const pathname = usePathname();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-  
+
   const lastScrollY = useRef(0);
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
   const normalizedPathname = normalizePath(pathname);
@@ -31,16 +31,16 @@ const Header = () => {
     return menus.sort((a, b) => a.order - b.order).map((menu, index) => {
       const fullPath = menu.path.startsWith('/') ? menu.path : `/${menu.path}`;
       const hasQuery = fullPath.includes('?');
-      
+
       const menuPathNormalized = normalizePath(fullPath, false);
       const isBasePathActive = normalizedPathname === menuPathNormalized;
-      
+
       let isActive = isBasePathActive;
-      
+
       // If menu path has query params, we need to check them too
       if (hasQuery && isBasePathActive && searchParams) {
         const targetParams = new URLSearchParams(fullPath.split('?')[1]);
-        isActive = Array.from(targetParams.entries()).every(([key, value]) => 
+        isActive = Array.from(targetParams.entries()).every(([key, value]) =>
           searchParams.get(key) === value
         );
       } else if (!hasQuery && isBasePathActive && searchParams && searchParams.toString()) {
@@ -120,44 +120,75 @@ const Header = () => {
 
   return (
     <header className="header_contentent custom-font">
+      {/* Green Top Bar - All Devices */}
+      <div className="top-bar-custom-wrapper" style={{ backgroundColor: '#006a60', color: 'white' }}>
+        <div className="top-bar-custom container px-3 px-lg-0" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px 0',
+          fontSize: '0.85rem'
+        }}>
+          <div className="top-bar-left">
+            <span>২৮ ফেব্রুয়ারি, ২০২৬</span>
+          </div>
+          <div className="top-bar-right d-flex gap-3 align-items-center">
+            <a href="#" className="text-white small"><i className="fas fa-search"></i></a>
+            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-facebook-f"></i></a>
+            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-instagram"></i></a>
+            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-linkedin-in"></i></a>
+            <a href="#" className="text-white"><i className="fab fa-youtube"></i></a>
+          </div>
+        </div>
+      </div>
+
       {/* Mobile Top Bar */}
       {isMediumOrSmaller && (
         <div
-          className="mobile-topbardef d-flex justify-content-between align-items-center px-3 py-2 bg-dark w-100"
+          className="mobile-topbardef d-flex justify-content-between align-items-center px-3 py-2 bg-white shadow-sm w-100"
         >
           <div className="hamburger" onClick={toggleSidebar}>
-            <i className="fas fa-bars text-white fs-4"></i>
+            <i className="fas fa-bars text-dark fs-4"></i>
           </div>
-          <div className="social-iconst">
-            <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-            <a key="twitter" href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
-          </div>
+          <Link href="/" className="mobile-logo">
+            <Image
+              src="/images/Logo.png"
+              alt="Pathokbonddho Logo"
+              width={100}
+              height={35}
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </Link>
         </div>
       )}
 
       {/* Top Bar hidden */}
       {isMediumOrSmaller && (
         <div
-          className="mobile-topbar d-flex justify-content-between align-items-center px-3 py-2 bg-dark position-fixed w-100"
+          className="mobile-topbar d-flex justify-content-between align-items-center px-3 py-2 bg-white shadow-sm position-fixed w-100"
           style={{
-            top: showScrollingNavbar ? "0" : "-100px",
+            top: showScrollingNavbar ? "0" : "-150px",
             transition: "top 0.3s ease-in-out",
             zIndex: 1050,
           }}
         >
           <div className="hamburger" onClick={toggleSidebar}>
-            <i className="fas fa-bars text-white fs-4"></i>
+            <i className="fas fa-bars text-dark fs-4"></i>
           </div>
-          <div className="social-iconst">
-            <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-            <a key="twitter" href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-            <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-            <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
-          </div>
+          <Link href="/" className="mobile-logo">
+            <Image
+              src="/images/Logo.png"
+              alt="Pathokbonddho Logo"
+              width={100}
+              height={35}
+              style={{ objectFit: 'contain' }}
+            />
+          </Link>
         </div>
       )}
+
+
 
 
       {/* Bootstrap Modal Sidebar for Small/Medium Devices */}
@@ -197,31 +228,16 @@ const Header = () => {
 
       {!isMediumOrSmaller && (
         <div className="site-header">
-          {/* Top Bar */}
-          <div className="top-bar-custom container" style={{ top: showScrollingNavbar ? "-50px" : "0", opacity: showScrollingNavbar ? 0 : 1, transition: "all 0.3s ease-in-out" }}>
-
-            <div className="top-bar-left">
-              <span>২৮ ফেব্রুয়ারি, ২০২৬</span>
-            </div>
-            <div className="top-bar-right">
-              <a href="#"><i className="fas fa-search"></i></a>
-              <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer"><i className="fab fa-facebook-f"></i></a>
-              <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer"><i className="fab fa-instagram"></i></a>
-              <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"></i></a>
-              <a href="#"><i className="fab fa-youtube"></i></a>
-            </div>
-          </div>
-
           {/* White Sticky Navbar */}
           <div className={`main-navbar-custom ${showScrollingNavbar ? 'sticky' : ''}`}>
             <div className="inside_main container">
               <Link href="/" className="logo-container">
-                <Image 
-                  src="/images/Logo.png" 
-                  alt="Pathokbonddho Logo" 
-                  width={150} 
-                  height={50} 
-                  className="logo-logo" 
+                <Image
+                  src="/images/Logo.png"
+                  alt="Pathokbonddho Logo"
+                  width={150}
+                  height={50}
+                  className="logo-logo"
                   priority
                   style={{ objectFit: 'contain' }}
                 />

@@ -128,7 +128,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
         return (
             <Container className="py-5" style={{ minHeight: '60vh' }}>
                 <Alert variant="danger" className="text-center shadow-sm">
-                    <Alert.Heading className="font-bangla mt-2">খবরটি পাওয়া যায়নি</Alert.Heading>
+                    <Alert.Heading className="custom-font mt-2">খবরটি পাওয়া যায়নি</Alert.Heading>
                     <p>{error || "The requested article could not be loaded."}</p>
                     <Link href="/" className="btn btn-outline-danger mt-3 font-bangla">নীড়ে ফিরে যান</Link>
                 </Alert>
@@ -178,7 +178,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                 ))}
             </Container>
 
-            <Container className="pt-2">
+            <Container className="pt-2 custom-font">
                 <Row className="g-5">
                     <Col lg={8} className="main-article-column">
                         <div className="mb-3">
@@ -388,16 +388,16 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                                             }
                                                         }}
                                                     >
-                                                    <div style={{ position: 'relative', height: '250px', width: '100%' }}>
-                                                        <Image 
-                                                            src={imgSrc} 
-                                                            alt={ad.name || 'Advertisement'} 
-                                                            fill 
-                                                            className="rounded shadow-sm" 
-                                                            style={{ objectFit: 'contain' }}
-                                                            sizes="(max-width: 992px) 0vw, 350px"
-                                                        />
-                                                    </div>
+                                                        <div style={{ position: 'relative', height: '250px', width: '100%' }}>
+                                                            <Image
+                                                                src={imgSrc}
+                                                                alt={ad.name || 'Advertisement'}
+                                                                fill
+                                                                className="rounded shadow-sm"
+                                                                style={{ objectFit: 'contain' }}
+                                                                sizes="(max-width: 992px) 0vw, 350px"
+                                                            />
+                                                        </div>
                                                     </a>
                                                 )
                                             )}

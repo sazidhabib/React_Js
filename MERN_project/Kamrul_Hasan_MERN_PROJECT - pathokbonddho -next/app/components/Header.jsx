@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useMenu } from '../providers/MenuProvider';
 import { Spinner } from 'react-bootstrap';
 
@@ -20,9 +20,29 @@ const Header = () => {
   const pathname = usePathname();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 
+  const router = useRouter();
   const lastScrollY = useRef(0);
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
   const normalizedPathname = normalizePath(pathname);
+  
+  const [currentDate, setCurrentDate] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const date = new Date();
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    setCurrentDate(date.toLocaleDateString('bn-BD', options));
+  }, []);
+
+  const handleSearch = (e) => {
+    if (e) e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
 
   // Render menu links dynamically
   const renderMenuLinks = (onClickHandler = null) => {
@@ -57,7 +77,7 @@ const Header = () => {
         <li className="nav-item" key={menu._id || index}>
           <Link
             href={fullPath}
-            className={`nav-link text-white ${isActive ? 'active' : ''}`}
+            className={`nav-link ${isActive ? 'active fw-bold' : 'text-white'}`}
             onClick={onClickHandler}
           >
             {menu.name}
@@ -130,10 +150,28 @@ const Header = () => {
           fontSize: '0.85rem'
         }}>
           <div className="top-bar-left">
-            <span>২৮ ফেব্রুয়ারি, ২০২৬</span>
+            <span>{currentDate || '২৮ ফেব্রুয়ারি, ২০২৬'}</span>
           </div>
           <div className="top-bar-right d-flex gap-3 align-items-center">
-            <a href="#" className="text-white small"><i className="fas fa-search"></i></a>
+            {isSearchOpen ? (
+              <form onSubmit={handleSearch} className="d-flex align-items-center bg-white rounded px-2 py-1" style={{ border: '1px solid #ccc' }}>
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="খুঁজুন..."
+                  className="border-0 small"
+                  style={{ outline: 'none', width: '120px', fontSize: '0.8rem', color: '#333' }}
+                  autoFocus
+                />
+                <button type="submit" className="border-0 bg-transparent p-0 text-dark">
+                  <i className="fas fa-search small"></i>
+                </button>
+                <i className="fas fa-times ms-2 text-muted small cursor-pointer" onClick={() => setIsSearchOpen(false)}></i>
+              </form>
+            ) : (
+              <i className="fas fa-search text-white small cursor-pointer" onClick={() => setIsSearchOpen(true)}></i>
+            )}
             <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-facebook-f"></i></a>
             <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-instagram"></i></a>
             <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-linkedin-in"></i></a>
@@ -210,6 +248,21 @@ const Header = () => {
                 <button type="button" className="btn-close btn-close-white" onClick={toggleSidebar}></button>
               </div>
               <div className="modal-body d-flex flex-column align-items-start">
+                {/* Mobile Search In Sidebar */}
+                <form onSubmit={handleSearch} className="w-100 mb-3 d-flex align-items-center bg-white rounded px-3 py-2">
+                  <input 
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="খুঁজুন..."
+                    className="border-0 w-100"
+                    style={{ outline: 'none', color: '#333' }}
+                  />
+                  <button type="submit" className="border-0 bg-transparent p-0 text-dark">
+                    <i className="fas fa-search"></i>
+                  </button>
+                </form>
+
                 <ul className="nav flex-column w-100">
                   {renderMenuLinks(() => setShowSidebar(false))}
                 </ul>

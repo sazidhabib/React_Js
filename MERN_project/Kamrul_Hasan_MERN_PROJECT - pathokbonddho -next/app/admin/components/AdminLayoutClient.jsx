@@ -52,11 +52,13 @@ export default function AdminLayoutClient({ children, user }) {
         return normalizedPathname === normalizedTargetPath;
     };
 
+    const isAdminUser = user?.role === 'admin' || user?.role === 'superadmin' || user?.isAdmin;
+
     useEffect(() => {
-        if (!loading && (!user || !user.isAdmin)) {
+        if (!loading && (!user || !isAdminUser)) {
             router.push('/login');
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, isAdminUser]);
 
     if (loading) {
         return (
@@ -68,7 +70,7 @@ export default function AdminLayoutClient({ children, user }) {
         );
     }
 
-    if (!user || !user.isAdmin) {
+    if (!user || !isAdminUser) {
         return null;
     }
 
@@ -239,6 +241,12 @@ export default function AdminLayoutClient({ children, user }) {
                         <li className={`nav-item py-1 ${isActiveRoute('/admin/users') ? 'bg-secondary rounded' : ''}`}>
                             <Link href="/admin/users" className="nav-link text-white px-3">
                                 <i className="fas fa-users me-2"></i>Users
+                            </Link>
+                        </li>
+
+                        <li className={`nav-item py-1 mt-auto ${isActiveRoute('/admin/settings') ? 'bg-secondary rounded' : ''}`}>
+                            <Link href="/admin/settings" className="nav-link text-white px-3">
+                                <i className="fas fa-cog me-2"></i>Settings
                             </Link>
                         </li>
                     </ul>

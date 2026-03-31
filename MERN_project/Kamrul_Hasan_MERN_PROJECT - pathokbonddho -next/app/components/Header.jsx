@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMenu } from '../providers/MenuProvider';
+import { useSettings } from '../providers/SettingsProvider';
 import { Spinner } from 'react-bootstrap';
 
 const normalizePath = (path, includeQuery = false) => {
@@ -17,6 +18,7 @@ const Header = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [isMediumOrSmaller, setIsMediumOrSmaller] = useState(false);
   const { menus, loading, getMenuByOrder } = useMenu();
+  const { settings } = useSettings();
   const pathname = usePathname();
   const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 
@@ -24,7 +26,7 @@ const Header = () => {
   const lastScrollY = useRef(0);
   const [showScrollingNavbar, setShowScrollingNavbar] = useState(false);
   const normalizedPathname = normalizePath(pathname);
-  
+
   const [currentDate, setCurrentDate] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -155,8 +157,8 @@ const Header = () => {
           <div className="top-bar-right d-flex gap-3 align-items-center">
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="d-flex align-items-center bg-white rounded px-2 py-1" style={{ border: '1px solid #ccc' }}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="খুঁজুন..."
@@ -190,7 +192,7 @@ const Header = () => {
           </div>
           <Link href="/" className="mobile-logo">
             <Image
-              src="/images/Logo.png"
+              src={settings?.logo || "/images/Logo.png"}
               alt="Pathokbonddho Logo"
               width={100}
               height={35}
@@ -216,7 +218,7 @@ const Header = () => {
           </div>
           <Link href="/" className="mobile-logo">
             <Image
-              src="/images/Logo.png"
+              src={settings?.logo || "/images/Logo.png"}
               alt="Pathokbonddho Logo"
               width={100}
               height={35}
@@ -250,8 +252,8 @@ const Header = () => {
               <div className="modal-body d-flex flex-column align-items-start">
                 {/* Mobile Search In Sidebar */}
                 <form onSubmit={handleSearch} className="w-100 mb-3 d-flex align-items-center bg-white rounded px-3 py-2">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="খুঁজুন..."
@@ -284,17 +286,26 @@ const Header = () => {
           {/* White Sticky Navbar */}
           <div className={`main-navbar-custom ${showScrollingNavbar ? 'sticky' : ''}`}>
             <div className="inside_main container">
-              <Link href="/" className="logo-container">
+              <Link href="/" className="logo-container d-flex align-items-center gap-3" style={{ textDecoration: 'none' }}>
                 <Image
-                  src="/images/Logo.png"
-                  alt="Pathokbonddho Logo"
+                  src={settings?.logo || "/images/Logo.png"}
+                  alt={settings?.siteNameBn || "Logo"}
                   width={150}
                   height={50}
                   className="logo-logo"
                   priority
                   style={{ objectFit: 'contain' }}
                 />
-                <span style={{ display: 'none', color: '#006a60', fontSize: '28px', fontWeight: 'bold' }}>পাঠকবন্ধু</span>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <h1 style={{ margin: 0, color: '#006a60', fontSize: '24px', fontWeight: 'bold' }}>
+                    {settings?.siteNameBn || 'পাঠকবন্ধু'}
+                  </h1>
+                  {settings?.tagline && (
+                    <p style={{ margin: 0, color: '#555', fontSize: '12px', fontStyle: 'italic' }}>
+                      {settings.tagline}
+                    </p>
+                  )}
+                </div>
               </Link>
               <ul className="nav-custom-links">
                 {menus.sort((a, b) => a.order - b.order).map((menu, index) => {

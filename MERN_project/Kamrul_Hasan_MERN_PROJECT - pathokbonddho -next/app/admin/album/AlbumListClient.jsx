@@ -93,23 +93,30 @@ const AlbumListClient = ({ initialAlbums, initialTotalPages, isAdmin }) => {
                 <div className="card-body p-0">
                     <Table hover responsive className="mb-0">
                         <thead className="table-dark">
-                            <tr><th>#</th><th>Album Name</th><th>Status</th><th className="text-center">Actions</th></tr>
+                            <tr key="header"><th>#</th><th>Album Name</th><th>Status</th><th className="text-center">Actions</th></tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="4" className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr> : albums.map((album, i) => (
-                                <tr key={album._id} className="align-middle">
-                                    <td>{(page - 1) * 10 + i + 1}</td>
-                                    <td className="fw-bold">{album.name}</td>
-                                    <td><Badge bg={album.status === 'active' ? 'success' : 'secondary'}>{album.status}</Badge></td>
-                                    <td className="text-center">
-                                        <div className="btn-group">
-                                            <Button variant="outline-primary" size="sm" onClick={() => handleShowModal(album)}>Edit</Button>
-                                            <Button variant="outline-danger" size="sm" onClick={() => { setDeleteId(album._id); setShowConfirm(true); }}>Del</Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {!loading && albums.length === 0 && <tr><td colSpan="4" className="text-center py-5 text-muted">No albums discovered.</td></tr>}
+                            {(() => {
+                                if (loading) {
+                                    return <tr key="loading"><td colSpan="4" className="text-center py-5"><Spinner animation="border" variant="primary" /></td></tr>;
+                                }
+                                if (albums.length === 0) {
+                                    return <tr key="empty"><td colSpan="4" className="text-center py-5 text-muted">No albums discovered.</td></tr>;
+                                }
+                                return albums.map((album, i) => (
+                                    <tr key={album._id || `album-${i}`} className="align-middle">
+                                        <td>{(page - 1) * 10 + i + 1}</td>
+                                        <td className="fw-bold">{album.name}</td>
+                                        <td><Badge bg={album.status === 'active' ? 'success' : 'secondary'}>{album.status}</Badge></td>
+                                        <td className="text-center">
+                                            <div className="btn-group">
+                                                <Button variant="outline-primary" size="sm" onClick={() => handleShowModal(album)}>Edit</Button>
+                                                <Button variant="outline-danger" size="sm" onClick={() => { setDeleteId(album._id); setShowConfirm(true); }}>Del</Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ));
+                            })()}
                         </tbody>
                     </Table>
                 </div>

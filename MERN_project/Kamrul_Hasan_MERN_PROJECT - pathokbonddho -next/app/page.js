@@ -4,7 +4,7 @@ import ScrollToSection from './components/ScrollToSection';
 import PageRenderer from './components/PageRenderer';
 
 export const metadata = {
-  title: 'পাঠকবন্ধু - Home',
+  title: 'পাঠকবন্ধু',
   description: 'Welcome to পাঠকবন্ধু, the news portal.',
 };
 

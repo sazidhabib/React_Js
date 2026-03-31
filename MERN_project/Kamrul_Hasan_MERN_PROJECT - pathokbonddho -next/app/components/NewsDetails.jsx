@@ -4,6 +4,7 @@ import Link from 'next/link';
 import api from '@/app/lib/api';
 import { Container, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
 import Image from 'next/image';
+import { Helmet } from 'react-helmet-async';
 
 const NewsDetails = ({ id, initialData, initialAds }) => {
     const [news, setNews] = useState(initialData || null);
@@ -140,6 +141,17 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
 
     return (
         <article className="news-details-page bg-white pb-5">
+            {/* SEO Helmet - Dynamic meta tags only (title is handled by generateMetadata) */}
+            {news && (
+                <Helmet>
+                    <meta name="description" content={news.metaDescription || news.shortDescription || ''} />
+                    {news.metaKeywords && <meta name="keywords" content={news.metaKeywords} />}
+                    {leadImageUrl && <meta property="og:image" content={leadImageUrl} />}
+                    {leadImageUrl && <meta property="twitter:image" content={leadImageUrl} />}
+                    <meta property="og:title" content={news.newsHeadline || 'News'} />
+                    <meta property="og:description" content={news.metaDescription || news.shortDescription || ''} />
+                </Helmet>
+            )}
             <Container className="pt-3">
                 {headerAds.map((ad, idx) => (
                     <div key={ad.id || idx} className="mb-4 text-center">

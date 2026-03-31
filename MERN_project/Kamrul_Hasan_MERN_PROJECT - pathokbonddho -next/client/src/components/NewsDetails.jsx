@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async';
 
 const NewsDetails = () => {
     const { id } = useParams();

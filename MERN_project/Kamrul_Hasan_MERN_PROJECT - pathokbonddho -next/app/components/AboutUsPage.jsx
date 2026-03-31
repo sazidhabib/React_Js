@@ -61,14 +61,14 @@ const AboutUsPage = ({ initialData }) => {
   };
 
   const getFullImageUrl = (path) => {
-      if (!path) return "/images/kamrul_hasan_bio2.jpg";
-      if (path.startsWith('http')) return path;
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-      // Ensure we append /uploads/ if it's just a filename
-      const cleanPath = path.replace(/^\/+/, "");
-      return cleanPath.startsWith('uploads/') 
-        ? `${baseUrl}/${cleanPath}` 
-        : `${baseUrl}/uploads/${cleanPath}`;
+    if (!path) return "/images/kamrul_hasan_bio2.jpg";
+    if (path.startsWith('http')) return path;
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    // Ensure we append /uploads/ if it's just a filename
+    const cleanPath = path.replace(/^\/+/, "");
+    return cleanPath.startsWith('uploads/')
+      ? `${baseUrl}/${cleanPath}`
+      : `${baseUrl}/uploads/${cleanPath}`;
   };
 
   const imageUrl = getFullImageUrl(aboutData?.imageUrl);
@@ -103,20 +103,20 @@ const AboutUsPage = ({ initialData }) => {
 
   if (loading && !aboutData) {
     return (
-        <div className="aboutus-loading d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">লোড হচ্ছে...</p>
-        </div>
+      <div className="aboutus-loading d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
+        <Spinner animation="border" variant="primary" />
+        <p className="mt-3 text-muted">লোড হচ্ছে...</p>
+      </div>
     );
   }
 
   if (error && !aboutData) {
     return (
-        <div className="aboutus-error text-center py-5">
-          <i className="fas fa-exclamation-triangle fs-1 text-danger mb-3"></i>
-          <p className="lead">{error}</p>
-          <Link href="/" className="btn btn-primary">প্রধান পাতায় ফিরুন</Link>
-        </div>
+      <div className="aboutus-error text-center py-5">
+        <i className="fas fa-exclamation-triangle fs-1 text-danger mb-3"></i>
+        <p className="lead">{error}</p>
+        <Link href="/" className="btn btn-primary">প্রধান পাতায় ফিরুন</Link>
+      </div>
     );
   }
 
@@ -146,7 +146,7 @@ const AboutUsPage = ({ initialData }) => {
             <div className="col-lg-5">
               <div className="aboutus-bio-image-wrapper position-relative">
                 <div className="aboutus-bio-image-accent"></div>
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '4/5' }}>
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '5/5' }}>
                   <Image
                     src={imageUrl}
                     alt={aboutData?.introTitle || "পাঠকবন্ধুর লোগো"}
@@ -231,7 +231,7 @@ const AboutUsPage = ({ initialData }) => {
               <div className="col-6 col-md-3" key={index}>
                 <div className="aboutus-stat-card text-center p-4 rounded shadow-sm" style={{ animationDelay: `${index * 0.15}s` }}>
                   <div className="aboutus-stat-icon mb-2">
-                    <i className={`${stat.icon} fs-2 text-primary`}></i>
+                    <i className={`${stat.icon} fs-2`}></i>
                   </div>
                   <div className="aboutus-stat-value fw-bold fs-3">{stat.number || stat.value}</div>
                   <div className="aboutus-stat-label text-muted">{stat.label}</div>
@@ -259,7 +259,7 @@ const AboutUsPage = ({ initialData }) => {
             <div className="col-md-6">
               <div className="aboutus-glass-card mission-card p-5 rounded border shadow-sm h-100">
                 <div className="aboutus-glass-icon mb-3">
-                  <i className={`${missionData.icon} fs-1 text-primary`}></i>
+                  <i className={`${missionData.icon} fs-1 `}></i>
                 </div>
                 <h3>{missionData.title}</h3>
                 <p>{missionData.description}</p>
@@ -268,7 +268,7 @@ const AboutUsPage = ({ initialData }) => {
             <div className="col-md-6">
               <div className="aboutus-glass-card vision-card p-5 rounded border shadow-sm h-100">
                 <div className="aboutus-glass-icon mb-3">
-                  <i className={`${visionData.icon} fs-1 text-primary`}></i>
+                  <i className={`${visionData.icon} fs-1`}></i>
                 </div>
                 <h3>{visionData.title}</h3>
                 <p>{visionData.description}</p>
@@ -296,7 +296,7 @@ const AboutUsPage = ({ initialData }) => {
               <div className="col-sm-6 col-lg-3" key={index}>
                 <div className="aboutus-value-card text-center p-4 h-100 border rounded shadow-sm" style={{ animationDelay: `${index * 0.1}s` }}>
                   <div className="aboutus-value-icon mb-3">
-                    <i className={`${value.icon} fs-2 text-primary`}></i>
+                    <i className={`${value.icon} fs-2 `}></i>
                   </div>
                   <h4>{value.title}</h4>
                   <p className="text-muted small">{value.description || value.desc}</p>
@@ -313,7 +313,7 @@ const AboutUsPage = ({ initialData }) => {
           <h2 className="mb-3">{aboutData?.ctaTitle || "আমাদের সাথে যুক্ত থাকুন"}</h2>
           <p className="mb-4">{aboutData?.ctaSubtitle || "সর্বশেষ সংবাদ ও আপডেটের জন্য আমাদের অনুসরণ করুন"}</p>
           <div className="aboutus-cta-buttons d-flex justify-content-center gap-3">
-            <Link href="/" className="btn btn-light px-4 py-2 fw-bold text-primary">
+            <Link href="/" className="btn btn-light px-4 py-2 fw-bold ">
               <i className="fas fa-home me-2"></i>প্রধান পাতা
             </Link>
             {(socials.facebook || socials.email || socials.linkedin) && (

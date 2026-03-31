@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import HomeLayout from "./layouts/HomeLayout";
 import AdminLayout from "./layouts/AdminLayout";
 import AdminTable from "./admin/AdminTable";
@@ -37,9 +38,10 @@ import AboutUsPage from "./components/AboutUsPage";
 
 const AppRoutes = () => {
   return (
-    <Router>
+    <HelmetProvider>
+      <Router>
 
-      <Routes>
+        <Routes>
         {/* News Detail Page */}
         <Route path="/news" element={<NewsLayout />}>
           <Route path=":id" element={<NewsDetails />} />
@@ -84,6 +86,7 @@ const AppRoutes = () => {
       </Routes>
 
     </Router>
+    </HelmetProvider>
   );
 };
 

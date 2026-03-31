@@ -20,10 +20,10 @@ const NewsListClient = ({ initialNews, initialTotalPages, isAdmin }) => {
     const fetchNews = async () => {
         setLoading(true);
         try {
-            const params = { 
-                page, 
-                limit: 10, 
-                search, 
+            const params = {
+                page,
+                limit: 20,
+                search,
                 status,
                 ...(type && { newsType: type })
             };
@@ -31,7 +31,16 @@ const NewsListClient = ({ initialNews, initialTotalPages, isAdmin }) => {
             const data = res.data;
             const items = data.news || data.rows || data.data || (Array.isArray(data) ? data : []);
             setNews(items);
-            setTotalPages(data.totalPages || 1);
+
+            // Calculate totalPages correctly - if API returns count, convert to pages
+            let pages = data.totalPages || 1;
+            if (pages > 1000) {
+                // Likely API returned total count instead of pages
+                const total = data.total || data.count || pages;
+                pages = Math.ceil(total / 20);
+                console.warn(`Recalculated pages from ${data.totalPages} to ${pages}`);
+            }
+            setTotalPages(Math.max(1, pages));
         } catch (err) {
             toast.error("Failed to fetch news");
             setNews([]);
@@ -114,29 +123,29 @@ const NewsListClient = ({ initialNews, initialTotalPages, isAdmin }) => {
                     <Table responsive hover className="mb-0">
                         <thead className="table-dark">
                             <tr>
-                                <th style={{width: '40px'}}><Form.Check checked={selected.length === news.length && news.length > 0} onChange={e => setSelected(e.target.checked ? news.map(n => n.id) : [])} /></th>
+                                <th style={{ width: '40px' }}><Form.Check checked={selected.length === news.length && news.length > 0} onChange={e => setSelected(e.target.checked ? news.map(n => n.id) : [])} /></th>
                                 <th>Headline</th><th>Type</th><th>Author</th><th>Status</th><th>Created</th><th className="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="7" className="text-center py-5"><Spinner animation="border" /></td></tr> : 
-                             news.map(n => (
-                                <tr key={n.id}>
-                                    <td><Form.Check checked={selected.includes(n.id)} onChange={e => setSelected(e.target.checked ? [...selected, n.id] : selected.filter(id => id !== n.id))} /></td>
-                                    <td><div className="fw-bold">{n.newsHeadline}</div><small className="text-muted">{n.newsHeadlineBangla}</small></td>
-                                    <td><Badge bg={n.newsType === 'photo' ? 'primary' : n.newsType === 'video' ? 'danger' : 'secondary'}>{n.newsType || 'standard'}</Badge></td>
-                                    <td>{n.Author?.name || n.author?.name || 'N/A'}</td>
-                                    <td>{getStatusBadge(n.status)}</td>
-                                    <td>{new Date(n.createdAt).toLocaleDateString()}</td>
-                                    <td className="text-center">
-                                        <div className="btn-group">
-                                            <Link href={n.newsType === 'photo' ? `/admin/photo-news/edit/${n.id}` : n.newsType === 'video' ? `/admin/video-news/edit/${n.id}` : `/admin/news/edit/${n.id}`} className="btn btn-sm btn-outline-primary">Edit</Link>
-                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(n.id)}>Del</Button>
-                                            <Link href={`/news/${n.slug}`} target="_blank" className="btn btn-sm btn-outline-info">View</Link>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                            {loading ? <tr><td colSpan="7" className="text-center py-5"><Spinner animation="border" /></td></tr> :
+                                news.map(n => (
+                                    <tr key={n.id}>
+                                        <td><Form.Check checked={selected.includes(n.id)} onChange={e => setSelected(e.target.checked ? [...selected, n.id] : selected.filter(id => id !== n.id))} /></td>
+                                        <td><div className="fw-bold">{n.newsHeadline}</div><small className="text-muted">{n.newsHeadlineBangla}</small></td>
+                                        <td><Badge bg={n.newsType === 'photo' ? 'primary' : n.newsType === 'video' ? 'danger' : 'secondary'}>{n.newsType || 'standard'}</Badge></td>
+                                        <td>{n.Author?.name || n.author?.name || 'N/A'}</td>
+                                        <td>{getStatusBadge(n.status)}</td>
+                                        <td>{new Date(n.createdAt).toLocaleDateString()}</td>
+                                        <td className="text-center">
+                                            <div className="btn-group">
+                                                <Link href={n.newsType === 'photo' ? `/admin/photo-news/edit/${n.id}` : n.newsType === 'video' ? `/admin/video-news/edit/${n.id}` : `/admin/news/edit/${n.id}`} className="btn btn-sm btn-outline-primary">Edit</Link>
+                                                <Button variant="outline-danger" size="sm" onClick={() => handleDelete(n.id)}>Del</Button>
+                                                <Link href={`/news/${n.slug}`} target="_blank" className="btn btn-sm btn-outline-info">View</Link>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                             {!loading && news.length === 0 && <tr><td colSpan="7" className="text-center py-4 text-muted">No news found</td></tr>}
                         </tbody>
                     </Table>
@@ -144,13 +153,42 @@ const NewsListClient = ({ initialNews, initialTotalPages, isAdmin }) => {
             </Card>
 
             {totalPages > 1 && (
-                <Pagination className="justify-content-center mt-3">
-                    <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)} />
-                    {[...Array(totalPages)].map((_, i) => (
-                        <Pagination.Item key={i} active={i + 1 === page} onClick={() => setPage(i + 1)}>{i + 1}</Pagination.Item>
-                    ))}
-                    <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)} />
-                </Pagination>
+                <div className="d-flex justify-content-center align-items-center gap-2 mt-3">
+                    <Pagination className="mb-0">
+                        <Pagination.Prev disabled={page === 1} onClick={() => setPage(page - 1)} />
+                    </Pagination>
+
+                    {/* Page info */}
+                    <div style={{ minWidth: '150px', textAlign: 'center' }}>
+                        <small className="text-muted">
+                            Page <strong>{page}</strong> of <strong>{totalPages}</strong>
+                        </small>
+                    </div>
+
+                    {/* Jump to page input */}
+                    <InputGroup style={{ maxWidth: '120px' }}>
+                        <Form.Control
+                            placeholder="Go to..."
+                            type="number"
+                            min="1"
+                            max={totalPages}
+                            defaultValue={page}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    const newPage = Math.max(1, Math.min(totalPages, parseInt(e.target.value) || 1));
+                                    setPage(newPage);
+                                    e.target.value = '';
+                                }
+                            }}
+                            className="text-center"
+                            size="sm"
+                        />
+                    </InputGroup>
+
+                    <Pagination className="mb-0">
+                        <Pagination.Next disabled={page === totalPages} onClick={() => setPage(page + 1)} />
+                    </Pagination>
+                </div>
             )}
         </div>
     );

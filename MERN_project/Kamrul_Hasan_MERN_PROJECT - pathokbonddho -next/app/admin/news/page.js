@@ -5,7 +5,7 @@ import NewsListClient from './NewsListClient';
 async function getInitialNews(token) {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
     try {
-        const res = await fetch(`${API_URL}/news?page=1&limit=10`, {
+        const res = await fetch(`${API_URL}/news?page=1&limit=20`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             },
@@ -43,10 +43,10 @@ export default async function NewsDashboardPage() {
     const { news, totalPages } = isAdmin ? await getInitialNews(token) : { news: [], totalPages: 1 };
 
     return (
-        <NewsListClient 
-            initialNews={news} 
-            initialTotalPages={totalPages} 
-            isAdmin={isAdmin} 
+        <NewsListClient
+            initialNews={news}
+            initialTotalPages={totalPages}
+            isAdmin={isAdmin}
         />
     );
 }

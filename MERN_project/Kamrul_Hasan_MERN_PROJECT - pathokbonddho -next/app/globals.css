@@ -2404,3 +2404,127 @@ footer {
 .img-fluid {
     height: auto !important;
 }
+
+/* ════════════ FRONTEND NEWS HOVER EFFECTS ════════════ */
+/* 1. Card Zoom & Lift Effect */
+.news-widget-card,
+.hover-shadow,
+.news-design-text-inside-image,
+.news-design-side-layout,
+.news-design-title-only {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease !important;
+    border-radius: 8px;
+    background-color: transparent;
+}
+
+.news-widget-card:hover,
+.hover-shadow:hover,
+.news-design-text-inside-image:hover,
+.news-design-title-only:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+    z-index: 2;
+    background-color: #ffffff;
+}
+
+/* Side layouts look better with a subtle background and slight translate rather than large shadow */
+.news-design-side-layout {
+    padding: 8px;
+}
+.news-design-side-layout:hover {
+    transform: translateX(4px);
+    background-color: #f8f9fa;
+    box-shadow: -2px 0 0 #E67E22;
+    z-index: 2;
+}
+
+.news-widget-card:hover,
+.hover-shadow:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12) !important;
+    z-index: 2;
+}
+
+/* 2. Image Inner Zoom on Hover */
+.card-img-wrapper,
+.news-side-image-wrapper,
+.news-image-container,
+.side-image-container,
+.text-inside-image-img {
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+}
+
+.card-img-wrapper img,
+.news-side-image-wrapper img,
+.news-image-container img,
+.side-image-container img,
+.text-inside-image-img img,
+.hover-zoom {
+    transition: transform 0.5s ease-out !important;
+}
+
+.news-widget-card:hover .card-img-wrapper img,
+.news-widget-card:hover .news-image-container img,
+.hover-shadow:hover .news-side-image-wrapper img,
+.news-design-text-inside-image:hover .text-inside-image-img img,
+.news-design-side-layout:hover .side-image-container img,
+.hover-shadow:hover .hover-zoom {
+    transform: scale(1.08) !important;
+}
+
+/* 3. Text/Title Color Change on Hover (matching site's green/red brand) */
+.news-card-title,
+.hover-danger,
+.hover-primary,
+.news-design-side-layout h5,
+.news-design-title-only h5,
+.news-design-text-inside-image h5 {
+    transition: color 0.3s ease !important;
+}
+
+.news-widget-card:hover .news-card-title,
+.hover-shadow:hover .hover-danger,
+.hover-shadow:hover .hover-primary,
+.news-design-side-layout:hover h5,
+.news-design-title-only:hover h5,
+.news-design-text-inside-image:hover h5 {
+    color: #E67E22 !important;
+    /* Brand orange for high attention */
+}
+
+/* 4. Mute Short Description Slightly on Hover to Emphasize Title */
+.news-widget-card p,
+.hover-shadow p,
+.news-design-side-layout p,
+.news-design-title-only p {
+    transition: opacity 0.3s ease;
+}
+
+.news-widget-card:hover p,
+.hover-shadow:hover p,
+.news-design-side-layout:hover p,
+.news-design-title-only:hover p {
+    opacity: 0.85;
+}
+
+/* Specific Sidebar News List Hover */
+.related-news-list .hover-bg-light:hover {
+    background-color: #f8f9fa !important;
+    transform: translateX(4px);
+    box-shadow: -2px 0 0 #da251d;
+    transition: all 0.3s ease;
+}
+
+.related-news-list .hover-bg-light img {
+    transition: transform 0.4s ease;
+}
+
+.related-news-list .hover-bg-light:hover img {
+    transform: scale(1.1);
+}
+
+.related-news-list .hover-bg-light:hover .hover-danger {
+    color: #da251d !important;
+}

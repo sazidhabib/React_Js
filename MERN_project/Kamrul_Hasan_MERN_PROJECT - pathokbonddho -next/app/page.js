@@ -3,10 +3,34 @@ import Footer from './components/Footer';
 import ScrollToSection from './components/ScrollToSection';
 import PageRenderer from './components/PageRenderer';
 
-export const metadata = {
-  title: 'পাঠকবন্ধু',
-  description: 'Welcome to পাঠকবন্ধু, the news portal.',
-};
+export async function generateMetadata() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  
+  try {
+      const response = await fetch(`${API_URL}/menus`, { next: { revalidate: 60 } });
+      if (response.ok) {
+          const data = await response.json();
+          const menus = data.data || data || [];
+          
+          const menu = menus.find(m => m.path === '/' || m.name.toLowerCase() === 'home' || m.path.toLowerCase() === 'home' || m.order === 1);
+          
+          if (menu) {
+              return {
+                  title: menu.metaTitle || menu.name || 'পাঠকবন্ধু',
+                  ...(menu.metaDescription ? { description: menu.metaDescription } : { description: 'Welcome to পাঠকবন্ধু, the news portal.' }),
+                  ...(menu.metaKeywords && { keywords: menu.metaKeywords }),
+              };
+          }
+      }
+  } catch (error) {
+      console.error('Error fetching home metadata:', error);
+  }
+  
+  return {
+    title: 'পাঠকবন্ধু',
+    description: 'Welcome to পাঠকবন্ধু, the news portal.',
+  };
+}
 
 async function getPageData(slug = 'home') {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';

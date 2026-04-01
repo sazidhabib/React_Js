@@ -188,13 +188,22 @@ const MenuFormModal = ({ show, onHide, onSubmit, editMenu, parentMenus }) => {
                         />
                     </Form.Group>
 
-                    <Accordion>
-                        <Accordion.Item eventKey="0" className="border shadow-sm">
-                            <Accordion.Header>
-                                <span className="fw-bold">SEO Meta Configuration</span>
+                    <div className="mb-4">
+                        <Button 
+                            variant="light" 
+                            className="w-100 d-flex justify-content-between align-items-center border shadow-sm py-3"
+                            onClick={() => setShowSeoFields(!showSeoFields)}
+                            type="button"
+                        >
+                            <span className="fw-bold text-dark">
+                                SEO Meta Configuration
                                 {hasSeoData && <Badge bg="success" className="ms-3">Configured</Badge>}
-                            </Accordion.Header>
-                            <Accordion.Body className="bg-light">
+                            </span>
+                            <span className="text-muted">{showSeoFields ? '▼' : '▶'}</span>
+                        </Button>
+                        
+                        {showSeoFields && (
+                            <div className="border border-top-0 p-3 bg-light shadow-sm">
                                 <Form.Group className="mb-3">
                                     <Form.Label>Meta Title</Form.Label>
                                     <Form.Control {...register("metaTitle")} placeholder="Default: Same as Name" />
@@ -207,9 +216,9 @@ const MenuFormModal = ({ show, onHide, onSubmit, editMenu, parentMenus }) => {
                                     <Form.Label>Meta Keywords</Form.Label>
                                     <Form.Control as="textarea" rows={2} {...register("metaKeywords")} placeholder="news, world, updates..." />
                                 </Form.Group>
-                            </Accordion.Body>
-                        </Accordion.Item>
-                    </Accordion>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
                         <Button variant="outline-secondary" onClick={onHide}>Cancel</Button>

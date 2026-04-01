@@ -174,10 +174,21 @@ const Header = () => {
             ) : (
               <i className="fas fa-search text-white small cursor-pointer" onClick={() => setIsSearchOpen(true)}></i>
             )}
-            <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-facebook-f"></i></a>
-            <a href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-instagram"></i></a>
-            <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-linkedin-in"></i></a>
-            <a href="#" className="text-white"><i className="fab fa-youtube"></i></a>
+            {settings?.social?.facebook && (
+              <a href={settings.social.facebook} target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-facebook-f"></i></a>
+            )}
+            {settings?.social?.instagram && (
+              <a href={settings.social.instagram} target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-instagram"></i></a>
+            )}
+            {settings?.social?.linkedin && (
+              <a href={settings.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-linkedin-in"></i></a>
+            )}
+            {settings?.social?.youtube && (
+              <a href={settings.social.youtube} target="_blank" rel="noopener noreferrer" className="text-white"><i className="fab fa-youtube"></i></a>
+            )}
+            {settings?.social?.twitter && (
+              <a href={settings.social.twitter} target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-x-twitter"></i></a>
+            )}
           </div>
         </div>
       </div>
@@ -270,10 +281,21 @@ const Header = () => {
                 </ul>
 
                 <div className="social-icons mt-3">
-                  <a key="linkedin" href="https://www.linkedin.com/in/kamrul-hasan-journalist/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
-                  <a key="twitter" href="#" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
-                  <a key="facebook" href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
-                  <a key="instagram" href="https://www.instagram.com/kamrul4112/?igsh=cGNhMnp6ZW9nNHFt&utm_source=qr#" target="_blank" rel="noopener noreferrer" className="text-white"><i className="fa-brands fa-instagram"></i></a>
+                  {settings?.social?.linkedin && (
+                    <a key="linkedin" href={settings.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-linkedin-in"></i></a>
+                  )}
+                  {settings?.social?.twitter && (
+                    <a key="twitter" href={settings.social.twitter} target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-x-twitter"></i></a>
+                  )}
+                  {settings?.social?.facebook && (
+                    <a key="facebook" href={settings.social.facebook} target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-facebook-f"></i></a>
+                  )}
+                  {settings?.social?.instagram && (
+                    <a key="instagram" href={settings.social.instagram} target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-instagram"></i></a>
+                  )}
+                  {settings?.social?.youtube && (
+                    <a key="youtube" href={settings.social.youtube} target="_blank" rel="noopener noreferrer" className="text-white me-2"><i className="fa-brands fa-youtube"></i></a>
+                  )}
                 </div>
               </div>
             </div>
@@ -315,7 +337,7 @@ const Header = () => {
                     <li key={menu._id || index}>
                       <Link
                         href={menuPath}
-                        className={`nav-link-custom ${isActive ? 'active' : ''}`}
+                        className={`nav-link-custom fw-bold ${isActive ? 'active' : ''}`}
                       >
                         {menu.name}
                       </Link>

@@ -95,6 +95,38 @@ async function getPageData(slug) {
   }
 }
 
+export async function generateMetadata({ params }) {
+    const { slug } = await params;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    
+    try {
+        const response = await fetch(`${API_URL}/menus`, { next: { revalidate: 60 } });
+        if (response.ok) {
+            const data = await response.json();
+            const menus = data.data || data || [];
+            
+            const menu = menus.find(m => {
+                const cleanPath = m.path ? m.path.replace(/^\/+/, '') : '';
+                return cleanPath.toLowerCase() === slug.toLowerCase();
+            });
+            
+            if (menu) {
+                return {
+                    title: menu.metaTitle || menu.name,
+                    ...(menu.metaDescription && { description: menu.metaDescription }),
+                    ...(menu.metaKeywords && { keywords: menu.metaKeywords }),
+                };
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching menu metadata:', error);
+    }
+    
+    return {
+        title: slug.charAt(0).toUpperCase() + slug.slice(1),
+    };
+}
+
 export default async function DynamicCategoryRoute({ params }) {
     const { slug } = await params;
     const initialData = await getPageData(slug);

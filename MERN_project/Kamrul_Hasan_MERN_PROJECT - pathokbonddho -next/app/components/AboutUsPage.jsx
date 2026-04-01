@@ -5,8 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import api from '@/app/lib/api';
+import { useSettings } from '../providers/SettingsProvider';
 
 const AboutUsPage = ({ initialData }) => {
+  const { settings } = useSettings();
   const [aboutData, setAboutData] = useState(initialData || null);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(null);
@@ -198,18 +200,26 @@ const AboutUsPage = ({ initialData }) => {
                   {/* Default fallbacks if none provided */}
                   {!socials.facebook && !socials.twitter && !socials.linkedin && !socials.email && (
                     <>
-                      <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
-                        <i className="fab fa-facebook-f"></i>
-                      </a>
-                      <a href="https://www.instagram.com/kamrul4112/" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
-                        <i className="fab fa-instagram"></i>
-                      </a>
-                      <a href="https://www.linkedin.com/in/kamrul-hasan-journalist/" target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
-                        <i className="fab fa-linkedin-in"></i>
-                      </a>
-                      <a href="#" className="aboutus-social-link">
-                        <i className="fa-brands fa-x-twitter"></i>
-                      </a>
+                      {settings?.social?.facebook && (
+                        <a href={settings.social.facebook} target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                          <i className="fab fa-facebook-f"></i>
+                        </a>
+                      )}
+                      {settings?.social?.instagram && (
+                        <a href={settings.social.instagram} target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                          <i className="fab fa-instagram"></i>
+                        </a>
+                      )}
+                      {settings?.social?.linkedin && (
+                        <a href={settings.social.linkedin} target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                          <i className="fab fa-linkedin-in"></i>
+                        </a>
+                      )}
+                      {settings?.social?.twitter && (
+                        <a href={settings.social.twitter} target="_blank" rel="noopener noreferrer" className="aboutus-social-link">
+                          <i className="fa-brands fa-x-twitter"></i>
+                        </a>
+                      )}
                     </>
                   )}
                 </div>
@@ -321,8 +331,8 @@ const AboutUsPage = ({ initialData }) => {
                 <i className={`${socials.facebook ? "fab fa-facebook-f" : socials.linkedin ? "fab fa-linkedin" : "fas fa-envelope"} me-2`}></i>যোগাযোগ করুন
               </a>
             )}
-            {Object.keys(socials).length === 0 && (
-              <a href="https://www.facebook.com/kamrul.hasan.75286" target="_blank" rel="noopener noreferrer" className="btn btn-outline-light px-4 py-2 fw-bold">
+            {Object.keys(socials).length === 0 && settings?.social?.facebook && (
+              <a href={settings.social.facebook} target="_blank" rel="noopener noreferrer" className="btn btn-outline-light px-4 py-2 fw-bold">
                 <i className="fab fa-facebook-f me-2"></i>ফেসবুক
               </a>
             )}

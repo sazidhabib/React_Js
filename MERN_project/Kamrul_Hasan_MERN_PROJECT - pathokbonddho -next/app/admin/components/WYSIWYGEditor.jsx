@@ -11,8 +11,8 @@ const WYSIWYGEditor = forwardRef(({
     onEditImage
 }, ref) => {
     const editorRef = useRef(null);
+    const savedRangeRef = useRef(null);
     const [isFocused, setIsFocused] = useState(false);
-    const [savedRange, setSavedRange] = useState(null);
     const [selectedElement, setSelectedElement] = useState(null);
     const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
 
@@ -47,8 +47,8 @@ const WYSIWYGEditor = forwardRef(({
         if (editorRef.current && value !== editorRef.current.innerHTML) editorRef.current.innerHTML = value || '';
     }, [value]);
 
-    const saveSelection = () => { const s = window.getSelection(); if (s.rangeCount > 0) setSavedRange(s.getRangeAt(0)); };
-    const restoreSelection = () => { if (savedRange && editorRef.current) { editorRef.current.focus(); const s = window.getSelection(); s.removeAllRanges(); s.addRange(savedRange); } };
+    const saveSelection = () => { const s = window.getSelection(); if (s.rangeCount > 0) savedRangeRef.current = s.getRangeAt(0).cloneRange(); };
+    const restoreSelection = () => { if (savedRangeRef.current && editorRef.current) { editorRef.current.focus(); const s = window.getSelection(); s.removeAllRanges(); s.addRange(savedRangeRef.current); } };
     const handleInput = () => { const c = editorRef.current.innerHTML; onChange(c); };
 
     useImperativeHandle(ref, () => ({

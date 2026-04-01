@@ -168,6 +168,7 @@ const TagForm = ({ tag, onSubmit, onCancel, isSubmitting }) => {
 const TagsListClient = ({ initialTags, isAdmin }) => {
     const [editingTag, setEditingTag] = useState(null);
     const [showForm, setShowForm] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const swrKey = isAdmin ? '/tags' : null;
     const { data: swrData, error, isLoading: loading } = useSWR(swrKey, fetcher, {
@@ -180,7 +181,7 @@ const TagsListClient = ({ initialTags, isAdmin }) => {
     const refreshData = () => mutate(swrKey);
 
     const handleSubmit = async (formData) => {
-        setLoading(true);
+        setIsSubmitting(true);
         try {
             if (editingTag) {
                 await api.patch(`/tags/${editingTag.id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -194,6 +195,8 @@ const TagsListClient = ({ initialTags, isAdmin }) => {
             setEditingTag(null);
         } catch (error) {
             toast.error('Operation failed');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -223,7 +226,7 @@ const TagsListClient = ({ initialTags, isAdmin }) => {
                     tag={editingTag}
                     onSubmit={handleSubmit}
                     onCancel={() => { setShowForm(false); setEditingTag(null); }}
-                    isSubmitting={loading}
+                    isSubmitting={isSubmitting}
                 />
             )}
 

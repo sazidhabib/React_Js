@@ -132,12 +132,13 @@ const createNews = async (req, res) => {
 
         // Handle file uploads
         const leadImage = req.files?.leadImage ? `uploads/post_image/${req.files.leadImage[0].filename}` : req.body.leadImagePath;
-        const thumbImage = req.files?.thumbImage ? `uploads/post_image/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
+        let thumbImage = req.files?.thumbImage ? `uploads/post_image/${req.files.thumbImage[0].filename}` : req.body.thumbImagePath;
         const metaImage = req.files?.metaImage ? `uploads/post_image/${req.files.metaImage[0].filename}` : req.body.metaImagePath;
 
         // Remove duplicate 'uploads/' prefix if present in body path
         const leadImagePath = leadImage ? leadImage : null;
-        const thumbImagePath = thumbImage ? thumbImage : null;
+        // If no thumb image provided, fall back to lead image
+        const thumbImagePath = thumbImage ? thumbImage : (leadImagePath || null);
         const metaImagePath = metaImage ? metaImage : null;
 
         console.log('Image paths:', {
@@ -710,6 +711,13 @@ const updateNews = async (req, res) => {
                 'news',
                 req.params.id
             );
+        }
+
+        // If no thumbImage is set but leadImage is, use leadImage as thumbImage
+        if (!updateData.thumbImage && !existingNews.thumbImage && updateData.leadImage) {
+            updateData.thumbImage = updateData.leadImage;
+        } else if (!updateData.thumbImage && existingNews.thumbImage && updateData.leadImage && existingNews.thumbImage === existingNews.leadImage) {
+            updateData.thumbImage = updateData.leadImage;
         }
 
         const updatedNews = await existingNews.update(updateData);

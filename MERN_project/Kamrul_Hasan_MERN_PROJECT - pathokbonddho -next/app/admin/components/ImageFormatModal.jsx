@@ -19,7 +19,7 @@ const ImageFormatModal = ({ show, onHide, onConfirm, photo }) => {
             <Modal.Body className="p-4 text-center">
                 <div className="mb-4">
                     <img 
-                        src={photo ? `${STATIC_URL}/${photo.imageUrl}` : ''} 
+                        src={photo ? `${STATIC_URL}/${photo.imageUrl.replace(/^\/+/, '')}` : ''} 
                         alt="Preview" 
                         style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', objectFit: 'contain' }}
                     />

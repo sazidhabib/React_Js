@@ -9,6 +9,15 @@ const IMG_URL = STATIC_URL;
 
 
 const AboutListClient = ({ initialAbout, isAdmin }) => {
+    const getFullImageUrl = (path) => {
+        if (!path) return "";
+        if (path.startsWith('http')) return path;
+        const cleanPath = path.replace(/^\/+/, "");
+        return cleanPath.startsWith('uploads/')
+            ? `${IMG_URL}/${cleanPath}`
+            : `${IMG_URL}/uploads/${cleanPath}`;
+    };
+
     const [about, setAbout] = useState(initialAbout);
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false);
@@ -23,7 +32,7 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
     const [introTitle, setIntroTitle] = useState(initialAbout?.introTitle || "");
     const [introDescription, setIntroDescription] = useState(initialAbout?.introDescription || "");
     const [image, setImage] = useState(null);
-    const [preview, setPreview] = useState(initialAbout?.imageUrl ? `${IMG_URL}/${initialAbout.imageUrl.replace(/^\/+/, '')}` : "");
+    const [preview, setPreview] = useState(getFullImageUrl(initialAbout?.imageUrl));
 
     // Socials State
     const [socials, setSocials] = useState(initialAbout?.socialLinks || { facebook: "", linkedin: "", twitter: "", email: "" });
@@ -66,7 +75,7 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
                 setIntroTag(data.introTag || "");
                 setIntroTitle(data.introTitle || "");
                 setIntroDescription(data.introDescription || "");
-                setPreview(data.imageUrl ? `${IMG_URL}/${data.imageUrl.replace(/^\/+/, '')}` : "");
+                setPreview(getFullImageUrl(data.imageUrl));
                 setSocials(data.socialLinks || { facebook: "", linkedin: "", twitter: "", email: "" });
                 setStats(data.stats || []);
                 setMissionVision(data.missionVision || { mission: {}, vision: {} });
@@ -128,7 +137,7 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
             await api.post('/about', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            
+
             toast.success("About page updated successfully!");
             fetchAbout();
         } catch (error) {
@@ -208,28 +217,10 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
                                     <Col lg={4}>
                                         <Card className="border-0 shadow-sm p-3 mb-4">
                                             <h6 className="fw-bold mb-3 border-bottom pb-2">Profile Image</h6>
-                                            <div className="text-center bg-light p-3 rounded mb-3" style={{minHeight: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                                                {preview ? <img src={preview} alt="Profile" className="img-fluid rounded shadow-sm border border-3 border-white" style={{maxHeight: '300px'}} /> : <i className="fas fa-image fa-3x text-muted"></i>}
+                                            <div className="text-center bg-light p-3 rounded mb-3" style={{ minHeight: '250px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                {preview ? <img src={preview} alt="Profile" className="img-fluid rounded shadow-sm border border-3 border-white" style={{ maxHeight: '300px' }} /> : <i className="fas fa-image fa-3x text-muted"></i>}
                                             </div>
                                             <Form.Control type="file" onChange={handleImageChange} className="mb-3" />
-                                            
-                                            <h6 className="fw-bold mb-3 mt-4 border-bottom pb-2">Social Connections</h6>
-                                            <InputGroup className="mb-2 shadow-sm">
-                                                <InputGroup.Text className="bg-primary text-white"><i className="fab fa-facebook-f"></i></InputGroup.Text>
-                                                <Form.Control placeholder="Facebook URL" value={socials.facebook} onChange={(e) => setSocials({...socials, facebook: e.target.value})} />
-                                            </InputGroup>
-                                            <InputGroup className="mb-2 shadow-sm">
-                                                <InputGroup.Text className="bg-info text-white"><i className="fab fa-twitter"></i></InputGroup.Text>
-                                                <Form.Control placeholder="Twitter/X URL" value={socials.twitter} onChange={(e) => setSocials({...socials, twitter: e.target.value})} />
-                                            </InputGroup>
-                                            <InputGroup className="mb-2 shadow-sm">
-                                                <InputGroup.Text className="bg-secondary text-white"><i className="fab fa-linkedin-in"></i></InputGroup.Text>
-                                                <Form.Control placeholder="LinkedIn URL" value={socials.linkedin} onChange={(e) => setSocials({...socials, linkedin: e.target.value})} />
-                                            </InputGroup>
-                                            <InputGroup className="mb-2 shadow-sm">
-                                                <InputGroup.Text className="bg-danger text-white"><i className="fas fa-envelope"></i></InputGroup.Text>
-                                                <Form.Control placeholder="Contact Email" value={socials.email} onChange={(e) => setSocials({...socials, email: e.target.value})} />
-                                            </InputGroup>
                                         </Card>
                                     </Col>
                                 </Row>
@@ -271,11 +262,11 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
                                             </div>
                                             <Form.Group className="mb-3">
                                                 <Form.Label className="small fw-bold">Mission Heading</Form.Label>
-                                                <Form.Control type="text" value={missionVision.mission?.title} onChange={(e) => setMissionVision({...missionVision, mission: {...missionVision.mission, title: e.target.value}})} />
+                                                <Form.Control type="text" value={missionVision.mission?.title} onChange={(e) => setMissionVision({ ...missionVision, mission: { ...missionVision.mission, title: e.target.value } })} />
                                             </Form.Group>
                                             <Form.Group>
                                                 <Form.Label className="small fw-bold">Description Text</Form.Label>
-                                                <Form.Control as="textarea" rows={4} value={missionVision.mission?.description} onChange={(e) => setMissionVision({...missionVision, mission: {...missionVision.mission, description: e.target.value}})} />
+                                                <Form.Control as="textarea" rows={4} value={missionVision.mission?.description} onChange={(e) => setMissionVision({ ...missionVision, mission: { ...missionVision.mission, description: e.target.value } })} />
                                             </Form.Group>
                                         </Card>
                                     </Col>
@@ -287,11 +278,11 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
                                             </div>
                                             <Form.Group className="mb-3">
                                                 <Form.Label className="small fw-bold">Vision Heading</Form.Label>
-                                                <Form.Control type="text" value={missionVision.vision?.title} onChange={(e) => setMissionVision({...missionVision, vision: {...missionVision.vision, title: e.target.value}})} />
+                                                <Form.Control type="text" value={missionVision.vision?.title} onChange={(e) => setMissionVision({ ...missionVision, vision: { ...missionVision.vision, title: e.target.value } })} />
                                             </Form.Group>
                                             <Form.Group>
                                                 <Form.Label className="small fw-bold">Description Text</Form.Label>
-                                                <Form.Control as="textarea" rows={4} value={missionVision.vision?.description} onChange={(e) => setMissionVision({...missionVision, vision: {...missionVision.vision, description: e.target.value}})} />
+                                                <Form.Control as="textarea" rows={4} value={missionVision.vision?.description} onChange={(e) => setMissionVision({ ...missionVision, vision: { ...missionVision.vision, description: e.target.value } })} />
                                             </Form.Group>
                                         </Card>
                                     </Col>
@@ -305,7 +296,7 @@ const AboutListClient = ({ initialAbout, isAdmin }) => {
                                             <Card className="border p-3 shadow-sm border-2 h-100">
                                                 <div className="p-2 border-bottom mb-3 d-flex align-items-center">
                                                     <div className="bg-primary-soft p-2 rounded me-3"><i className={`${v.icon} text-primary`}></i></div>
-                                                    <h6 className="mb-0 fw-bold">Value Card #{index+1}</h6>
+                                                    <h6 className="mb-0 fw-bold">Value Card #{index + 1}</h6>
                                                 </div>
                                                 <Row>
                                                     <Col md={4}>

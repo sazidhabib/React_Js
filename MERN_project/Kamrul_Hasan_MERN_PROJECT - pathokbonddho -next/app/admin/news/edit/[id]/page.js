@@ -68,13 +68,21 @@ const NewsEdit = () => {
                 ]);
 
                 const n = newsRes.data;
+                let scheduleValue = '';
+                if (n.newsSchedule) {
+                    const d = new Date(n.newsSchedule);
+                    if (!isNaN(d.getTime())) {
+                        const pad = (v) => v.toString().padStart(2, '0');
+                        scheduleValue = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    }
+                }
                 setFormData({
                     newsHeadline: n.newsHeadline || '', newsHeadlineBangla: n.newsHeadlineBangla || '',
                     highlight: n.highlight || '', alternativeHeadline: n.alternativeHeadline || '',
                     authorId: n.authorId?.toString() || '', authorName: n.Author?.name || n.author?.name || '',
                     shortDescription: n.shortDescription || '', content: n.content || '',
                     imageCaption: n.imageCaption || '', videoLink: n.videoLink || '',
-                    newsSchedule: n.newsSchedule || '', metaTitle: n.metaTitle || '',
+                    newsSchedule: scheduleValue, metaTitle: n.metaTitle || '',
                     metaKeywords: n.metaKeywords || '', metaDescription: n.metaDescription || '',
                     status: n.status || 'draft',
                     tagIds: (n.Tags || []).map(t => t.id.toString()),
@@ -120,7 +128,7 @@ const NewsEdit = () => {
             Object.keys(files).forEach(k => { if (files[k]) submitData.append(k, files[k]); });
             Object.keys(selectedImages).forEach(k => { if (selectedImages[k]) submitData.append(`${k}Path`, selectedImages[k].imageUrl); });
 
-            await api.put(`/news/${id}`, submitData);
+            await api.patch(`/news/${id}`, submitData);
             toast.success("News updated successfully!");
             router.push('/admin/news');
         } catch (err) { toast.error(err.response?.data?.message || "Failed to update news"); }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, Table, Spinner, Form, Card, Row, Col, Modal, Badge, Pagination } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import api, { STATIC_URL } from "@/app/lib/api";
@@ -9,6 +9,23 @@ import useSWR, { mutate } from 'swr';
 import { fetcher } from "@/app/lib/swr-config";
 
 const IMG_URL = `${STATIC_URL}/uploads`;
+
+const getFullImageUrl = (imgPath) => {
+    if (!imgPath) return "";
+    if (imgPath.startsWith('http')) return imgPath;
+    const cleanPath = imgPath.replace(/^\/+/, "");
+    // Backend saves author images in uploads/authors/ directory
+    // DB stores just the filename (e.g. "image-123.webp")
+    if (cleanPath.startsWith('uploads/')) {
+        return `${STATIC_URL}/${cleanPath}`;
+    }
+    // If path has a subdirectory like "authors/file.webp"
+    if (cleanPath.includes('/')) {
+        return `${STATIC_URL}/uploads/${cleanPath}`;
+    }
+    // Just a filename — prepend the authors subdirectory
+    return `${STATIC_URL}/uploads/authors/${cleanPath}`;
+};
 
 const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
     const [showModal, setShowModal] = useState(false);
@@ -21,6 +38,7 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
     const [formData, setFormData] = useState({ name: '', description: '', websiteLink: '', isSpecialAuthor: false });
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const swrKey = isAdmin ? `/authors?page=${page}&limit=10${searchTerm ? `&search=${searchTerm}` : ''}${filterSpecial ? `&isSpecialAuthor=${filterSpecial}` : ''}` : null;
 
@@ -65,23 +83,35 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setIsSubmitting(true);
         const submitData = new FormData();
         Object.keys(formData).forEach(key => submitData.append(key, formData[key]));
         if (imageFile) submitData.append('image', imageFile);
 
+        // Debug: log what we're sending
+        console.log('=== AUTHOR SUBMIT DEBUG ===');
+        for (let [key, value] of submitData.entries()) {
+            console.log(key, ':', value instanceof File ? `File(${value.name}, ${value.size}bytes)` : value);
+        }
+
         try {
             if (editingAuthor) {
-                await api.patch(`/authors/${editingAuthor.id}`, submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                // Do NOT set Content-Type manually for FormData — browser must set it with boundary
+                await api.patch(`/authors/${editingAuthor.id}`, submitData);
                 toast.success('Author updated');
             } else {
-                await api.post('/authors', submitData, { headers: { 'Content-Type': 'multipart/form-data' } });
+                await api.post('/authors', submitData);
                 toast.success('Author created');
             }
             setShowModal(false);
             resetForm();
             refreshData();
-        } catch (error) { toast.error(error.response?.data?.message || 'Operation failed'); }
+        } catch (error) { 
+            console.error('Author submit error:', error);
+            toast.error(error.response?.data?.message || 'Operation failed'); 
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -120,7 +150,7 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                             </Form.Select>
                         </Col>
                         <Col md={4} className="text-end">
-                            {selectedAuthors.length > 0 && <Button variant="danger" className="shadow-sm" onClick={() => {/* bulk delete logic if exists */}}>Delete Selected ({selectedAuthors.length})</Button>}
+                            {selectedAuthors.length > 0 && <Button variant="danger" className="shadow-sm" onClick={() => {/* bulk delete logic if exists */ }}>Delete Selected ({selectedAuthors.length})</Button>}
                         </Col>
                     </Row>
                 </Card.Body>
@@ -131,7 +161,7 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                     <Table hover className="mb-0">
                         <thead className="table-dark">
                             <tr>
-                                <th style={{width: 50}}><Form.Check checked={authors.length > 0 && selectedAuthors.length === authors.length} onChange={toggleSelectAll} /></th>
+                                <th style={{ width: 50 }}><Form.Check checked={authors.length > 0 && selectedAuthors.length === authors.length} onChange={toggleSelectAll} /></th>
                                 <th>Photo</th>
                                 <th>Name</th>
                                 <th>Type</th>
@@ -145,17 +175,17 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                                     <td>
                                         {author.image ? (
                                             <div style={{ position: 'relative', width: '40px', height: '40px' }}>
-                                                <NextImage 
-                                                    src={`${IMG_URL}/${author.image}`} 
-                                                    alt={author.name} 
-                                                    fill 
-                                                    className="rounded-circle shadow-sm" 
+                                                <NextImage
+                                                    src={getFullImageUrl(author.image)}
+                                                    alt={author.name}
+                                                    fill
+                                                    className="rounded-circle shadow-sm"
                                                     style={{ objectFit: 'cover' }}
                                                     sizes="40px"
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center" style={{width: 40, height: 40}}><i className="fas fa-user"></i></div>
+                                            <div className="bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}><i className="fas fa-user"></i></div>
                                         )}
                                     </td>
                                     <td className="fw-bold">{author.name}</td>
@@ -165,7 +195,7 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                                             <Button variant="outline-primary" size="sm" onClick={() => {
                                                 setEditingAuthor(author);
                                                 setFormData({ name: author.name, description: author.description || '', websiteLink: author.websiteLink || '', isSpecialAuthor: author.isSpecialAuthor });
-                                                setImagePreview(author.image ? `${IMG_URL}/${author.image}` : '');
+                                                setImagePreview(getFullImageUrl(author.image));
                                                 setShowModal(true);
                                             }}>Edit</Button>
                                             <Button variant="outline-danger" size="sm" onClick={() => handleDelete(author.id)}>Del</Button>
@@ -224,8 +254,11 @@ const AuthorsListClient = ({ initialAuthors, initialPagination, isAdmin }) => {
                         </Row>
                     </Modal.Body>
                     <Modal.Footer className="border-top-0 pt-0">
-                        <Button variant="outline-secondary" onClick={() => setShowModal(false)}>Discard</Button>
-                        <Button type="submit" variant="primary" className="px-5">Save Profile</Button>
+                        <Button variant="outline-secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Discard</Button>
+                        <Button type="submit" variant="primary" className="px-5" disabled={isSubmitting}>
+                            {isSubmitting ? <Spinner animation="border" size="sm" className="me-2" /> : null}
+                            {editingAuthor ? 'Update Profile' : 'Save Profile'}
+                        </Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Card, Form, Button, Modal, Badge, Spinner, InputGroup } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
 import { useAuth } from "@/app/providers/AuthProvider";
 import WYSIWYGEditor from '@/app/admin/components/WYSIWYGEditor';
 import ImageFormatModal from '@/app/admin/components/ImageFormatModal';
@@ -57,7 +57,7 @@ const NewsCreate = () => {
     const [selectedImages, setSelectedImages] = useState({ leadImage: null, thumbImage: null, metaImage: null });
     const [activeEditor, setActiveEditor] = useState(null);
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const IMG_BASE = STATIC_URL || 'http://localhost:5000';
 
     useEffect(() => {
         if (!isAdmin) return;
@@ -219,7 +219,7 @@ const NewsCreate = () => {
     };
 
     const handleFormatConfirm = ({ format, altText, caption }) => {
-        const imageUrl = `${API_URL}/${photoToFormat.imageUrl}`;
+        const imageUrl = photoToFormat.imageUrl ? `${IMG_BASE}/${photoToFormat.imageUrl.replace(/^\/+/, '')}` : '';
         let html = '';
         if (format === 'full-width') html = `<img src="${imageUrl}" alt="${altText}" style="width: 100%; height: auto; display: block; margin: 1em 0; border-radius: 0.375rem;" />`;
         else if (format === 'left-aligned') html = `<img src="${imageUrl}" alt="${altText}" style="float: left; margin: 0 1.5em 1em 0; max-width: 50%; height: auto; border-radius: 0.375rem;" />`;
@@ -312,7 +312,7 @@ const NewsCreate = () => {
         const file = files[imageType];
         const selImg = selectedImages[imageType];
         if (file) return <div className="mt-2"><img src={URL.createObjectURL(file)} alt="Preview" className="img-thumbnail" style={{ maxHeight: '100px' }} /><div className="text-muted small">New upload</div></div>;
-        if (selImg) return <div className="mt-2"><img src={`${API_URL}/${selImg.imageUrl}`} alt="Selected" className="img-thumbnail" style={{ maxHeight: '100px' }} /><div className="text-muted small">From gallery</div></div>;
+        if (selImg && selImg.imageUrl) return <div className="mt-2"><img src={`${IMG_BASE}/${selImg.imageUrl.replace(/^\/+/, '')}`} alt="Selected" className="img-thumbnail" style={{ maxHeight: '100px' }} /><div className="text-muted small">From gallery</div></div>;
         return null;
     };
 
@@ -354,7 +354,7 @@ const NewsCreate = () => {
                             <Col md={3} key={photo.id}>
                                 <Card className="h-100 cursor-pointer" onClick={() => onSelect(photo)} style={{ cursor: 'pointer' }}>
                                     <div className="position-relative">
-                                        <Card.Img src={`${API_URL}/${photo.imageUrl}`} style={{ height: '150px', objectFit: 'cover' }} />
+                                        {photo.imageUrl && <Card.Img src={`${IMG_BASE}/${photo.imageUrl.replace(/^\/+/, '')}`} style={{ height: '150px', objectFit: 'cover' }} />}
                                         <Badge bg="dark" className="position-absolute top-0 end-0 m-1">{getSourceLabel(photo.source)}</Badge>
                                     </div>
                                     <Card.Body className="p-2"><small className="d-block text-truncate">{photo.caption || photo.filename}</small></Card.Body>

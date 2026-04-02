@@ -3,16 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Form, Badge, OverlayTrigger, Tooltip, Spinner, Table } from 'react-bootstrap';
 import { NewsSelectionModal, ImageSelectionModal, VideoSelectionModal, AdSelectionModal } from './ContentSelectionModals';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
 import Image from 'next/image';
 
-const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const UPLOADS_BASE_URL = STATIC_URL || 'http://localhost:5000';
 
 // Helper to build a correct image URL
 const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith('http')) return path.replace(/^http:\/\//, 'https://');
-    // Remove leading slashes only, matching frontend widget behavior
     return `${UPLOADS_BASE_URL}/${path.replace(/^\/+/, '')}`;
 };
 
@@ -127,7 +126,7 @@ export const PreviewCellContent = ({ contentType, contentId, contentTitle }) => 
     if (contentType === 'ad') {
         const adImage = data?.image;
         const adTitle = data?.title || data?.name || contentTitle || 'Ad';
-        const imgSrc = adImage ? getImageUrl(`ads/${adImage}`) : null;
+        const imgSrc = adImage ? getImageUrl(`uploads/ads/${adImage}`) : null;
         return (
             <div>
                 {imgSrc && (

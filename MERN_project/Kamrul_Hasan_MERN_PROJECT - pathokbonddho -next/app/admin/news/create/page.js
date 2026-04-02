@@ -58,6 +58,7 @@ const NewsCreate = () => {
     const [activeEditor, setActiveEditor] = useState(null);
 
     const IMG_BASE = STATIC_URL || 'http://localhost:5000';
+    const getImageUrl = (url) => (!url || url.startsWith('http')) ? url : `${IMG_BASE}/${url.replace(/^\/+/, '')}`;
 
     useEffect(() => {
         if (!isAdmin) return;
@@ -212,14 +213,15 @@ const NewsCreate = () => {
         setShowFormatModal(true);
     };
 
-    const handleEditImage = (imageData) => {
+    const handleEditImage = (imageData, editorType) => {
+        setCurrentEditor(editorType);
         setPhotoToFormat({ imageUrl: imageData.imageUrl, caption: imageData.caption, alt: imageData.alt, format: imageData.format });
         setEditingElement(imageData.element);
         setShowFormatModal(true);
     };
 
     const handleFormatConfirm = ({ format, altText, caption }) => {
-        const imageUrl = photoToFormat.imageUrl ? `${IMG_BASE}/${photoToFormat.imageUrl.replace(/^\/+/, '')}` : '';
+        const imageUrl = getImageUrl(photoToFormat.imageUrl);
         let html = '';
         if (format === 'full-width') html = `<img src="${imageUrl}" alt="${altText}" style="width: 100%; height: auto; display: block; margin: 1em 0; border-radius: 0.375rem;" />`;
         else if (format === 'left-aligned') html = `<img src="${imageUrl}" alt="${altText}" style="float: left; margin: 0 1.5em 1em 0; max-width: 50%; height: auto; border-radius: 0.375rem;" />`;
@@ -232,6 +234,7 @@ const NewsCreate = () => {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html.trim();
             editingElement.parentNode.replaceChild(tempDiv.firstChild, editingElement);
+            if (editorRefs[currentEditor]?.current?.syncContent) editorRefs[currentEditor].current.syncContent();
             if (editorRefs[currentEditor]?.current) editorRefs[currentEditor].current.focus();
         } else {
             if (editorRefs[currentEditor]?.current) editorRefs[currentEditor].current.insertHTML(html);
@@ -312,7 +315,9 @@ const NewsCreate = () => {
         const file = files[imageType];
         const selImg = selectedImages[imageType];
         if (file) return <div className="mt-2"><img src={URL.createObjectURL(file)} alt="Preview" className="img-thumbnail" style={{ maxHeight: '100px' }} /><div className="text-muted small">New upload</div></div>;
-        if (selImg && selImg.imageUrl) return <div className="mt-2"><img src={`${IMG_BASE}/${selImg.imageUrl.replace(/^\/+/, '')}`} alt="Selected" className="img-thumbnail" style={{ maxHeight: '100px' }} /><div className="text-muted small">From gallery</div></div>;
+        if (selImg && selImg.imageUrl) {
+            return <div className="mt-2"><img src={getImageUrl(selImg.imageUrl)} alt="Selected" className="img-thumbnail" style={{ maxHeight: '100px' }} /><div className="text-muted small">From gallery</div></div>;
+        }
         return null;
     };
 
@@ -354,7 +359,7 @@ const NewsCreate = () => {
                             <Col md={3} key={photo.id}>
                                 <Card className="h-100 cursor-pointer" onClick={() => onSelect(photo)} style={{ cursor: 'pointer' }}>
                                     <div className="position-relative">
-                                        {photo.imageUrl && <Card.Img src={`${IMG_BASE}/${photo.imageUrl.replace(/^\/+/, '')}`} style={{ height: '150px', objectFit: 'cover' }} />}
+                                        {photo.imageUrl && <Card.Img src={getImageUrl(photo.imageUrl)} style={{ height: '150px', objectFit: 'cover' }} />}
                                         <Badge bg="dark" className="position-absolute top-0 end-0 m-1">{getSourceLabel(photo.source)}</Badge>
                                     </div>
                                     <Card.Body className="p-2"><small className="d-block text-truncate">{photo.caption || photo.filename}</small></Card.Body>
@@ -393,15 +398,15 @@ const NewsCreate = () => {
                                 </Form.Group>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Highlight</Form.Label>
-                                    <WYSIWYGEditor ref={editorRefs.highlight} value={formData.highlight} onChange={v => setFormData({...formData, highlight: v})} height={200} onImageClick={() => openEditorImageModal('highlight')} onEditImage={handleEditImage} />
+                                    <WYSIWYGEditor ref={editorRefs.highlight} value={formData.highlight} onChange={v => setFormData({...formData, highlight: v})} height={200} onImageClick={() => openEditorImageModal('highlight')} onEditImage={(data) => handleEditImage(data, 'highlight')} />
                                 </Form.Group>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Short Description</Form.Label>
-                                    <WYSIWYGEditor ref={editorRefs.shortDescription} value={formData.shortDescription} onChange={v => setFormData({...formData, shortDescription: v})} height={200} onImageClick={() => openEditorImageModal('shortDescription')} onEditImage={handleEditImage} />
+                                    <WYSIWYGEditor ref={editorRefs.shortDescription} value={formData.shortDescription} onChange={v => setFormData({...formData, shortDescription: v})} height={200} onImageClick={() => openEditorImageModal('shortDescription')} onEditImage={(data) => handleEditImage(data, 'shortDescription')} />
                                 </Form.Group>
                                 <Form.Group className="mb-3">
                                     <Form.Label>Content *</Form.Label>
-                                    <WYSIWYGEditor ref={editorRefs.content} value={formData.content} onChange={v => setFormData({...formData, content: v})} height={400} onImageClick={() => openEditorImageModal('content')} onEditImage={handleEditImage} />
+                                    <WYSIWYGEditor ref={editorRefs.content} value={formData.content} onChange={v => setFormData({...formData, content: v})} height={400} onImageClick={() => openEditorImageModal('content')} onEditImage={(data) => handleEditImage(data, 'content')} />
                                 </Form.Group>
                             </Card.Body>
                         </Card>

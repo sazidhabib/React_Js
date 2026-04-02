@@ -139,7 +139,7 @@ class ImageService {
                             filename: file,
                             filePath: `uploads/${file}`,
                             sourceType: 'other',
-                            sourceId: 0
+                            sourceId: null
                         });
                         registeredCount++;
                     }

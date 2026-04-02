@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import api from '@/app/lib/api';
+import api, { STATIC_URL } from '@/app/lib/api';
 import { Card, Badge, Spinner } from 'react-bootstrap';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,7 +8,7 @@ import Image from 'next/image';
 const NewsWidget = ({ cell }) => {
     const [news, setNews] = useState(cell.resolvedContent || null);
     const [loading, setLoading] = useState(!cell.resolvedContent);
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const STATIC_BASE = STATIC_URL || 'http://localhost:5000';
 
     useEffect(() => {
         // Skip fetching if content is already resolved by the server
@@ -44,7 +44,7 @@ const NewsWidget = ({ cell }) => {
         };
 
         fetchNews();
-    }, [cell.contentId, cell.tag, cell.resolvedContent, API_BASE_URL]);
+    }, [cell.contentId, cell.tag, cell.resolvedContent, STATIC_BASE]);
 
     const getImageUrl = (newsItem) => {
         if (!newsItem) return null;
@@ -53,8 +53,7 @@ const NewsWidget = ({ cell }) => {
         if (imagePath.startsWith('http')) {
             return imagePath.replace(/^http:\/\//, 'https://');
         }
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-        return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
+        return `${STATIC_BASE}/${imagePath.replace(/^\//, '')}`;
     };
 
     const formatDate = (dateStr) => {

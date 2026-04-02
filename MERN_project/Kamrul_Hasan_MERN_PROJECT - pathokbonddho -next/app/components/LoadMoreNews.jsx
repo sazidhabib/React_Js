@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import api from '@/app/lib/api';
+import api, { STATIC_URL } from '@/app/lib/api';
 import { Container, Button, Spinner, Badge } from 'react-bootstrap';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,7 +10,7 @@ const LoadMoreNews = ({ slug, excludeIds }) => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-    const API_BASE_URL = '';
+    const API_BASE_URL = STATIC_URL || 'http://localhost:5000';
 
     useEffect(() => {
         // Reset state when slug or excludeIds change

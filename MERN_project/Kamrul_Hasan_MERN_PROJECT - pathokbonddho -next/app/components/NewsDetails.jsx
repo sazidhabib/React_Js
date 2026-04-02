@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import api from '@/app/lib/api';
+import api, { STATIC_URL } from '@/app/lib/api';
 import { Container, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
 import Image from 'next/image';
 import { Helmet } from 'react-helmet-async';
@@ -17,7 +17,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
     const [headerAds, setHeaderAds] = useState(initialAds?.header || []);
     const [footerAds, setFooterAds] = useState(initialAds?.footer || []);
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const STATIC_BASE = STATIC_URL || 'http://localhost:5000';
 
     useEffect(() => {
         // If we have initial data, we can skip the main fetch
@@ -48,7 +48,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
 
         fetchNewsDetails();
         window.scrollTo(0, 0);
-    }, [id, initialData, API_BASE_URL]);
+    }, [id, initialData, STATIC_BASE]);
 
     const fetchSecondaryContent = async (articleData) => {
         // Fetch related news
@@ -94,8 +94,7 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
         if (imagePath.startsWith('http')) {
             return imagePath.replace(/^http:\/\//, 'https://');
         }
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-        return `${baseUrl}/${imagePath.replace(/^\//, '')}`;
+        return `${STATIC_BASE}/${imagePath.replace(/^\//, '')}`;
     };
 
     const formatDate = (dateStr) => {
@@ -313,10 +312,16 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
 
                         <style>
                             {`
-                                .article-body { color: #333; word-wrap: break-word; line-height: 1.9; }
-                                .article-body p, .article-body div, .article-body p span, .article-body p * {
+                                .article-body { color: #333; word-wrap: break-word; line-height: 1.9; font-size: ${fontSize}px !important; }
+                                .article-body p, .article-body div, .article-body span, .article-body li, .article-body blockquote, .article-body figcaption, .article-body section, .article-body article {
                                     font-family: 'custom_font' !important; font-size: ${fontSize}px !important; line-height: inherit !important;
                                 }
+                                .article-body h1, .article-body h2, .article-body h3, .article-body h4, .article-body h5, .article-body h6 {
+                                    font-family: 'custom_font' !important; font-size: ${fontSize + 4}px !important; line-height: 1.4 !important;
+                                }
+                                .article-body ul, .news-highlight-content ul { list-style-type: disc !important; padding-left: 2.5rem !important; margin-bottom: 1rem !important; }
+                                .article-body ol, .news-highlight-content ol { list-style-type: decimal !important; padding-left: 2.5rem !important; margin-bottom: 1rem !important; }
+                                .article-body li, .news-highlight-content li { margin-bottom: 0.5rem !important; display: list-item !important; }
                                 @media print {
                                     body * { visibility: hidden; }
                                     .news-details-page, .news-details-page .main-article-column, .news-details-page .main-article-column * { visibility: visible; }

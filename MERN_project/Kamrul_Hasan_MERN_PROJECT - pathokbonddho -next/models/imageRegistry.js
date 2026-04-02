@@ -21,7 +21,7 @@ const ImageRegistry = sequelize.define("ImageRegistry", {
     },
     sourceId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     mimeType: {
         type: DataTypes.STRING

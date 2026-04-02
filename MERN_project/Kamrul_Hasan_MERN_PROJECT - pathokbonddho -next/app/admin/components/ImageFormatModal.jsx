@@ -3,9 +3,21 @@ import { Modal, Button } from 'react-bootstrap';
 import { STATIC_URL } from "@/app/lib/api";
 
 const ImageFormatModal = ({ show, onHide, onConfirm, photo }) => {
-    const [format, setFormat] = useState(photo?.format || 'full-width');
-    const [altText, setAltText] = useState(photo?.alt || '');
-    const [caption, setCaption] = useState(photo?.caption || '');
+    const [format, setFormat] = useState('full-width');
+    const [altText, setAltText] = useState('');
+    const [caption, setCaption] = useState('');
+
+    React.useEffect(() => {
+        if (show && photo) {
+            setFormat(photo.format || 'full-width');
+            setAltText(photo.alt || photo.caption || '');
+            setCaption(photo.caption || '');
+        } else if (!show) {
+            setFormat('full-width');
+            setAltText('');
+            setCaption('');
+        }
+    }, [show, photo]);
 
     const handleConfirm = () => {
         onConfirm({ format, altText, caption });
@@ -19,7 +31,7 @@ const ImageFormatModal = ({ show, onHide, onConfirm, photo }) => {
             <Modal.Body className="p-4 text-center">
                 <div className="mb-4">
                     <img 
-                        src={photo ? `${STATIC_URL}/${photo.imageUrl.replace(/^\/+/, '')}` : ''} 
+                        src={photo?.imageUrl ? (photo.imageUrl.startsWith('http') ? photo.imageUrl : `${STATIC_URL}/${photo.imageUrl.replace(/^\/+/, '')}`) : null} 
                         alt="Preview" 
                         style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px', objectFit: 'contain' }}
                     />

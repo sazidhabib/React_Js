@@ -702,7 +702,7 @@ const updateNews = async (req, res) => {
                     }
                 });
             }
-            updateData.metaImage = req.files.metaImage[0].filename;
+            updateData.metaImage = `uploads/post_image/${req.files.metaImage[0].filename}`;
 
             // Register new image
             await ImageService.registerImage(
@@ -848,7 +848,7 @@ const bulkDeleteNews = async (req, res) => {
             const imageFields = ['leadImage', 'thumbImage', 'metaImage'];
             for (const field of imageFields) {
                 if (news[field]) {
-                    const imagePath = path.join(__dirname, "..", "uploads", "post_image", news[field]);
+                    const imagePath = path.join(__dirname, "..", news[field]);
                     if (fs.existsSync(imagePath)) {
                         fs.unlinkSync(imagePath);
                     }

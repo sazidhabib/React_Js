@@ -2,17 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button, Card, Spinner, InputGroup, Image, Badge } from 'react-bootstrap';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
 import { toast } from 'react-toastify';
 
-const UPLOADS_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const UPLOADS_BASE_URL = STATIC_URL || 'http://localhost:5000';
 
 // Helper to build a correct image URL
 const getImageUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith('http')) return path;
-    const cleaned = path.replace(/^\/+/, '').replace(/^uploads\//, '');
-    return `${UPLOADS_BASE_URL}/uploads/${cleaned}`;
+    if (path.startsWith('http')) return path.replace(/^http:\/\//, 'https://');
+    return `${UPLOADS_BASE_URL}/${path.replace(/^\/+/, '')}`;
 };
 
 export const NewsSelectionModal = ({ show, onClose, onSelect }) => {
@@ -282,7 +281,7 @@ export const AdSelectionModal = ({ show, onClose, onSelect }) => {
                                     {ad.image && (
                                         <div style={{ height: '150px', overflow: 'hidden' }}>
                                             <Image
-                                                src={getImageUrl(`ads/${ad.image}`)}
+                                                src={getImageUrl(`uploads/ads/${ad.image}`)}
                                                 fluid
                                                 style={{ objectFit: 'cover', height: '100%', width: '100%' }}
                                                 onError={e => { e.target.style.display = 'none'; }}

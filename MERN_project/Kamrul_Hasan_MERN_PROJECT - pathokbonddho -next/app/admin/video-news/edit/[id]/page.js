@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Container, Row, Col, Card, Form, Button, Modal, Badge, Spinner, InputGroup } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { useRouter, useParams } from 'next/navigation';
-import api from "@/app/lib/api";
+import api, { STATIC_URL } from "@/app/lib/api";
 import { useAuth } from "@/app/providers/AuthProvider";
 import WYSIWYGEditor from '../../../components/WYSIWYGEditor';
 
@@ -53,6 +53,8 @@ const VideoNewsEdit = () => {
     const editorRefs = {
         highlight: useRef(null), shortDescription: useRef(null), content: useRef(null)
     };
+    const IMG_BASE = STATIC_URL || 'http://localhost:5000';
+    const getImageUrl = (url) => (!url || url.startsWith('http')) ? url : `${IMG_BASE}/${url.replace(/^\/+/, '')}`;
 
     useEffect(() => {
         if (!isAdmin || !id) return;
@@ -129,7 +131,7 @@ const VideoNewsEdit = () => {
     };
 
     const handleFormatConfirm = ({ format, altText, caption }) => {
-        const imageUrl = `http://localhost:5000/${photoToFormat.imageUrl}`;
+        const imageUrl = getImageUrl(photoToFormat.imageUrl);
         let html = '';
         if (format === 'full-width') html = `<img src="${imageUrl}" alt="${altText}" style="width: 100%; height: auto; display: block; margin: 1em 0; border-radius: 0.375rem;" />`;
         else if (format === 'left-aligned') html = `<img src="${imageUrl}" alt="${altText}" style="float: left; margin: 0 1.5em 1em 0; max-width: 50%; height: auto; border-radius: 0.375rem;" />`;
@@ -162,7 +164,7 @@ const VideoNewsEdit = () => {
                                 if(type === 'editor') { setPhotoToFormat(p); setModals(prev => ({ ...prev, format: true, editor: false })); }
                                 else { setSelectedImages({...selectedImages, [type]: p}); setFiles({...files, [type]: null}); onHide(); } 
                             }}>
-                                <Card.Img src={`http://localhost:5000/${p.imageUrl}`} style={{height: '120px', objectFit: 'cover'}} />
+                                <Card.Img src={getImageUrl(p.imageUrl)} style={{height: '120px', objectFit: 'cover'}} />
                                 <Card.Body className="p-1 text-center"><small className="text-truncate d-block">{p.filename}</small></Card.Body>
                             </Card>
                         </Col>
@@ -200,8 +202,8 @@ const VideoNewsEdit = () => {
                             </Form.Group>
                             <Form.Group className="mb-3"><Form.Label>Lead Image (Video Thumbnail)</Form.Label>
                                 <div className="border p-2 text-center mb-2" style={{minHeight: '100px'}}>
-                                    {selectedImages.leadImage ? <img src={`http://localhost:5000/${selectedImages.leadImage.imageUrl}`} style={{maxWidth: '100%'}} /> : 
-                                     currentImages.leadImage ? <img src={`http://localhost:5000/${currentImages.leadImage}`} style={{maxWidth: '100%'}} /> : 'No image'}
+                                    {selectedImages.leadImage ? <img src={getImageUrl(selectedImages.leadImage.imageUrl)} alt="Preview" style={{maxWidth: '100%'}} /> : 
+                                     currentImages.leadImage ? <img src={getImageUrl(currentImages.leadImage)} alt="Current" style={{maxWidth: '100%'}} /> : 'No image'}
                                 </div>
                                 <Button size="sm" className="w-100" onClick={() => { setSelectedImageType('leadImage'); setModals({...modals, leadImage: true}); }}>Choose from Gallery</Button>
                             </Form.Group>
@@ -218,7 +220,7 @@ const VideoNewsEdit = () => {
             <Modal show={modals.format} onHide={() => setModals({...modals, format: false})} centered>
                 <Modal.Header closeButton><Modal.Title>Image Format</Modal.Title></Modal.Header>
                 <Modal.Body className="text-center">
-                    {photoToFormat && <img src={`http://localhost:5000/${photoToFormat.imageUrl}`} style={{maxHeight: '150px'}} className="mb-3" />}
+                    {photoToFormat && <img src={getImageUrl(photoToFormat.imageUrl)} alt="Preview" style={{maxHeight: '150px'}} className="mb-3" />}
                     <div className="d-flex flex-column gap-2">
                         <Button variant="outline-primary" onClick={() => handleFormatConfirm({format: 'full-width', altText: photoToFormat.filename || ''})}>Full Width</Button>
                         <Button variant="outline-primary" onClick={() => handleFormatConfirm({format: 'left-aligned', altText: photoToFormat.filename || ''})}>Left Aligned</Button>

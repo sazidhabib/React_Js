@@ -54,6 +54,7 @@ const WYSIWYGEditor = forwardRef(({
     useImperativeHandle(ref, () => ({
         insertHTML: (html) => { restoreSelection(); document.execCommand('insertHTML', false, html); handleInput(); },
         saveSelection: () => saveSelection(),
+        syncContent: () => handleInput(),
         focus: () => { if (editorRef.current) editorRef.current.focus(); }
     }));
 
@@ -220,7 +221,14 @@ const WYSIWYGEditor = forwardRef(({
                     </div>
                 )}
             </div>
-            <style>{`.editor-content img,.editor-content figure{transition:outline .2s;cursor:pointer}.editor-content img:hover,.editor-content figure:hover{outline:2px solid #3b82f6}.editor-content img[data-selected="true"],.editor-content figure[data-selected="true"]{outline:2px solid #2563eb!important}`}</style>
+            <style>{`
+                .editor-content img, .editor-content figure { transition: outline .2s; cursor: pointer; }
+                .editor-content img:hover, .editor-content figure:hover { outline: 2px solid #3b82f6; }
+                .editor-content img[data-selected="true"], .editor-content figure[data-selected="true"] { outline: 2px solid #2563eb !important; }
+                .editor-content ul { list-style-type: disc !important; padding-left: 2.5rem !important; margin-bottom: 1rem !important; }
+                .editor-content ol { list-style-type: decimal !important; padding-left: 2.5rem !important; margin-bottom: 1rem !important; }
+                .editor-content li { margin-bottom: 0.5rem !important; display: list-item !important; }
+            `}</style>
         </div>
     );
 });

@@ -104,7 +104,13 @@ export default function AdminLayoutClient({ children, user }) {
             <div className="d-flex flex-grow-1">
                 <aside
                     className={`bg-dark text-white p-0 ${isSidebarOpen ? '' : 'd-none d-md-block'}`}
-                    style={{ width: '260px', minHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}
+                    style={{ 
+                        width: '260px', 
+                        minHeight: 'calc(100vh - 48px)', 
+                        overflowY: 'auto',
+                        flexShrink: 0,
+                        zIndex: 1030
+                    }}
                 >
                     <ul className="nav flex-column p-3" style={{ fontSize: '0.95rem' }}>
                         <li className={`nav-item py-1 ${isActiveRoute('/admin') ? 'bg-secondary rounded' : ''}`}>

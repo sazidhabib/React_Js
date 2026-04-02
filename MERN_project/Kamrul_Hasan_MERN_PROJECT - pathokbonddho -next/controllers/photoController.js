@@ -191,13 +191,17 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
             return res.status(400).json({ message: 'At least one image is required.' });
         }
 
-        // Check if album exists
-        const album = await Album.findByPk(albumId);
-        if (!album) {
-            return res.status(404).json({ message: 'Album not found' });
+        // Check if album exists (ONLY if albumId is provided)
+        let album = null;
+        if (albumId && albumId !== 'null' && albumId !== 'undefined') {
+            album = await Album.findByPk(albumId);
+            if (!album) {
+                return res.status(404).json({ message: 'Album not found' });
+            }
         }
 
         const createdPhotos = [];
+        const registeredImages = [];
 
         for (const file of files) {
             // Now file.path should be set by convertToWebp middleware
@@ -209,40 +213,57 @@ exports.uploadMultiplePhotos = async (req, res, next) => {
             const filePath = file.path.replace(/\\/g, '/');
             const filename = path.basename(filePath);
 
-            // Optional: Prevent duplicates per album
-            const existing = await Photo.findOne({
-                where: {
-                    imageUrl: filePath,
-                    albumId: albumId
+            let photoId = null;
+
+            // Only create Photo records if an album exists
+            if (album) {
+                // Optional: Prevent duplicates per album
+                const existing = await Photo.findOne({
+                    where: {
+                        imageUrl: filePath,
+                        albumId: albumId
+                    }
+                });
+
+                if (!existing) {
+                    const photo = await Photo.create({
+                        imageUrl: filePath,
+                        albumId: albumId,
+                        caption: caption?.trim() || '',
+                    });
+                    photoId = photo.id;
+                    createdPhotos.push(photo);
+                } else {
+                    photoId = existing.id;
                 }
-            });
-            if (existing) continue;
+            }
 
-            // Create photo first
-            const photo = await Photo.create({
-                imageUrl: filePath,
-                albumId: albumId,
-                caption: caption?.trim() || '',
-            });
-
-            // NEW: Register image in centralized registry
+            // NEW: Register image in centralized registry (ALWAYS)
             await ImageService.registerImage(
                 filename,
                 filePath,
-                'photo',
-                photo.id,
+                album ? 'photo' : 'other',
+                photoId,
                 file.mimetype,
                 file.size
             );
 
-            createdPhotos.push(photo);
+            registeredImages.push({
+                filename,
+                imageUrl: filePath,
+                source: album ? 'photo' : 'other'
+            });
         }
 
-        if (createdPhotos.length === 0) {
+        if (registeredImages.length === 0) {
             return res.status(400).json({ message: 'No valid files were processed' });
         }
 
-        res.status(201).json(createdPhotos);
+        // Return created photos if any, otherwise return registered info
+        res.status(201).json(createdPhotos.length > 0 ? createdPhotos : { 
+            message: 'Images registered successfully',
+            images: registeredImages 
+        });
     } catch (error) {
         console.error('❌ Error in uploadMultiplePhotos:', error);
         next(error);

@@ -81,9 +81,15 @@ const createNews = async (req, res) => {
             console.log('Added timestamp to ensure uniqueness:', slug);
         }
 
-        if (!newsHeadline || !authorId || !content) {
+        if (!newsHeadline || !authorId) {
             return res.status(400).json({
-                message: "News Headline, Author, and Content are required"
+                message: "News Headline and Author are required"
+            });
+        }
+        
+        if (!content && newsType !== 'photo' && newsType !== 'video') {
+            return res.status(400).json({
+                message: "Content is required for standard news"
             });
         }
 
@@ -210,18 +216,24 @@ const createNews = async (req, res) => {
         }
 
         // Create Gallery Items for Photo News
+        console.log('Gallery Items raw:', galleryItems);
         if (newsType === 'photo' && galleryItems) {
             try {
                 const parsedGalleryItems = typeof galleryItems === 'string' ? JSON.parse(galleryItems) : galleryItems;
+                console.log('Parsed Gallery Items:', parsedGalleryItems);
                 if (Array.isArray(parsedGalleryItems) && parsedGalleryItems.length > 0) {
-                    const galleryRecords = parsedGalleryItems.map((item, index) => ({
-                        newsId: newNews.id,
-                        imageUrl: item.imageUrl,
-                        caption: item.caption,
-                        content: item.content,
-                        sortOrder: index
-                    }));
-                    await NewsGalleryItem.bulkCreate(galleryRecords);
+                    const galleryRecords = parsedGalleryItems
+                        .filter(item => item.imageUrl) // Filter out items without images
+                        .map((item, index) => ({
+                            newsId: newNews.id,
+                            imageUrl: item.imageUrl,
+                            caption: item.caption,
+                            content: item.content || '',
+                            sortOrder: index
+                        }));
+                    if (galleryRecords.length > 0) {
+                        await NewsGalleryItem.bulkCreate(galleryRecords);
+                    }
                 }
             } catch (error) {
                 console.error("Error parsing gallery items:", error);
@@ -619,7 +631,7 @@ const updateNews = async (req, res) => {
             alternativeHeadline: alternativeHeadline !== undefined ? alternativeHeadline : existingNews.alternativeHeadline,
             authorId: authorId ? parseInt(authorId) : existingNews.authorId,
             shortDescription: shortDescription !== undefined ? shortDescription : existingNews.shortDescription,
-            content: content || existingNews.content,
+            content: content !== undefined ? content : existingNews.content,
             imageCaption: imageCaption !== undefined ? imageCaption : existingNews.imageCaption,
             videoLink: videoLink !== undefined ? videoLink : existingNews.videoLink,
             newsSchedule: newsSchedule === '' ? null : (newsSchedule !== undefined ? newsSchedule : existingNews.newsSchedule),
@@ -746,19 +758,25 @@ const updateNews = async (req, res) => {
         }
 
         // Update Gallery Items for Photo News
+        console.log('Update News Gallery Items raw:', galleryItems);
         if ((newsType === 'photo' || existingNews.newsType === 'photo') && galleryItems !== undefined) {
             try {
                 const parsedGalleryItems = typeof galleryItems === 'string' ? JSON.parse(galleryItems) : galleryItems;
+                console.log('Update News Parsed Gallery Items:', parsedGalleryItems);
                 await NewsGalleryItem.destroy({ where: { newsId: req.params.id } });
                 if (Array.isArray(parsedGalleryItems) && parsedGalleryItems.length > 0) {
-                     const galleryRecords = parsedGalleryItems.map((item, index) => ({
-                        newsId: req.params.id,
-                        imageUrl: item.imageUrl,
-                        caption: item.caption,
-                        content: item.content,
-                        sortOrder: index
-                    }));
-                    await NewsGalleryItem.bulkCreate(galleryRecords);
+                     const galleryRecords = parsedGalleryItems
+                        .filter(item => item.imageUrl) // Filter out items without images
+                        .map((item, index) => ({
+                            newsId: req.params.id,
+                            imageUrl: item.imageUrl,
+                            caption: item.caption,
+                            content: item.content || '',
+                            sortOrder: index
+                        }));
+                    if (galleryRecords.length > 0) {
+                        await NewsGalleryItem.bulkCreate(galleryRecords);
+                    }
                 }
             } catch (error) {
                 console.error("Error updating gallery items:", error);

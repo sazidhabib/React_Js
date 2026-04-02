@@ -34,7 +34,7 @@ const VideoNewsCreate = () => {
     const [showTagDropdown, setShowTagDropdown] = useState(false);
 
     const [showImageModal, setShowImageModal] = useState({
-        leadImage: false, thumbImage: false, metaImage: false, editor: false
+        thumbImage: false, metaImage: false, editor: false
     });
     const [selectedImageType, setSelectedImageType] = useState('');
     const [currentEditor, setCurrentEditor] = useState(null);
@@ -49,13 +49,13 @@ const VideoNewsCreate = () => {
     const [formData, setFormData] = useState({
         newsHeadline: '', newsHeadlineBangla: '', highlight: '', alternativeHeadline: '',
         authorId: '', authorName: '', shortDescription: '', content: '',
-        imageCaption: '', videoLink: '', newsSchedule: '', metaTitle: '',
+        videoLink: '', newsSchedule: '', metaTitle: '',
         metaKeywords: '', metaDescription: '', status: 'draft',
         tagIds: [], tagNames: [], categoryIds: []
     });
 
-    const [files, setFiles] = useState({ leadImage: null, thumbImage: null, metaImage: null });
-    const [selectedImages, setSelectedImages] = useState({ leadImage: null, thumbImage: null, metaImage: null });
+    const [files, setFiles] = useState({ thumbImage: null, metaImage: null });
+    const [selectedImages, setSelectedImages] = useState({ thumbImage: null, metaImage: null });
     const [activeEditor, setActiveEditor] = useState(null);
 
     const IMG_BASE = STATIC_URL || 'http://localhost:5000';
@@ -184,7 +184,7 @@ const VideoNewsCreate = () => {
     };
 
     const closeImageModal = () => {
-        setShowImageModal({ leadImage: false, thumbImage: false, metaImage: false, editor: false });
+        setShowImageModal({ thumbImage: false, metaImage: false, editor: false });
         setSelectedImageType('');
         setCurrentEditor(null);
     };
@@ -429,9 +429,8 @@ const VideoNewsCreate = () => {
                         <Card className="mb-3">
                             <Card.Body>
                                 <h5 className="border-bottom pb-2 mb-3">Media</h5>
-                                <Form.Group className="mb-3"><Form.Label>Lead Image (Video Thumbnail)</Form.Label><div className="d-flex gap-2 mb-2"><Form.Control type="file" name="leadImage" accept="image/*" onChange={handleFileChange} /><Button variant="outline-secondary" onClick={() => openImageModal('leadImage')}>Choose</Button></div><ImagePreview imageType="leadImage" /></Form.Group>
-                                <Form.Group className="mb-3"><Form.Label>Thumbnail Image</Form.Label><div className="d-flex gap-2 mb-2"><Form.Control type="file" name="thumbImage" accept="image/*" onChange={handleFileChange} /><Button variant="outline-secondary" onClick={() => openImageModal('thumbImage')}>Choose</Button></div><ImagePreview imageType="thumbImage" /></Form.Group>
-                                <Form.Group className="mb-3"><Form.Label>Image Caption</Form.Label><Form.Control value={formData.imageCaption} name="imageCaption" onChange={handleInputChange} /></Form.Group>
+                                <Form.Group className="mb-3"><Form.Label>Thumbnail Image (Optional)</Form.Label><div className="d-flex gap-2 mb-2"><Form.Control type="file" name="thumbImage" accept="image/*" onChange={handleFileChange} /><Button variant="outline-secondary" onClick={() => openImageModal('thumbImage')}>Choose</Button></div><ImagePreview imageType="thumbImage" /></Form.Group>
+
                             </Card.Body>
                         </Card>
 
@@ -449,7 +448,7 @@ const VideoNewsCreate = () => {
             </Form>
 
             <ImageSelectionModal show={showImageModal.editor} onClose={closeImageModal} onSelect={handleEditorImageSelect} title="Select Image for Editor" />
-            <ImageSelectionModal show={showImageModal.leadImage} onClose={closeImageModal} onSelect={handleImageSelect} title="Select Lead Image" />
+
             <ImageSelectionModal show={showImageModal.thumbImage} onClose={closeImageModal} onSelect={handleImageSelect} title="Select Thumbnail Image" />
             <ImageSelectionModal show={showImageModal.metaImage} onClose={closeImageModal} onSelect={handleImageSelect} title="Select Meta Image" />
             <ImageFormatModal show={showFormatModal} onHide={() => setShowFormatModal(false)} onConfirm={handleFormatConfirm} photo={photoToFormat} />

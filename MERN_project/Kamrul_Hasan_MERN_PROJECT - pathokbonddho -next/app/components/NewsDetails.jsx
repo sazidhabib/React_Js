@@ -136,7 +136,12 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
         );
     }
 
-    const leadImageUrl = getImageUrl(news.leadImage || news.metaImage || news.thumbImage);
+    let imagePathForLead = news.leadImage || news.metaImage || news.thumbImage;
+    if (!imagePathForLead && news.newsType === 'video' && news.videoLink) {
+        const videoId = getYouTubeId(news.videoLink);
+        if (videoId) imagePathForLead = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    }
+    const leadImageUrl = getImageUrl(imagePathForLead);
 
     return (
         <article className="news-details-page bg-white pb-5">
@@ -288,6 +293,8 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
                                 );
                             }
 
+                            if (news.newsType === 'photo') return null;
+
                             return leadImageUrl && (
                                 <div className="mb-4">
                                     <div className="hero-image-wrapper rounded shadow-sm overflow-hidden bg-light" style={{ position: 'relative', width: '100%', height: 'auto', minHeight: '300px', maxHeight: '500px' }}>
@@ -337,28 +344,32 @@ const NewsDetails = ({ id, initialData, initialAds }) => {
 
                         {news.newsType === 'photo' && news.GalleryItems && news.GalleryItems.length > 0 && (
                             <div className="photo-gallery-section mt-5 border-top pt-4">
-                                <h4 className="fw-bold font-bangla mb-4">গ্যালারি</h4>
                                 {news.GalleryItems.sort((a, b) => a.sortOrder - b.sortOrder).map((item, idx) => (
-                                    <div key={item.id || idx} className="gallery-item mb-5 bg-light p-3 rounded shadow-sm">
+                                    <div key={item.id || idx} className="gallery-item mb-5">
                                         {item.imageUrl && (
-                                            <div className="text-center mb-3">
-                                                <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: '300px' }}>
+                                            <div className=" shadow-sm border mb-3 overflow-hidden">
+                                                <div style={{ position: 'relative', width: '100%', height: 'auto' }}>
                                                     <Image
                                                         src={getImageUrl(item.imageUrl)}
                                                         alt={item.caption || `Gallery image ${idx + 1}`}
                                                         width={800}
                                                         height={500}
-                                                        className="img-fluid rounded shadow-sm w-100 h-auto"
-                                                        sizes="(max-width: 800px) 100vw, 800px"
+                                                        className="w-100 h-auto"
+                                                        style={{ objectFit: 'contain' }}
+
                                                     />
                                                 </div>
+                                                {item.caption && (
+                                                    <div className="py-2 bg-light border-top">
+                                                        <p className="text-muted small text-center mb-0 font-bangla px-3 fst-italic">
+                                                            {item.caption}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
-                                        {item.caption && (
-                                            <h5 className="font-bangla fw-bold mb-2 text-dark">{item.caption}</h5>
-                                        )}
                                         {item.content && (
-                                            <div className="font-bangla text-muted" style={{ lineHeight: '1.6', fontSize: `${fontSize - 1}px` }}>
+                                            <div className="font-bangla text-muted px-2" style={{ lineHeight: '1.8', fontSize: `${fontSize}px` }}>
                                                 {item.content}
                                             </div>
                                         )}

@@ -10,6 +10,12 @@ const NewsWidget = ({ cell }) => {
     const [loading, setLoading] = useState(!cell.resolvedContent);
     const STATIC_BASE = STATIC_URL || 'http://localhost:5000';
 
+    const getYoutubeId = (url) => {
+        if (!url) return null;
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&\n?#]+)/);
+        return match ? match[1] : null;
+    };
+
     useEffect(() => {
         // Skip fetching if content is already resolved by the server
         if (cell.resolvedContent) {
@@ -49,6 +55,12 @@ const NewsWidget = ({ cell }) => {
     const getImageUrl = (newsItem) => {
         if (!newsItem) return null;
         let imagePath = newsItem.thumbImage || newsItem.leadImage || newsItem.metaImage;
+        
+        if (!imagePath && newsItem.newsType === 'video' && newsItem.videoLink) {
+            const videoId = getYoutubeId(newsItem.videoLink);
+            if (videoId) return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        }
+
         if (!imagePath) return null;
         if (imagePath.startsWith('http')) {
             return imagePath.replace(/^http:\/\//, 'https://');

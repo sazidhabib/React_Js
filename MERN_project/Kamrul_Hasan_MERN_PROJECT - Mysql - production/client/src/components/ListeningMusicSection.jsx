@@ -25,29 +25,28 @@ const ListeningMusicSection = () => {
   const { getMenuByOrder } = useMenu();
   const listeningMusicMenu = getMenuByOrder(8); // Assuming 'Listening Music' is the third menu item
 
-  const [musicData, setMusicData] = useState(null);
+  const [musicSections, setMusicSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const API_MUSIC_URL = `${import.meta.env.VITE_API_BASE_URL}/api/sections/music`;
-
   const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api/songs`;
 
 
   useEffect(() => {
-    const fetchJetukuData = async () => {
+    const fetchMusicData = async () => {
       try {
-        const response = await axios.get(API_MUSIC_URL);
-        setMusicData(response.data);
+        const response = await axios.get(`${API_MUSIC_URL}?t=${Date.now()}`);
+        setMusicSections(response.data);
       } catch (err) {
-        console.error("Error fetching jetuku data:", err);
-        setError("Failed to load jetuku section content");
+        console.error("Error fetching music data:", err);
+        setError("Failed to load music section content");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJetukuData();
+    fetchMusicData();
   }, []);
 
   // Fetch songs
@@ -100,28 +99,14 @@ const ListeningMusicSection = () => {
     );
   }
 
+  if (musicSections.length === 0) {
+    return null;
+  }
+
   const indexOfLastSong = currentPage * songsPerPage;
   const indexOfFirstSong = indexOfLastSong - songsPerPage;
   const currentSongs = songs.slice(indexOfFirstSong, indexOfLastSong);
   const totalPages = Math.ceil(songs.length / songsPerPage);
-
-  const getPageNumbers = () => {
-    const pages = [];
-
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
-    } else {
-      pages.push(1);
-      if (currentPage > 3) pages.push('...');
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages - 2) pages.push('...');
-      pages.push(totalPages);
-    }
-
-    return pages;
-  };
 
 
   const handlePlayPause = async (index) => {
@@ -176,9 +161,15 @@ const ListeningMusicSection = () => {
     <section className="gansona" id={listeningMusicMenu?.path || "listeningmusic"}>
       <div className="container">
         <h3 className="subheading">{listeningMusicMenu?.name || "গান শোনা"}</h3>
-        <h2 className="lisenmainheading">{musicData?.title || "জানি না এ পৃথিবীর ঘাতকরা গান শোনে কিনা,"}</h2>
-        <h2 className="lisenmainheading">{musicData?.description || "জানি না লালন শুনে ভাসে কেন বুকের আঙিনা"}</h2>
-        <div className="row">
+        
+        {musicSections.map((musicData, index) => (
+          <div key={musicData._id || index} className="mb-4">
+            <h2 className="lisenmainheading">{musicData?.title}</h2>
+            <h2 className="lisenmainheading" style={{ fontSize: '1.5rem', fontWeight: 'normal' }}>{musicData?.description}</h2>
+          </div>
+        ))}
+
+        <div className="row mt-4">
           <div className="col-lg-6">
             <div className="icon-content">
               <div className="icon mb-3">
@@ -187,14 +178,14 @@ const ListeningMusicSection = () => {
               <div className="kobite-text">
                 {currentSongs.map((song, index) => {
                   const actualIndex = indexOfFirstSong + index;
-                  const isCurrent = currentIndex === actualIndex; // ✅ define it here
+                  const isCurrent = currentIndex === actualIndex;
 
                   return (
                     <div
                       key={index}
                       className={`d-flex flex-column p-2 mb-3 rounded ${isCurrent ? 'music-bg text-white' : 'bg-light'}`}
                       style={{ cursor: 'pointer', transition: '0.3s' }}
-                      onClick={() => handlePlayPause(actualIndex)} // ✅ use actualIndex here
+                      onClick={() => handlePlayPause(actualIndex)}
                     >
                       <div className="d-flex align-items-center music">
                         {isCurrent && isPlaying ? (

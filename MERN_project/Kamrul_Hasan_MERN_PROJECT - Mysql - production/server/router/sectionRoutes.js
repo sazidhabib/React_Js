@@ -6,7 +6,8 @@ const {
     updateSectionById,
     getSections,
     getSectionByType,
-    deleteSection
+    deleteSection,
+    toggleVisibility
 } = require("../controllers/sectionController");
 const authMiddleware = require("../middlewares/auth-middleware");
 const validate = require('../middlewares/validate-middleware');
@@ -47,5 +48,8 @@ router.get("/:type", getSectionByType);
 
 // Delete section by ID
 router.delete("/:id", authMiddleware, deleteSection);
+
+// Toggle visibility
+router.patch("/:id/toggle-visibility", authMiddleware, toggleVisibility);
 
 module.exports = router;

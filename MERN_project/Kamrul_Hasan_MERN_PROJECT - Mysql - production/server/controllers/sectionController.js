@@ -2,56 +2,11 @@ const Section = require("../models/sections");
 const fs = require("fs");
 const path = require("path");
 
-// ✅ Create or Update Section
-const upsertSection = async (req, res) => {
-    try {
-        const { type, title, description } = req.body;
-        const imageUrl = req.file ? req.file.url : req.body?.imageUrl;
-
-        if (!type || !title || !description) {
-            return res.status(400).json({ message: "Type, Title and Description are required" });
-        }
-
-        // Check if section exists by type
-        const existingSection = await Section.findOne({ where: { type } });
-
-        if (existingSection) {
-            // Update existing section
-            // Delete old image if new one is uploaded
-            if (req.file && existingSection.imageUrl) {
-                const oldImagePath = path.join(__dirname, "..", "uploads", existingSection.imageUrl);
-                if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
-            }
-
-            const updatedSection = await existingSection.update({
-                title,
-                description,
-                imageUrl: req.file ? imageUrl : existingSection.imageUrl,
-            });
-
-            return res.status(200).json({ message: "Section Updated", section: updatedSection });
-        } else {
-            // Create new section
-            const newSection = await Section.create({
-                type,
-                title,
-                description,
-                imageUrl,
-            });
-
-            return res.status(201).json({ message: "Section Created", section: newSection });
-        }
-    } catch (error) {
-        console.error("Upsert Section Error:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
-    }
-};
-
 // ✅ Update Section by ID
 const updateSectionById = async (req, res) => {
     try {
         const { title, description } = req.body;
-        const imageUrl = req.file ? req.file.url : req.body?.imageUrl;
+        const imageUrl = req.file ? req.file.filename : req.body?.imageUrl;
 
         const existingSection = await Section.findByPk(req.params.id);
         if (!existingSection) {
@@ -91,11 +46,14 @@ const getSections = async (req, res) => {
 // ✅ Get Section by Type
 const getSectionByType = async (req, res) => {
     try {
-        const section = await Section.findOne({ where: { type: req.params.type } });
-        if (!section) {
-            return res.status(404).json({ message: "Section Not Found" });
-        }
-        res.status(200).json(section);
+        const sections = await Section.findAll({
+            where: {
+                type: req.params.type,
+                isVisible: true
+            },
+            order: [["createdAt", "ASC"]]
+        });
+        res.status(200).json(sections);
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
@@ -119,10 +77,60 @@ const deleteSection = async (req, res) => {
     }
 };
 
+// ✅ Toggle Visibility
+const toggleVisibility = async (req, res) => {
+    try {
+        const section = await Section.findByPk(req.params.id);
+        if (!section) return res.status(404).json({ message: "Section Not Found" });
+
+        const newVisibility = !section.isVisible;
+        await section.update({ isVisible: newVisibility });
+
+        res.status(200).json({ message: "Visibility toggled", section });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+// ✅ Create or Update Section
+const upsertSection = async (req, res) => {
+    try {
+        const { type, title, description } = req.body;
+        const imageUrl = req.file ? req.file.filename : req.body?.imageUrl;
+
+        if (!type || !title || !description) {
+            return res.status(400).json({ message: "Type, Title and Description are required" });
+        }
+
+        // Create new section (Multiples allowed)
+        const newSection = await Section.create({
+            _id: generateId(),
+            type,
+            title,
+            description,
+            imageUrl,
+            isVisible: true,
+        });
+
+        return res.status(201).json({ message: "Section Created", section: newSection });
+    } catch (error) {
+        console.error("Upsert Section Error:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+// Helper function to generate _id (similar to MongoDB ObjectId)
+function generateId() {
+    const timestamp = Math.floor(new Date().getTime() / 1000).toString(16);
+    const random = Math.random().toString(16).substring(2, 10);
+    return timestamp + random.padStart(16, '0');
+}
+
 module.exports = {
     upsertSection,
     updateSectionById,
     getSections,
     getSectionByType,
-    deleteSection
+    deleteSection,
+    toggleVisibility
 };

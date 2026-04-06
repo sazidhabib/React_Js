@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -8,7 +7,7 @@ import axios from 'axios';
 const About = () => {
   const { getMenuByOrder } = useMenu();
   const aboutMenu = getMenuByOrder(2); // Assuming 'About' is the second menu item
-  const [aboutData, setAboutData] = useState(null);
+  const [aboutSections, setAboutSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -17,9 +16,8 @@ const About = () => {
   useEffect(() => {
     const fetchAboutData = async () => {
       try {
-        const response = await axios.get(API_URL);
-        console.log("Fetched about data:", response.data);
-        setAboutData(response.data);
+        const response = await axios.get(`${API_URL}?t=${Date.now()}`);
+        setAboutSections(response.data);
       } catch (err) {
         console.error("Error fetching about data:", err);
         setError("Failed to load about section content");
@@ -47,32 +45,36 @@ const About = () => {
     );
   }
 
+  if (aboutSections.length === 0) {
+    return null;
+  }
+
   return (
     <>
       <section className="about-us min-vh-100" id={aboutMenu?.path || "about-us"}>
-        <div className="container-fluid d-flex align-items-center justify-content-center ">
-          <div className="row align-items-center w-100">
-            <div className="col-lg-6 text-center text-lg-end">
-              <img
-                src={aboutData?.imageUrl
-                  ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${aboutData.imageUrl.replace(/^\/+/, "")}`
-                  : "/images/kamrul_hasan_bio2.jpg"}
-                alt="kamrulhasan_bio"
-                className="img-fluid profile-image"
-              />
+        <div className="container-fluid d-flex flex-column align-items-center justify-content-center">
+          {aboutSections.map((aboutData, index) => (
+            <div key={aboutData._id || index} className="row align-items-center w-100 py-5">
+              <div className="col-lg-6 text-center text-lg-end">
+                <img
+                  src={aboutData?.imageUrl
+                    ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${aboutData.imageUrl.replace(/^\/+/, "")}`
+                    : "/images/kamrul_hasan_bio2.jpg"}
+                  alt={aboutData?.title || "kamrulhasan_bio"}
+                  className="img-fluid profile-image"
+                />
+              </div>
+              <div className="col-lg-6 text-center text-lg-start pt-4">
+                {index === 0 && <h2 className="title">{aboutMenu?.name || "আমার আমি"}</h2>}
+                <h3 className="subtitle">{aboutData?.title || "সাংবাদিকতা আমার সবকিছু"}</h3>
+                <p className="description" style={{ whiteSpace: "pre-wrap" }}>
+                  {aboutData?.description || `
+                    বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও। 
+                  `}
+                </p>
+              </div>
             </div>
-            <div className="col-lg-6 text-center text-lg-start pt-4">
-              <h2 className="title">{aboutMenu?.name || "আমার আমি"}</h2>
-              <h3 className="subtitle">{aboutData?.title || "সাংবাদিকতা আমার সবকিছু"}</h3>
-              <p className="description" style={{ whiteSpace: "pre-wrap" }}>
-                {aboutData?.description || `
-                  বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও। 
-                  বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও।
-                  বরেন্দ্রভূমির সন্তান। সাংবাদিকতা করছেন তিন দশক ধরে। অর্জনের ঝুলিতে আছে অপরাধবিষয়ক রিপোর্টিংয়ে দীর্ঘদিনের কাজের অভিজ্ঞতা। সেই সূত্রে জুটেছে দেশি-বিদেশি পুরস্কারও।
-                `}
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
     </>

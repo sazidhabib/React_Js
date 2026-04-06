@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Spinner, Image } from "react-bootstrap";
+import { Button, Table, Spinner, Image, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../store/auth";
@@ -30,7 +30,7 @@ const SectionDashboard = () => {
     const fetchSections = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(API_URL);
+            const res = await axios.get(`${API_URL}?t=${Date.now()}`);
             setSections(res.data);
         } catch (err) {
             toast.error("Failed to fetch sections");
@@ -50,7 +50,6 @@ const SectionDashboard = () => {
             formData.append('type', sectionData.type);
             formData.append('title', sectionData.title);
             formData.append('description', sectionData.description);
-            // Only append image if it exists (for updates)
             if (sectionData.image && typeof sectionData.image !== 'string') {
                 formData.append('image', sectionData.image);
             }
@@ -62,19 +61,43 @@ const SectionDashboard = () => {
                 }
             };
 
-            // Use PUT for existing sections, POST for new ones
             const response = currentSection?._id
                 ? await axios.patch(`${API_URL}/${currentSection._id}`, formData, config)
                 : await axios.post(API_URL, formData, config);
 
             toast.success(`Section ${currentSection?._id ? 'updated' : 'created'} successfully`);
             setModalShow(false);
-            fetchSections(); // Refresh the data after successful submission
+            fetchSections();
             return response.data;
         } catch (error) {
             console.error('Submission error:', error);
             toast.error(error.response?.data?.error || 'Failed to save section');
             throw error;
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this section?")) return;
+        try {
+            await axios.delete(`${API_URL}/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success("Section deleted successfully");
+            fetchSections();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to delete section");
+        }
+    };
+
+    const handleToggleVisibility = async (section) => {
+        try {
+            await axios.patch(`${API_URL}/${section._id}/toggle-visibility`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(`Section visibility ${section.isVisible ? 'hidden' : 'shown'}`);
+            fetchSections();
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to toggle visibility");
         }
     };
 
@@ -84,6 +107,9 @@ const SectionDashboard = () => {
         <div className="container custom-font-initial mt-4">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4>Sections Dashboard</h4>
+                <Button variant="success" onClick={() => { setCurrentSection(null); setModalShow(true); }}>
+                    Create New Section
+                </Button>
             </div>
 
             {loading ? (
@@ -101,13 +127,13 @@ const SectionDashboard = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {sectionTypes.map((sectionType, index) => {
-                            const section = sections.find(s => s.type === sectionType.type);
+                        {sections.map((section, index) => {
+                            const sectionType = sectionTypes.find(st => st.type === section.type);
                             return (
-                                <tr key={sectionType.type}>
+                                <tr key={section._id || index}>
                                     <td>{index + 1}</td>
-                                    <td>{sectionType.name}</td>
-                                    <td>{section?.title || "Not created yet"}</td>
+                                    <td>{sectionType ? sectionType.name : section.type}</td>
+                                    <td>{section?.title || "No Title"}</td>
                                     <td>
                                         {section?.description
                                             ? `${section.description.substring(0, 50)}...`
@@ -126,21 +152,42 @@ const SectionDashboard = () => {
                                         )}
                                     </td>
                                     <td>
-                                        <Button
-                                            variant={section ? "warning" : "primary"}
-                                            size="sm"
-                                            onClick={() => {
-                                                setCurrentSection(section || { type: sectionType.type });
-                                                setModalShow(true);
-                                            }}
-                                        >
-                                            {section ? "Edit" : "Create"}
-                                        </Button>
-
+                                        <div className="d-flex gap-2">
+                                            <Button
+                                                variant="warning"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setCurrentSection(section);
+                                                    setModalShow(true);
+                                                }}
+                                            >
+                                                Edit
+                                            </Button>
+                                            <Form.Check
+                                                type="switch"
+                                                id={`visibility-switch-${section._id}`}
+                                                label={section.isVisible ? "Visible" : "Hidden"}
+                                                checked={section.isVisible}
+                                                onChange={() => handleToggleVisibility(section)}
+                                                className="mt-1"
+                                            />
+                                            <Button
+                                                variant="danger"
+                                                size="sm"
+                                                onClick={() => handleDelete(section._id)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
                                     </td>
                                 </tr>
                             );
                         })}
+                        {sections.length === 0 && (
+                            <tr>
+                                <td colSpan="6" className="text-center">No sections created yet.</td>
+                            </tr>
+                        )}
                     </tbody>
                 </Table>
             )}

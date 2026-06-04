@@ -1,0 +1,100 @@
+import { motion } from "framer-motion";
+
+import { styles } from "../styles";
+import { github } from "../assets";
+import { SectionWrapper } from "../hoc";
+import { projects } from "../constants";
+import { fadeIn, textVariant } from "../utils/motion";
+
+const ProjectCard = ({
+  index,
+  name,
+  description,
+  tags,
+  image,
+  source_code_link,
+}) => {
+  const truncateText = (text, wordLimit) => {
+    const words = text.split(" ");
+    return words.length > wordLimit
+      ? words.slice(0, wordLimit).join(" ") + "..."
+      : text;
+  };
+
+  return (
+    <motion.div variants={fadeIn("up", "spring", index * 0.1, 0.75)}>
+      <div className="glass-card rounded-xl p-[1px] glow-border h-full">
+        <div className="bg-tertiary/50 rounded-xl p-4 h-full flex flex-col">
+          <div className="relative w-full h-[200px] rounded-lg overflow-hidden">
+            <img
+              src={image}
+              alt={name}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+            />
+
+            <div className="absolute inset-0 flex justify-end m-2">
+              <div
+                onClick={() => window.open(source_code_link, "_blank")}
+                className="glass w-9 h-9 rounded-full flex justify-center items-center cursor-pointer hover:bg-white/20 transition-colors"
+              >
+                <img
+                  src={github}
+                  alt="source code"
+                  className="w-4 h-4 object-contain"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex-1 flex flex-col">
+            <h3 className="text-white font-semibold text-[18px] tracking-tight">
+              {name}
+            </h3>
+            <p className="mt-2 text-slate-400 text-[13px] leading-relaxed flex-1">
+              {truncateText(description, 30)}
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span
+                  key={`${name}-${tag.name}`}
+                  className={`text-[11px] font-mono ${tag.color} bg-white/5 px-2 py-0.5 rounded`}
+                >
+                  #{tag.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const Works = () => {
+  return (
+    <>
+      <motion.div variants={textVariant()}>
+        <p className={styles.sectionSubText}>Projects</p>
+        <h2 className={styles.sectionHeadText}>My Work.</h2>
+      </motion.div>
+
+      <motion.p
+        variants={fadeIn("", "", 0.1, 1)}
+        className="mt-3 text-slate-400 text-[15px] max-w-3xl leading-relaxed"
+      >
+        Following projects showcases my skills and experience through
+        real-world examples of my work. Each project is briefly described with
+        links to code repositories.
+      </motion.p>
+
+      <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {projects.map((project, index) => (
+          <ProjectCard key={`project-${index}`} index={index} {...project} />
+        ))}
+      </div>
+    </>
+  );
+};
+
+export default SectionWrapper(Works, "project");

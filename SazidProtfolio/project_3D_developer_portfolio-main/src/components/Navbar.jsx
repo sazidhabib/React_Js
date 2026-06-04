@@ -1,0 +1,112 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
+
+import { navLinks } from "../constants";
+import { menu, close } from "../assets";
+
+const Navbar = () => {
+  const [active, setActive] = useState("");
+  const [toggle, setToggle] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest > 50);
+  });
+
+  return (
+    <motion.nav
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className={`w-full flex justify-center fixed top-0 z-50 transition-all duration-500 px-4 sm:px-8 ${
+        scrolled ? "py-4 sm:py-6" : "py-6 sm:py-8"
+      }`}
+    >
+      <div className={`w-full flex justify-between items-center max-w-7xl mx-auto transition-all duration-500 ${
+        scrolled
+          ? "py-3 px-6 sm:px-8 rounded-full glass shadow-lg"
+          : "py-3 px-4 sm:px-8 bg-transparent"
+      }`}
+      >
+        <Link
+          to="/"
+          className="flex items-center gap-2"
+          onClick={() => {
+            setActive("");
+            window.scrollTo(0, 0);
+          }}
+        >
+          <span
+            className={`text-white font-bold cursor-pointer tracking-tight transition-all duration-500 ${
+              scrolled ? "text-base" : "text-xl"
+            }`}
+          >
+            Sazid<span className="text-accent">.</span>Habib
+          </span>
+        </Link>
+
+        <ul className="list-none items-center hidden md:flex flex-row gap-6">
+          {navLinks.map((nav) => (
+            <li
+              key={nav.id}
+              className={`${
+                active === nav.title ? "text-white" : "text-slate-400"
+              } hover:text-white text-[13px] font-medium cursor-pointer transition-colors`}
+              onClick={() => setActive(nav.title)}
+            >
+              <a href={`#${nav.id}`}>{nav.title}</a>
+            </li>
+          ))}
+          <a
+            href="https://github.com/sazidhabib"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button
+              type="button"
+              className="text-white bg-accent/10 hover:bg-accent/20 border border-accent/20 focus:ring-0 font-medium rounded-lg text-sm px-4 py-1.5 transition-all duration-300"
+            >
+              GitHub
+            </button>
+          </a>
+        </ul>
+
+        <div className="md:hidden flex flex-1 justify-end items-center">
+          <img
+            src={toggle ? close : menu}
+            alt="menu"
+            className="w-[24px] h-[24px] object-contain cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
+            onClick={() => setToggle(!toggle)}
+          />
+
+          <div
+            className={`${
+              !toggle ? "hidden" : "flex"
+            } p-6 glass absolute top-16 right-0 mx-4 my-2 min-w-[160px] z-10 rounded-xl`}
+          >
+            <ul className="list-none flex justify-end items-start flex-1 flex-col gap-4">
+              {navLinks.map((nav) => (
+                <li
+                  key={nav.id}
+                  className={`font-medium cursor-pointer text-[15px] ${
+                    active === nav.title ? "text-white" : "text-slate-400"
+                  }`}
+                  onClick={() => {
+                    setToggle(!toggle);
+                    setActive(nav.title);
+                  }}
+                >
+                  <a href={`#${nav.id}`}>{nav.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </motion.nav>
+  );
+};
+
+export default Navbar;

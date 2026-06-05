@@ -23,11 +23,15 @@ const Hero = () => {
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                delay: 0.3,
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="text-white font-bold text-[clamp(32px,5vw,56px)] leading-[1.15] tracking-tight mt-4"
             >
               Hi, I&apos;m{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-dark">
+              <span className="inline-block text-transparent italic bg-clip-text bg-gradient-to-r from-accent to-accent-dark pr-3 box-decoration-clone">
                 Mahbub Sazid Habib
               </span>
             </motion.h1>
@@ -35,7 +39,11 @@ const Hero = () => {
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                delay: 0.4,
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="text-slate-400 text-[15px] sm:text-[16px] leading-relaxed mt-4 max-w-[520px]"
             >
               Crafting responsive, user-friendly web applications with modern
@@ -45,7 +53,11 @@ const Hero = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                delay: 0.5,
+                duration: 0.6,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="flex gap-4 mt-8"
             >
               <a
@@ -91,7 +103,7 @@ const Hero = () => {
         className="absolute bottom-8 w-full flex justify-center items-center"
       >
         <a href="#about">
-          <div className="w-[30px] h-[52px] rounded-full border border-white/10 flex justify-center items-start p-2 hover:border-white/20 transition-colors">
+          <div className="w-[30px] h-[52px] rounded-full border border-white flex justify-center items-start p-2 hover:border-white/20 transition-colors">
             <motion.div
               animate={{ y: [0, 12, 0] }}
               transition={{

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Tilt from "react-parallax-tilt";
 
 import { styles } from "../styles";
 import { github } from "../assets";
@@ -23,7 +24,18 @@ const ProjectCard = ({
 
   return (
     <motion.div variants={fadeIn("up", "spring", index * 0.1, 0.75)}>
-      <div className="glass-card rounded-xl p-[1px] glow-border h-full">
+      <Tilt
+        tiltMaxAngleX={12}
+        tiltMaxAngleY={12}
+        perspective={1000}
+        glareEnable
+        glareMaxOpacity={0.18}
+        glareColor="#ffffff"
+        glarePosition="all"
+        scale={1.02}
+        transitionSpeed={1500}
+        className="glass-card rounded-xl p-[1px] glow-border h-full"
+      >
         <div className="bg-tertiary/50 rounded-xl p-4 h-full flex flex-col">
           <div className="relative w-full h-[200px] rounded-lg overflow-hidden">
             <img
@@ -66,7 +78,7 @@ const ProjectCard = ({
             </div>
           </div>
         </div>
-      </div>
+      </Tilt>
     </motion.div>
   );
 };
@@ -83,9 +95,9 @@ const Works = () => {
         variants={fadeIn("", "", 0.1, 1)}
         className="mt-3 text-slate-400 text-[15px] max-w-3xl leading-relaxed"
       >
-        Following projects showcases my skills and experience through
-        real-world examples of my work. Each project is briefly described with
-        links to code repositories.
+        Following projects showcases my skills and experience through real-world
+        examples of my work. Each project is briefly described with links to
+        code repositories.
       </motion.p>
 
       <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

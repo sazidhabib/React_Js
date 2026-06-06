@@ -40,6 +40,14 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+.glass-cardSh {
+  background: rgba(200, 200, 200);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
 .glow-border {
   position: relative;
 }
@@ -71,6 +79,11 @@
   animation: profile__animate 10s ease-in-out infinite 1s;
 }
 
+.green-pink-gradient {
+  background: #00cea8;
+  background: linear-gradient(90.13deg, #00cea8 1.9%, #bf61ff 97.5%);
+  background: -webkit-linear-gradient(-90.13deg, #00cea8 1.9%, #bf61ff 97.5%);
+}
 @keyframes profile__animate {
   0% {
     border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;

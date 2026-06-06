@@ -10,33 +10,32 @@ import { styles } from "../styles";
 import { SectionWrapper } from "../hoc";
 import { textVariant } from "../utils/motion";
 import { experiences } from "../constants/Constants";
-import { fadeIn } from "../utils/motion";
 
-const ExperienceCard = ({ experience, index }) => {
+const ExperienceCard = ({ experience }) => {
   return (
-    <motion.div variants={fadeIn("up", "spring", index * 0.1, 0.75)}>
-      <VerticalTimelineElement
-        icon={
-          <img
-            src={experience?.img}
-            alt={experience?.company}
-            className="rounded-full object-cover w-full h-full"
-          />
-        }
-        contentStyle={{
-          background: "rgba(17, 17, 34, 0.6)",
-          color: "#fff",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(255, 255, 255, 0.06)",
-          borderRadius: "12px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
-        }}
-        contentArrowStyle={{
-          borderRight: "2px solid rgba(255, 255, 255, 0.1)",
-        }}
-        date={experience?.date}
-      >
+    <VerticalTimelineElement
+      icon={
+        <img
+          src={experience?.img}
+          alt={experience?.company}
+          className="rounded-full object-cover w-full h-full"
+        />
+      }
+      contentStyle={{
+        background: "rgba(17, 17, 34, 0.6)",
+        color: "#fff",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        border: "1px solid rgba(255, 255, 255, 0.06)",
+        borderRadius: "12px",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+      }}
+      contentArrowStyle={{
+        borderRight: "7px solid rgba(255, 255, 255, 0.3)",
+      }}
+      date={experience?.date}
+    >
+      <div>
         <div className="flex gap-3">
           <img
             src={experience?.img}
@@ -82,8 +81,8 @@ const ExperienceCard = ({ experience, index }) => {
             </div>
           )}
         </div>
-      </VerticalTimelineElement>
-    </motion.div>
+      </div>
+    </VerticalTimelineElement>
   );
 };
 
@@ -103,7 +102,6 @@ const Experience = () => {
             <ExperienceCard
               key={`experience-${index}`}
               experience={experience}
-              index={index}
             />
           ))}
         </VerticalTimeline>

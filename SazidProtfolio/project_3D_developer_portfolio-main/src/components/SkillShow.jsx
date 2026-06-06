@@ -1,14 +1,44 @@
 import {
-  htmlnew, cssnew, javascriptnew, postman, react, reduxnew,
-  typescriptnew, tailwindcss, Figma, gitnew, Mongodb, nodejsnew,
-  bootstrap, python, githubnew, netlify, vscode, router,
+  htmlnew,
+  cssnew,
+  javascriptnew,
+  postman,
+  react,
+  reduxnew,
+  typescriptnew,
+  tailwindcss,
+  Figma,
+  gitnew,
+  Mongodb,
+  nodejsnew,
+  bootstrap,
+  python,
+  githubnew,
+  netlify,
+  vscode,
+  router,
 } from "../assets";
 
 const SkillShow = () => {
   const row1 = [
-    htmlnew, cssnew, javascriptnew, postman, react, router,
-    reduxnew, typescriptnew, tailwindcss, Figma, gitnew, Mongodb,
-    nodejsnew, bootstrap, python, githubnew, netlify, vscode,
+    htmlnew,
+    cssnew,
+    javascriptnew,
+    postman,
+    react,
+    router,
+    reduxnew,
+    typescriptnew,
+    tailwindcss,
+    Figma,
+    gitnew,
+    Mongodb,
+    nodejsnew,
+    bootstrap,
+    python,
+    githubnew,
+    netlify,
+    vscode,
   ];
 
   return (
@@ -26,7 +56,10 @@ const SkillShow = () => {
         <div className="relative w-full overflow-hidden mask-linear mb-6">
           <div className="flex space-x-4 skill-scroll whitespace-nowrap w-full">
             {[...row1, ...row1].map((el, index) => (
-              <div key={index} className="flex-shrink-0 glass-card rounded-lg p-3">
+              <div
+                key={index}
+                className="flex-shrink-0 glass-cardSh rounded-lg p-3"
+              >
                 <img
                   src={el}
                   alt="Technology logo"
@@ -40,7 +73,10 @@ const SkillShow = () => {
         <div className="relative w-full overflow-hidden mask-linear">
           <div className="flex space-x-4 skill-scroll-reverse whitespace-nowrap w-full">
             {[...row1, ...row1].map((el, index) => (
-              <div key={index} className="flex-shrink-0 glass-card rounded-lg p-3">
+              <div
+                key={index}
+                className="flex-shrink-0 glass-cardSh rounded-lg p-3"
+              >
                 <img
                   src={el}
                   alt="Technology logo"

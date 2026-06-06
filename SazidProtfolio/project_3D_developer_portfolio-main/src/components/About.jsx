@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Tilt from "react-parallax-tilt";
 
 import { styles } from "../styles";
 import { services } from "../constants";
@@ -6,16 +7,26 @@ import { SectionWrapper } from "../hoc";
 import { fadeIn, textVariant } from "../utils/motion";
 
 const ServiceCard = ({ index, title, icon }) => (
-  <motion.div
-    variants={fadeIn("up", "spring", index * 0.15, 0.75)}
-    className="glass-card rounded-2xl p-[1px] glow-border"
-  >
-    <div className="bg-tertiary/50 rounded-2xl py-8 px-8 min-h-[240px] flex flex-col items-center justify-center gap-5">
-      <img src={icon} alt={title} className="w-12 h-12 object-contain" />
-      <h3 className="text-white text-[18px] font-semibold text-center tracking-tight">
-        {title}
-      </h3>
-    </div>
+  <motion.div variants={fadeIn("up", "spring", index * 0.15, 0.75)}>
+    <Tilt
+      tiltMaxAngleX={15}
+      tiltMaxAngleY={15}
+      perspective={900}
+      glareEnable
+      glareMaxOpacity={0.15}
+      glareColor="#ffffff"
+      glarePosition="all"
+      scale={1.03}
+      transitionSpeed={1500}
+      className="green-pink-gradient rounded-2xl p-[2px] shadow-card h-full"
+    >
+      <div className="bg-tertiary rounded-2xl py-8 px-8 min-h-[240px] h-full flex flex-col items-center justify-center gap-5">
+        <img src={icon} alt={title} className="w-16 h-16 object-contain" />
+        <h3 className="text-white text-[18px] font-semibold text-center tracking-tight">
+          {title}
+        </h3>
+      </div>
+    </Tilt>
   </motion.div>
 );
 
@@ -33,8 +44,8 @@ const About = () => {
       >
         I&apos;m a skilled software developer with experience in TypeScript and
         JavaScript, and expertise in frameworks like React, Node.js, and
-        Three.js. I&apos;m a quick learner and collaborate closely with clients to
-        create efficient, scalable, and user-friendly solutions that solve
+        Three.js. I&apos;m a quick learner and collaborate closely with clients
+        to create efficient, scalable, and user-friendly solutions that solve
         real-world problems.
       </motion.p>
 

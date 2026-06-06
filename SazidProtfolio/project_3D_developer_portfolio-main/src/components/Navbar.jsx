@@ -24,11 +24,12 @@ const Navbar = () => {
         scrolled ? "py-4 sm:py-6" : "py-6 sm:py-8"
       }`}
     >
-      <div className={`w-full flex justify-between items-center max-w-7xl mx-auto transition-all duration-500 ${
-        scrolled
-          ? "py-3 px-6 sm:px-8 rounded-full glass shadow-lg"
-          : "py-3 px-4 sm:px-8 bg-transparent"
-      }`}
+      <div
+        className={`w-full flex justify-between items-center max-w-7xl mx-auto transition-all duration-500 ${
+          scrolled
+            ? "py-3 px-6 sm:px-8 rounded-full glass shadow-lg"
+            : "py-3 px-4 sm:px-8 bg-transparent"
+        }`}
       >
         <Link
           to="/"
@@ -40,7 +41,7 @@ const Navbar = () => {
         >
           <span
             className={`text-white font-bold cursor-pointer tracking-tight transition-all duration-500 ${
-              scrolled ? "text-base" : "text-xl"
+              scrolled ? "text-base" : "text-2xl"
             }`}
           >
             Sazid<span className="text-accent">.</span>Habib
@@ -51,12 +52,16 @@ const Navbar = () => {
           {navLinks.map((nav) => (
             <li
               key={nav.id}
-              className={`${
+              className={`transition-all duration-500 ease-in-out ${
+                scrolled ? "text-[13px]" : "text-lg"
+              } ${
                 active === nav.title ? "text-white" : "text-slate-400"
-              } hover:text-white text-[13px] font-medium cursor-pointer transition-colors`}
+              } hover:text-white font-medium cursor-pointer`}
               onClick={() => setActive(nav.title)}
             >
-              <a href={`#${nav.id}`}>{nav.title}</a>
+              <a href={`#${nav.id}`} className="inline-block">
+                {nav.title}
+              </a>
             </li>
           ))}
           <a

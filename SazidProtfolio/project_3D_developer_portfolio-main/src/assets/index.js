@@ -50,6 +50,9 @@ import githubnew from "./githubnew.png";
 import netlify from "./Netlify.png";
 import vscode from "./vscode.png";
 import router from "./router.webp";
+import kamrulfullpage from "./kamrulhasan_fullpage.webp";
+import kamrulvideo from "./kamrulhasan.mp4";
+
 
 export {
   logo,
@@ -101,4 +104,6 @@ export {
   netlify,
   vscode,
   router,
+  kamrulfullpage,
+  kamrulvideo,
 };

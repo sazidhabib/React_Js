@@ -30,7 +30,7 @@ module.exports = {
         display: ["Inter", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        "hero-pattern": "url('/src/assets/herobg.png')",
+        "hero-pattern": "linear-gradient(to bottom, rgba(3, 3, 10, 0) 50%, #03030a 100%), url('/src/assets/herobg.png')",
         "grid-pattern":
           "linear-gradient(rgba(79,172,254,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79,172,254,0.03) 1px, transparent 1px)",
       },

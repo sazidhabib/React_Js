@@ -1,4 +1,4 @@
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import {
   About,
@@ -14,6 +14,7 @@ import Skills from "./components/Skills";
 
 import Footer from "./components/Footer";
 import SkillShow from "./components/SkillShow";
+import ProjectDetails from "./components/ProjectDetails";
 
 const App = () => {
   return (
@@ -24,27 +25,35 @@ const App = () => {
           v7_relativeSplatPath: true,
         }}
       >
-        <div className="relative bg-primary">
-          <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
-            <Navbar />
-            <Hero />
-          </div>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div className="relative bg-primary">
+                <div className="bg-hero-pattern bg-cover bg-no-repeat bg-center">
+                  <Navbar />
+                  <Hero />
+                </div>
 
-          <About />
-          <Skills />
-          <Experience />
+                <About />
+                <Skills />
+                <Experience />
 
-          {/* <Tech /> */}
+                {/* <Tech /> */}
 
-          <SkillShow />
-          <div className="relative z-0">
-            <Works />
-            <Contact />
-            <StarsCanvas />
-          </div>
+                <SkillShow />
+                <div className="relative z-0">
+                  <Works />
+                  <Contact />
+                  <StarsCanvas />
+                </div>
 
-          <Footer />
-        </div>
+                <Footer />
+              </div>
+            }
+          />
+          <Route path="/project/:id" element={<ProjectDetails />} />
+        </Routes>
       </BrowserRouter>
     </ErrorBoundary>
   );

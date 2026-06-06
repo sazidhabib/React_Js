@@ -26,6 +26,8 @@ import {
   threejs,
   shopCard,
   FoodOrder,
+  kamrulfullpage,
+  kamrulvideo,
 } from "../assets";
 
 export const navLinks = [
@@ -201,9 +203,10 @@ const testimonials = [
 
 const projects = [
   {
+    id: "kamrulhasan",
     name: "kamrulhasan",
     description:
-      "This project is a dynamic personal website developed for journalist Kamrul Hasan. It serves as an interactive platform to showcase his writings, reflections, experiences, and published reports, offering readers valuable insights into various topics. The website is primarily in Bengali, targeting Bengali-speaking audiences, and is designed with a focus on readability, user engagement, and content accessibility. From top to bottom, every section of the website is fully dynamic and customizable through its powerful admin panel, allowing seamless management of content, including articles, reports, multimedia, and even the website’s menu structure.",
+      "This project is a dynamic personal website developed for journalist Kamrul Hasan. It serves as an interactive platform to showcase his writings, reflections, experiences, and published reports, offering readers valuable insights into various topics. The website is primarily in Bengali, targeting Bengali-speaking audiences, and is designed with a focus on readability, user engagement, and content accessibility. From top to bottom, every section of the website is fully dynamic and customizable through its powerful admin panel, allowing seamless management of content, including articles, reports, multimedia, and even the website's menu structure.",
     tags: [
       {
         name: "React",
@@ -227,9 +230,23 @@ const projects = [
       },
     ],
     image: kamrulhasan,
+    media: [
+      { type: "image", src: kamrulhasan },
+      { type: "image", src: kamrulfullpage },
+      { type: "video", src: kamrulvideo },
+    ],
     source_code_link: "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
+    live_link: "https://kamrulhasan.com",
+    features: [
+      "Dynamic content management system with full CRUD operations",
+      "Bengali-language platform for targeted local audience",
+      "Customizable admin panel for seamless content management",
+      "Article and multimedia publishing with rich text editor",
+      "SEO-optimized layout with meta tag management",
+    ],
   },
   {
+    id: "pharmasphere",
     name: "PharmaSphere",
     description:
       "A pharmacy-based e-commerce platform offering a seamless shopping experience for medicines and healthcare products. Built using the MERN stack, PharmaSphere features a secure payment system with Stripe, a dynamic admin panel for inventory management, and a user-friendly interface with advanced search and sorting capabilities",
@@ -256,9 +273,21 @@ const projects = [
       },
     ],
     image: pharmasphere,
+    media: [
+      { type: "image", src: pharmasphere },
+    ],
     source_code_link: "https://github.com/shafquatulbari/mern-e-commerce",
+    live_link: "#",
+    features: [
+      "Secure payment integration with Stripe checkout",
+      "Dynamic admin panel for inventory and order management",
+      "Advanced search with real-time filtering and sorting",
+      "Responsive pharmacy catalog with category browsing",
+      "User authentication with profile and order history",
+    ],
   },
   {
+    id: "snapshop",
     name: "SnapShop",
     description:
       "This is a responsive e-commerce platform built with TypeScript, React, and Tailwind CSS. It features product management, user authentication, user information and user-specific functionalities such as a wishlist and shopping cart.",
@@ -281,9 +310,21 @@ const projects = [
       },
     ],
     image: snapshop,
+    media: [
+      { type: "image", src: snapshop },
+    ],
     source_code_link: "https://github.com/sazidhabib/SnapShop_e-commerce",
+    live_link: "#",
+    features: [
+      "TypeScript-powered architecture for type-safe development",
+      "User authentication with JWT token management",
+      "Product management dashboard with CRUD operations",
+      "Wishlist and shopping cart with persistent state",
+      "Responsive Tailwind design with dark theme support",
+    ],
   },
   {
+    id: "movie-list",
     name: "Movie List Website",
     description:
       "A simple and user-friendly website to explore movies and TV shows, built using React and styled with styled-components or Tailwind CSS. This project allows users to keep track of their favorite movies and provides features for managing a personal watchlist.",
@@ -302,9 +343,21 @@ const projects = [
       },
     ],
     image: movie,
+    media: [
+      { type: "image", src: movie },
+    ],
     source_code_link: "https://github.com/sazidhabib/MovieListingWebsite",
+    live_link: "#",
+    features: [
+      "Browse trending movies and TV shows with live data",
+      "Personal watchlist with add/remove functionality",
+      "Search and filter across extensive media catalog",
+      "State management using React useContext hook",
+      "Responsive card layout with hover animations",
+    ],
   },
   {
+    id: "product-detail",
     name: "Product Detail & Add to Cart",
     description:
       "This project is a responsive product detail page built with React, JavaScript, and useContext. The page allows users to select product options such as color, size, and quantity while dynamically updating the product image, price, and cart details.",
@@ -323,12 +376,24 @@ const projects = [
       },
     ],
     image: shopCard,
+    media: [
+      { type: "image", src: shopCard },
+    ],
     source_code_link: "https://github.com/sazidhabib/shopcardreact/tree/master",
+    live_link: "#",
+    features: [
+      "Dynamic product option selection (color, size, quantity)",
+      "Real-time price calculation and image updates",
+      "Interactive color and size picker with visual feedback",
+      "Cart management with useContext state pattern",
+      "Responsive product gallery with zoom preview",
+    ],
   },
   {
+    id: "food-ordering",
     name: "Food Ordering App",
     description:
-      "This project is a responsive product detail page built with React, JavaScript, and useContext. The page allows users to select product options such as color, size, and quantity while dynamically updating the product image, price, and cart details.",
+      "A food ordering application built with React and Redux for state management. Users can browse menu items, add them to the cart, and manage quantities — all powered by a centralized Redux store for predictable state updates across the application.",
     tags: [
       {
         name: "React",
@@ -348,7 +413,18 @@ const projects = [
       },
     ],
     image: FoodOrder,
+    media: [
+      { type: "image", src: FoodOrder },
+    ],
     source_code_link: "https://github.com/sazidhabib/FoodCardApp_React_Redux",
+    live_link: "#",
+    features: [
+      "Redux-powered centralized state management",
+      "Add/remove cart items with quantity controls",
+      "Dynamic price calculation and order summary",
+      "Clean food catalog with category organization",
+      "Mobile-first responsive design for on-the-go ordering",
+    ],
   },
 ];
 

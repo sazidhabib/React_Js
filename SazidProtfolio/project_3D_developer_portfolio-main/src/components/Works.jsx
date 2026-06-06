@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import Tilt from "react-parallax-tilt";
+import { useNavigate } from "react-router-dom";
 
 import { styles } from "../styles";
 import { github } from "../assets";
@@ -9,12 +10,15 @@ import { fadeIn, textVariant } from "../utils/motion";
 
 const ProjectCard = ({
   index,
+  id,
   name,
   description,
   tags,
   image,
   source_code_link,
 }) => {
+  const navigate = useNavigate();
+
   const truncateText = (text, wordLimit) => {
     const words = text.split(" ");
     return words.length > wordLimit
@@ -22,8 +26,16 @@ const ProjectCard = ({
       : text;
   };
 
+  const handleCardClick = () => {
+    navigate(`/project/${id}`);
+  };
+
   return (
-    <motion.div variants={fadeIn("up", "spring", index * 0.1, 0.75)}>
+    <motion.div
+      variants={fadeIn("up", "spring", index * 0.1, 0.75)}
+      onClick={handleCardClick}
+      className="cursor-pointer"
+    >
       <Tilt
         tiltMaxAngleX={12}
         tiltMaxAngleY={12}
@@ -46,7 +58,10 @@ const ProjectCard = ({
 
             <div className="absolute inset-0 flex justify-end m-2">
               <div
-                onClick={() => window.open(source_code_link, "_blank")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(source_code_link, "_blank");
+                }}
                 className="glass w-9 h-9 rounded-full flex justify-center items-center cursor-pointer hover:bg-white/20 transition-colors"
               >
                 <img

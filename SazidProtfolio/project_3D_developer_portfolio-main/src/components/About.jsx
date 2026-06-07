@@ -20,9 +20,13 @@ const ServiceCard = ({ index, title, icon }) => (
       transitionSpeed={1500}
       className="green-pink-gradient rounded-2xl p-[2px] shadow-card h-full"
     >
-      <div className="bg-tertiary rounded-2xl py-8 px-8 min-h-[240px] h-full flex flex-col items-center justify-center gap-5">
-        <img src={icon} alt={title} className="w-16 h-16 object-contain" />
-        <h3 className="text-white text-[18px] font-semibold text-center tracking-tight">
+      <div className="bg-tertiary rounded-2xl py-8 px-8 min-h-[150px] md:min-h-[240px] h-full flex flex-col items-center justify-center gap-5">
+        <img
+          src={icon}
+          alt={title}
+          className="w-14 h-14 md:w-16 md:h-16 object-contain"
+        />
+        <h3 className="text-white text-[15px] md:text-[18px] font-semibold text-center tracking-tight">
           {title}
         </h3>
       </div>
@@ -49,7 +53,7 @@ const About = () => {
         real-world problems.
       </motion.p>
 
-      <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="mt-16 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {services.map((service, index) => (
           <ServiceCard key={service.title} index={index} {...service} />
         ))}

@@ -49,7 +49,7 @@ const ProjectCard = ({
         className="glass-card rounded-xl p-[1px] glow-border h-full"
       >
         <div className="bg-tertiary/50 rounded-xl p-4 h-full flex flex-col">
-          <div className="relative w-full h-[200px] rounded-lg overflow-hidden">
+          <div className="relative w-full h-[120px] md:h-[200px] rounded-lg overflow-hidden">
             <img
               src={image}
               alt={name}
@@ -78,18 +78,32 @@ const ProjectCard = ({
               {name}
             </h3>
             <p className="mt-2 text-slate-400 text-[13px] leading-relaxed flex-1">
-              {truncateText(description, 30)}
+              <span className="hidden md:inline">
+                {truncateText(description, 30)}
+              </span>
+              <span className="md:hidden">{truncateText(description, 10)}</span>
             </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              {tags.map((tag) => (
-                <span
-                  key={`${name}-${tag.name}`}
-                  className={`text-[11px] font-mono ${tag.color} bg-white/5 px-2 py-0.5 rounded`}
-                >
-                  #{tag.name}
-                </span>
-              ))}
+              <span className="hidden md:flex md:flex-wrap md:gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={`${name}-${tag.name}`}
+                    className={`text-[11px] font-mono ${tag.color} bg-white/5 px-2 py-0.5 rounded`}
+                  >
+                    #{tag.name}
+                  </span>
+                ))}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/project/${id}`);
+                }}
+                className="md:hidden text-accent text-[12px] font-medium hover:underline mt-1"
+              >
+                Read More →
+              </button>
             </div>
           </div>
         </div>
@@ -115,7 +129,7 @@ const Works = () => {
         code repositories.
       </motion.p>
 
-      <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="mt-16 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {projects.map((project, index) => (
           <ProjectCard key={`project-${index}`} index={index} {...project} />
         ))}

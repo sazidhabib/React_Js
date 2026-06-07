@@ -15,10 +15,12 @@ import Skills from "./components/Skills";
 import Footer from "./components/Footer";
 import SkillShow from "./components/SkillShow";
 import ProjectDetails from "./components/ProjectDetails";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const App = () => {
   return (
     <ErrorBoundary>
+      <ThemeProvider>
       <BrowserRouter
         future={{
           v7_startTransition: true,
@@ -55,6 +57,7 @@ const App = () => {
           <Route path="/project/:id" element={<ProjectDetails />} />
         </Routes>
       </BrowserRouter>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 };

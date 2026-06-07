@@ -5,21 +5,21 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#03030a",
-        secondary: "#8b8fa3",
-        tertiary: "#0c0c16",
-        "black-100": "#08080f",
-        "black-200": "#05050a",
-        "white-100": "#eef1ff",
-        accent: "#4facfe",
-        "accent-dark": "#3b82f6",
-        surface: "#111122",
-        "surface-light": "#1a1a30",
+        primary: "rgb(var(--color-primary) / <alpha-value>)",
+        secondary: "rgb(var(--color-secondary) / <alpha-value>)",
+        tertiary: "rgb(var(--color-tertiary) / <alpha-value>)",
+        "black-100": "rgb(var(--color-black-100) / <alpha-value>)",
+        "black-200": "rgb(var(--color-black-200) / <alpha-value>)",
+        "white-100": "rgb(var(--color-white-100) / <alpha-value>)",
+        accent: "rgb(var(--color-accent) / <alpha-value>)",
+        "accent-dark": "rgb(var(--color-accent-dark) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        "surface-light": "rgb(var(--color-surface-light) / <alpha-value>)",
       },
       boxShadow: {
-        card: "0 0 0 1px rgba(255,255,255,0.04)",
+        card: "var(--shadow-card)",
         glow: "0 0 30px rgba(79,172,254,0.12)",
-        glass: "0 8px 32px rgba(0,0,0,0.4)",
+        glass: "var(--shadow-glass)",
       },
       screens: {
         xs: "450px",
@@ -30,7 +30,7 @@ module.exports = {
         display: ["Inter", "system-ui", "sans-serif"],
       },
       backgroundImage: {
-        "hero-pattern": "linear-gradient(to bottom, rgba(3, 3, 10, 0) 50%, #03030a 100%), url('/src/assets/herobg.png')",
+        "hero-pattern": "linear-gradient(to bottom, transparent 50%, rgb(var(--color-primary) / 1) 100%), url('/src/assets/herobg.png')",
         "grid-pattern":
           "linear-gradient(rgba(79,172,254,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79,172,254,0.03) 1px, transparent 1px)",
       },

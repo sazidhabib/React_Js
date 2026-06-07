@@ -3,8 +3,9 @@ import { FaLinkedin, FaEnvelope } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-white/5 py-8">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <footer className="relative border-t border-white/5 py-8 overflow-hidden h-[15vh]">
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="text-slate-500 text-sm">
           &copy; {new Date().getFullYear()} Mahbub Sazid Habib. All rights reserved.
         </p>
@@ -32,7 +33,14 @@ const Footer = () => {
             <FaEnvelope className="w-4 h-4" />
           </a>
         </div>
+
       </div>
+      <img
+        src="/sazid%20habib.png"
+        alt=""
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[15vh] top-14 md:top-10 object-contain opacity-10 pointer-events-none select-none"
+        aria-hidden="true"
+      />
     </footer>
   );
 };

@@ -213,11 +213,27 @@ const projects = [
     One of the core highlights of the project is its Dynamic Layout Builder, where administrators can create and control pages, sections, rows, and columns directly from the admin dashboard without modifying code. The system is optimized for SEO, fast content delivery, image optimization, and scalable content management, making it ideal for modern digital news platforms.`,
     tags: [
       {
+        name: "Next.js",
+        color: "blue-text-gradient",
+      },
+      {
         name: "React",
         color: "blue-text-gradient",
       },
       {
-        name: "JavaScript",
+        name: "javascript",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Node.js",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Express.js",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Bootstrap",
         color: "green-text-gradient",
       },
       {
@@ -225,13 +241,42 @@ const projects = [
         color: "pink-text-gradient",
       },
       {
-        name: "MERN",
+        name: "MySQL",
         color: "blue-text-gradient",
       },
       {
-        name: "e-commerce",
+        name: "SWR",
         color: "pink-text-gradient",
       },
+      {
+        name: "React Hook Form",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Zod",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "JWT",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Bcryptjs",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Multer",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Sharp",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Open Graph",
+        color: "pink-text-gradient",
+      },
+
     ],
     image: pathokbonddhu,
     media: [
@@ -239,58 +284,108 @@ const projects = [
       { type: "image", src: pathokbonddhufullpage },
     ],
     source_code_link:
-      "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
-    live_link: "https://kamrulhasan.com",
+      "#",
+    live_link: "https://pathakbondhu.com/",
     features: [
-      "Dynamic content management system with full CRUD operations",
-      "Bengali-language platform for targeted local audience",
-      "Customizable admin panel for seamless content management",
-      "Article and multimedia publishing with rich text editor",
-      "SEO-optimized layout with meta tag management",
+      "Dynamic News Management system with full CRUD operations",
+      "Advanced Admin Dashboard for complete content control",
+      "Dynamic Homepage Layout Builder (Pages, Sections, Rows & Columns)",
+      "SEO-Optimized News Rendering with Server-Side Rendering (SSR)",
+      "Role-based Authentication & Secure JWT Authorization",
+      "Image Upload, Compression & WebP Optimization",
+      "Rich Text Editor Integration for article publishing",
+      "Advertisement & Banner Management System",
+      "Category, Author & Tag Management",
+      "Responsive and Mobile-Friendly UI",
+      "Fast Client-Side Data Fetching using SWR",
+      "Custom API Architecture with Express.js & Next.js Integration"
     ],
   },
   {
-    id: "kamrulhasan",
-    name: "kamrulhasan",
+    id: "nextideasolution",
+    name: "nextideasolution",
     description:
-      "This project is a dynamic personal website developed for journalist Kamrul Hasan. It serves as an interactive platform to showcase his writings, reflections, experiences, and published reports, offering readers valuable insights into various topics. The website is primarily in Bengali, targeting Bengali-speaking audiences, and is designed with a focus on readability, user engagement, and content accessibility. From top to bottom, every section of the website is fully dynamic and customizable through its powerful admin panel, allowing seamless management of content, including articles, reports, multimedia, and even the website's menu structure.",
+      "Next Idea Solutions is a full-stack web application developed for a digital marketing and web development agency. The platform serves as both a professional corporate website and a powerful admin management system for handling portfolio projects, services, case studies, blogs, client information, team members, and business settings. The project combines a modern frontend experience with a scalable backend architecture, allowing administrators to dynamically manage content, analytics, categories, and site-wide configurations through a centralized dashboard. The application is designed with performance, SEO optimization, scalability, and responsive user experience in mind.",
     tags: [
+      {
+        name: "Next.js",
+        color: "blue-text-gradient",
+      },
       {
         name: "React",
         color: "blue-text-gradient",
       },
       {
-        name: "JavaScript",
-        color: "green-text-gradient",
+        name: "javascript",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Node.js",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "Express.js",
+        color: "blue-text-gradient",
       },
       {
         name: "Tailwind",
         color: "pink-text-gradient",
       },
       {
-        name: "MERN",
+        name: "MySQL",
         color: "blue-text-gradient",
       },
       {
-        name: "e-commerce",
+        name: "SWR",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "React Hook Form",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Zod",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "JWT",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Bcryptjs",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Multer",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "Sharp",
         color: "pink-text-gradient",
       },
     ],
-    image: kamrulhasan,
+    image: nextidea,
     media: [
-      { type: "image", src: kamrulhasan },
-      { type: "image", src: kamrulfullpage },
-      { type: "video", src: kamrulvideo },
+      { type: "image", src: nextidea },
+      { type: "image", src: nextideafullpage },
     ],
     source_code_link:
-      "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
-    live_link: "https://kamrulhasan.com",
+      "#",
+    live_link: "https://nextideasolution.com/",
     features: [
-      "Dynamic content management system with full CRUD operations",
-      "Bengali-language platform for targeted local audience",
-      "Customizable admin panel for seamless content management",
-      "Article and multimedia publishing with rich text editor",
-      "SEO-optimized layout with meta tag management",
+      "Dynamic Service Management system",
+      "Custom Admin Dashboard with Full CRUD Operations",
+      "Case Study & Blog Publishing Platform",
+      "SEO-Optimized Server-Side Rendering (SSR)",
+      "JWT Authentication with Secure Cookie-Based Sessions",
+      "Role-Based Access Control & User Management",
+      "Client & Team Member Management",
+      "Image Upload & Optimization using Sharp",
+      "Contact Form & Email Integration with Nodemailer",
+      "Analytics & Business Settings Management",
+      "Responsive and Mobile-Friendly UI",
+      "RESTful API Architecture with Express.js",
+      "Rate Limiting & Security Middleware Integration",
     ],
   },
   {

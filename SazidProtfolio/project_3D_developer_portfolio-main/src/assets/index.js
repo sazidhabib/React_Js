@@ -52,8 +52,12 @@ import vscode from "./vscode.png";
 import router from "./router.webp";
 import kamrulfullpage from "./kamrulhasan_fullpage.webp";
 import kamrulvideo from "./kamrulhasan.mp4";
+import nextidea from "./nextidea.webp";
 
+import nextideafullpage from "./nextideafullpage.webp";
+import pathokbonddhu from "./pathakbondhu.webp";
 
+import pathokbonddhufullpage from "./pathokbonddhufullpage.webp";
 
 export {
   logo,
@@ -107,4 +111,8 @@ export {
   router,
   kamrulfullpage,
   kamrulvideo,
+  nextidea,
+  nextideafullpage,
+  pathokbonddhu,
+  pathokbonddhufullpage,
 };

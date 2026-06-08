@@ -28,6 +28,10 @@ import {
   FoodOrder,
   kamrulfullpage,
   kamrulvideo,
+  nextidea,
+  nextideafullpage,
+  pathokbonddhu,
+  pathokbonddhufullpage,
 } from "../assets";
 
 export const navLinks = [
@@ -203,6 +207,49 @@ const testimonials = [
 
 const projects = [
   {
+    id: "Pathokbonddho",
+    name: "Pathokbonddho",
+    description: `Pathokbonddho is a full-stack dynamic News Portal and Content Management System (CMS) built to manage and publish news content efficiently. The platform is far more advanced than a traditional static news website, featuring a powerful backend system for managing articles, authors, categories, advertisements, galleries, and fully customizable homepage layouts.
+    One of the core highlights of the project is its Dynamic Layout Builder, where administrators can create and control pages, sections, rows, and columns directly from the admin dashboard without modifying code. The system is optimized for SEO, fast content delivery, image optimization, and scalable content management, making it ideal for modern digital news platforms.`,
+    tags: [
+      {
+        name: "React",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "JavaScript",
+        color: "green-text-gradient",
+      },
+      {
+        name: "Tailwind",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "MERN",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "e-commerce",
+        color: "pink-text-gradient",
+      },
+    ],
+    image: pathokbonddhu,
+    media: [
+      { type: "image", src: pathokbonddhu },
+      { type: "image", src: pathokbonddhufullpage },
+    ],
+    source_code_link:
+      "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
+    live_link: "https://kamrulhasan.com",
+    features: [
+      "Dynamic content management system with full CRUD operations",
+      "Bengali-language platform for targeted local audience",
+      "Customizable admin panel for seamless content management",
+      "Article and multimedia publishing with rich text editor",
+      "SEO-optimized layout with meta tag management",
+    ],
+  },
+  {
     id: "kamrulhasan",
     name: "kamrulhasan",
     description:
@@ -235,7 +282,52 @@ const projects = [
       { type: "image", src: kamrulfullpage },
       { type: "video", src: kamrulvideo },
     ],
-    source_code_link: "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
+    source_code_link:
+      "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
+    live_link: "https://kamrulhasan.com",
+    features: [
+      "Dynamic content management system with full CRUD operations",
+      "Bengali-language platform for targeted local audience",
+      "Customizable admin panel for seamless content management",
+      "Article and multimedia publishing with rich text editor",
+      "SEO-optimized layout with meta tag management",
+    ],
+  },
+  {
+    id: "kamrulhasan",
+    name: "kamrulhasan",
+    description:
+      "This project is a dynamic personal website developed for journalist Kamrul Hasan. It serves as an interactive platform to showcase his writings, reflections, experiences, and published reports, offering readers valuable insights into various topics. The website is primarily in Bengali, targeting Bengali-speaking audiences, and is designed with a focus on readability, user engagement, and content accessibility. From top to bottom, every section of the website is fully dynamic and customizable through its powerful admin panel, allowing seamless management of content, including articles, reports, multimedia, and even the website's menu structure.",
+    tags: [
+      {
+        name: "React",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "JavaScript",
+        color: "green-text-gradient",
+      },
+      {
+        name: "Tailwind",
+        color: "pink-text-gradient",
+      },
+      {
+        name: "MERN",
+        color: "blue-text-gradient",
+      },
+      {
+        name: "e-commerce",
+        color: "pink-text-gradient",
+      },
+    ],
+    image: kamrulhasan,
+    media: [
+      { type: "image", src: kamrulhasan },
+      { type: "image", src: kamrulfullpage },
+      { type: "video", src: kamrulvideo },
+    ],
+    source_code_link:
+      "https://github.com/sazidhabib/React_Js/tree/main/MERN_project",
     live_link: "https://kamrulhasan.com",
     features: [
       "Dynamic content management system with full CRUD operations",
@@ -273,9 +365,7 @@ const projects = [
       },
     ],
     image: pharmasphere,
-    media: [
-      { type: "image", src: pharmasphere },
-    ],
+    media: [{ type: "image", src: pharmasphere }],
     source_code_link: "https://github.com/shafquatulbari/mern-e-commerce",
     live_link: "#",
     features: [
@@ -310,9 +400,7 @@ const projects = [
       },
     ],
     image: snapshop,
-    media: [
-      { type: "image", src: snapshop },
-    ],
+    media: [{ type: "image", src: snapshop }],
     source_code_link: "https://github.com/sazidhabib/SnapShop_e-commerce",
     live_link: "#",
     features: [
@@ -343,9 +431,7 @@ const projects = [
       },
     ],
     image: movie,
-    media: [
-      { type: "image", src: movie },
-    ],
+    media: [{ type: "image", src: movie }],
     source_code_link: "https://github.com/sazidhabib/MovieListingWebsite",
     live_link: "#",
     features: [
@@ -376,9 +462,7 @@ const projects = [
       },
     ],
     image: shopCard,
-    media: [
-      { type: "image", src: shopCard },
-    ],
+    media: [{ type: "image", src: shopCard }],
     source_code_link: "https://github.com/sazidhabib/shopcardreact/tree/master",
     live_link: "#",
     features: [
@@ -413,9 +497,7 @@ const projects = [
       },
     ],
     image: FoodOrder,
-    media: [
-      { type: "image", src: FoodOrder },
-    ],
+    media: [{ type: "image", src: FoodOrder }],
     source_code_link: "https://github.com/sazidhabib/FoodCardApp_React_Redux",
     live_link: "#",
     features: [

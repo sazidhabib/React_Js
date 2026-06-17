@@ -26,9 +26,9 @@
     /* Base Layout Reset */
     .bbc-home-wrapper {
         font-family: var(--bbc-font-main);
-        background-color: #F8F9FA;
+        background-color: #ffffff;
         color: var(--bbc-text-primary);
-        padding: 20px 0;
+        padding: 20px 5px;
     }
 
     /* Breaking News Ticker */
@@ -141,14 +141,14 @@
         letter-spacing: 0.5px;
     }
     .bbc-card-title {
-        font-size: 17px;
+        font-size: 20px !important;
         font-weight: 700;
         line-height: 1.35;
         margin-bottom: 6px;
         color: var(--bbc-text-primary);
     }
     .bbc-card-desc {
-        font-size: 13px;
+        font-size: 17px;
         color: var(--bbc-text-secondary);
         line-height: 1.45;
         margin-bottom: 8px;
@@ -179,7 +179,7 @@
         margin-top: 24px;
     }
     .bbc-section-title {
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 800;
         color: var(--bbc-text-primary);
         text-decoration: none;
@@ -232,9 +232,148 @@
             grid-template-columns: repeat(2, 1fr);
         }
     }
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .bbc-grid-4, .bbc-grid-3, .bbc-grid-2 {
             grid-template-columns: 1fr;
+        }
+    }
+
+    /* Responsive Grid for 2-column sections (Saradesh & Campus, etc.) */
+    .bbc-grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .bbc-grid-2-col {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+    }
+
+    /* BBC Category Section Layout (Desktop: Split Columns, Mobile: Stacked) */
+    .bbc-category-section {
+        display: grid;
+        grid-template-columns: 1.5fr 1.2fr;
+        gap: 24px;
+        margin-bottom: 24px;
+        align-items: start;
+    }
+    
+    .bbc-secondary-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .bbc-lead-card-section {
+        border-bottom: none;
+        padding-bottom: 0;
+        text-decoration: none !important;
+        color: inherit !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .bbc-lead-card-section:hover .bbc-card-title {
+        color: var(--bbc-red);
+        text-decoration: underline;
+    }
+    
+    .bbc-lead-card-section .bbc-card-title {
+        font-size: 20px !important;
+        font-weight: 700;
+        line-height: 1.35;
+        margin: 10px 0 8px 0;
+        color: var(--bbc-text-primary);
+    }
+    
+    .bbc-lead-card-section .bbc-card-desc {
+        font-size: 14px;
+        color: var(--bbc-text-secondary);
+        line-height: 1.45;
+        margin-bottom: 8px;
+    }
+    
+    .bbc-section-divider {
+        border: 0;
+        border-top: 1px solid var(--bbc-border);
+        margin: 12px 0;
+    }
+    
+    .bbc-card-row {
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        align-items: start;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--bbc-border);
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+    
+    .bbc-card-row:hover .bbc-card-title {
+        color: var(--bbc-red);
+        text-decoration: underline;
+    }
+    
+    .bbc-card-row:first-child {
+        padding-top: 0;
+    }
+    
+    .bbc-card-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .bbc-card-row-img-wrapper {
+        width: 120px;
+        height: 75px;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .bbc-card-row-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .bbc-card-row-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+    }
+    
+    .bbc-card-row-content .bbc-card-title {
+        font-size: 17px !important;
+        font-weight: 700;
+        line-height: 1.4;
+        margin: 0;
+        color: var(--bbc-text-primary);
+    }
+    
+    @media (max-width: 768px) {
+        .bbc-category-section {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .bbc-card-row {
+            padding: 10px 0;
+        }
+        
+        .bbc-card-row-img-wrapper {
+            width: 100px;
+            height: 65px;
+        }
+        
+        .bbc-card-row-content .bbc-card-title {
+            font-size: 14px !important;
         }
     }
 
@@ -308,6 +447,13 @@
     /* Poll custom styling */
     .poll-box {
         margin-top: 8px;
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+    .poll-box .custom-control-label {
+        word-break: break-word;
+        white-space: normal;
     }
     .poll-box .custom-radio {
         margin-bottom: 8px;
@@ -354,11 +500,93 @@
         justify-content: center;
         align-items: center;
         margin: 20px 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    /* Facebook widget scroll fix & scale support */
+    .fb-root-wrapper {
+        overflow: hidden;
+        max-width: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+    }
+    .fb-page, .fb-page span, .fb-page iframe {
+        max-width: 100% !important;
+    }
+    @media (max-width: 360px) {
+        .fb-page {
+            transform: scale(0.9);
+            transform-origin: center top;
+        }
+    }
+    @media (max-width: 320px) {
+        .fb-page {
+            transform: scale(0.85);
+            transform-origin: center top;
+        }
+    }
+
+    /* Hero Secondary Card Responsive Styles (Row layout on mobile, vertical card on desktop) */
+    .bbc-hero-secondary-card {
+        text-decoration: none !important;
+        color: inherit !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .bbc-hero-secondary-card:hover .bbc-card-title {
+        color: var(--bbc-red);
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .bbc-hero-middle {
+            display: flex;
+            flex-direction: column;
+            gap: 0 !important;
+        }
+        .bbc-hero-secondary-card {
+            flex-direction: row !important;
+            gap: 16px;
+            align-items: start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--bbc-border);
+        }
+        .bbc-hero-secondary-card:last-child {
+            border-bottom: none;
+        }
+        .bbc-hero-secondary-img-wrapper {
+            width: 100px !important;
+            height: 65px !important;
+            padding-top: 0 !important;
+            flex-shrink: 0;
+        }
+        .bbc-hero-secondary-img-wrapper .bbc-card-img {
+            position: static !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .bbc-hero-secondary-content {
+            flex: 1;
+            padding: 0 !important;
+        }
+        .bbc-hero-secondary-content .bbc-card-title {
+            font-size: 14px !important;
+            margin: 0 !important;
+            line-height: 1.4;
+        }
+        .bbc-hero-secondary-content .bbc-card-category {
+            display: none !important;
+        }
     }
 </style>
 
 <div class="bbc-home-wrapper">
-    <div class="container">
+    
         
         <!-- Breaking News Bar -->
         <div class="bbc-breaking-bar">
@@ -397,13 +625,13 @@
             <!-- Secondary Vertical Grid (Middle Column) -->
             <div class="bbc-hero-middle" style="display: flex; flex-direction: column; gap: 12px;">
                 @foreach ($sliders->take(2) as $slider)
-                    <a href="{{ route('frontend.postBySubcategory.details',[$slider->category->slug ?? 'category',$slider->slug])}}" class="bbc-card">
-                        <div class="bbc-card-img-wrapper">
+                    <a href="{{ route('frontend.postBySubcategory.details',[$slider->category->slug ?? 'category',$slider->slug])}}" class="bbc-card bbc-hero-secondary-card">
+                        <div class="bbc-card-img-wrapper bbc-hero-secondary-img-wrapper">
                             <img class="bbc-card-img" src="{{asset('assets/images/post/'.$slider->image_big)}}" alt="{{ $slider->title }}" />
                         </div>
-                        <div class="bbc-card-content">
+                        <div class="bbc-card-content bbc-hero-secondary-content">
                             <span class="bbc-card-category">{{ $slider->category->title ?? '' }}</span>
-                            <h3 class="bbc-card-title" style="font-size: 15px;">{{strlen($slider->title)>60 ? mb_substr($slider->title,0,60,"utf-8").'...' : $slider->title}}</h3>
+                            <h3 class="bbc-card-title" style="font-size: 15px;">{{ $slider->title }}</h3>
                         </div>
                     </a>
                 @endforeach
@@ -469,16 +697,36 @@
                 <a href="{{ route('frontend.category',$secondcat->slug)}}" class="bbc-section-title">{{ $secondcat->title }}</a>
                 <a href="{{ route('frontend.category',$secondcat->slug)}}" class="bbc-section-more">আরো খবর &raquo;</a>
             </div>
-            <div class="bbc-grid-4">
+            <div class="bbc-category-section">
                 @foreach ($secondcatpostbig as $row)
-                    <a href="{{ route('frontend.postBySubcategory.details',[$secondcat->slug,$row->slug])}}" class="bbc-card">
-                        <div class="bbc-card-img-wrapper">
-                            <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="{{ $row->title }}" />
-                        </div>
-                        <div class="bbc-card-content">
-                            <h3 class="bbc-card-title" style="font-size: 15px;">{{strlen($row->title)>65 ? mb_substr($row->title,0,65,"utf-8").'...' : $row->title}}</h3>
-                        </div>
-                    </a>
+                    @if ($loop->first)
+                        <!-- Lead Card -->
+                        <a href="{{ route('frontend.postBySubcategory.details',[$secondcat->slug,$row->slug])}}" class="bbc-lead-card-section">
+                            <div class="bbc-card-img-wrapper">
+                                <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="{{ $row->title }}" />
+                            </div>
+                            <div class="bbc-card-content">
+                                <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                <p class="bbc-card-desc">{!! strlen($row->short_description)>150 ? mb_substr($row->short_description,0,150,"utf-8").'...' : $row->short_description !!}</p>
+                            </div>
+                        </a>
+                        <!-- Start of Secondary List -->
+                        <div class="bbc-secondary-list">
+                    @else
+                        <!-- Row Card -->
+                        <a href="{{ route('frontend.postBySubcategory.details',[$secondcat->slug,$row->slug])}}" class="bbc-card-row">
+                            <div class="bbc-card-row-img-wrapper">
+                                <img src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                            </div>
+                            <div class="bbc-card-row-content">
+                                <h3 class="bbc-card-title">{{$row->title}}</h3>
+                            </div>
+                        </a>
+                    @endif
+                    
+                    @if ($loop->last)
+                        </div> <!-- End of Secondary List -->
+                    @endif
                 @endforeach
             </div>
         @endif
@@ -524,7 +772,7 @@
             @endif
 
             <!-- Facebook widget -->
-            <div class="bbc-widget" style="margin-bottom: 0; display: flex; flex-direction: column;">
+            <div class="bbc-widget" style="margin-bottom: 0; display: flex; flex-direction: column; max-width: 100%; overflow: hidden;">
                 <div class="bbc-widget-title" style="border-bottom: 2px solid var(--bbc-red);">ফেসবুকে আমরা...</div>
                 <div class="fb-root-wrapper" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 200px;">
                     <div class="fb-root">
@@ -538,7 +786,7 @@
                                               }(document, 'script', 'facebook-jssdk'));
                         </script>
                         <div class="fb-page" data-href="https://www.facebook.com/{{ $gs->facebook_page_url }}" data-tabs="timeline"
-                            data-width="390" data-height="220" data-small-header="true" data-adapt-container-width="true"
+                            data-width="300" data-height="220" data-small-header="true" data-adapt-container-width="true"
                             data-hide-cover="false" data-show-facepile="true"></div>
                     </div>
                 </div>
@@ -564,16 +812,36 @@
                 <a href="{{ route('frontend.category',$thirdcat->slug)}}" class="bbc-section-title">{{ $thirdcat->title }}</a>
                 <a href="{{ route('frontend.category',$thirdcat->slug)}}" class="bbc-section-more">আরো খবর &raquo;</a>
             </div>
-            <div class="bbc-grid-3">
+            <div class="bbc-category-section">
                 @foreach ($thirdcatpostsmall as $row)
-                    <a href="{{ route('frontend.postBySubcategory.details',[$thirdcat->slug,$row->slug])}}" class="bbc-card">
-                        <div class="bbc-card-img-wrapper">
-                            <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="{{ $row->title }}" />
-                        </div>
-                        <div class="bbc-card-content">
-                            <h3 class="bbc-card-title" style="font-size: 15px;">{{strlen($row->title)>65 ? mb_substr($row->title,0,65,"utf-8").'...' : $row->title}}</h3>
-                        </div>
-                    </a>
+                    @if ($loop->first)
+                        <!-- Lead Card -->
+                        <a href="{{ route('frontend.postBySubcategory.details',[$thirdcat->slug,$row->slug])}}" class="bbc-lead-card-section">
+                            <div class="bbc-card-img-wrapper">
+                                <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="{{ $row->title }}" />
+                            </div>
+                            <div class="bbc-card-content">
+                                <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                <p class="bbc-card-desc">{!! strlen($row->short_description)>150 ? mb_substr($row->short_description,0,150,"utf-8").'...' : $row->short_description !!}</p>
+                            </div>
+                        </a>
+                        <!-- Start of Secondary List -->
+                        <div class="bbc-secondary-list">
+                    @else
+                        <!-- Row Card -->
+                        <a href="{{ route('frontend.postBySubcategory.details',[$thirdcat->slug,$row->slug])}}" class="bbc-card-row">
+                            <div class="bbc-card-row-img-wrapper">
+                                <img src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                            </div>
+                            <div class="bbc-card-row-content">
+                                <h3 class="bbc-card-title">{{$row->title}}</h3>
+                            </div>
+                        </a>
+                    @endif
+                    
+                    @if ($loop->last)
+                        </div> <!-- End of Secondary List -->
+                    @endif
                 @endforeach
             </div>
         @endif
@@ -586,7 +854,7 @@
         @endif
 
         <!-- Two Column Categories (Saradesh & Campus) -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+        <div class="bbc-grid-2-col">
             @php
                 $saradeshcat=DB::table('categories')->where('parent_id',null)->skip(5)->first();
                 if ($saradeshcat) {
@@ -604,16 +872,29 @@
                     <div class="bbc-section-header">
                         <a href="{{ route('frontend.category',$saradeshcat->slug)}}" class="bbc-section-title">{{ $saradeshcat->title }}</a>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; flex-direction: column;">
                         @foreach($saradeshcatpostbig as $row)
-                            <a href="{{ route('frontend.postBySubcategory.details',[$saradeshcat->slug,$row->slug])}}" class="bbc-card" style="flex-direction: row; height: auto;">
-                                <div class="bbc-card-img-wrapper" style="width: 140px; padding-top: 100px; flex-shrink: 0;">
-                                    <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
-                                </div>
-                                <div class="bbc-card-content" style="padding: 12px;">
-                                    <h3 class="bbc-card-title" style="font-size: 14px; margin: 0;">{{strlen($row->title)>60 ? mb_substr($row->title,0,60,"utf-8").'...' : $row->title}}</h3>
-                                </div>
-                            </a>
+                            @if ($loop->first)
+                                <a href="{{ route('frontend.postBySubcategory.details',[$saradeshcat->slug,$row->slug])}}" class="bbc-lead-card-section">
+                                    <div class="bbc-card-img-wrapper">
+                                        <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                        <p class="bbc-card-desc">{!! strlen($row->short_description)>100 ? mb_substr($row->short_description,0,100,"utf-8").'...' : $row->short_description !!}</p>
+                                    </div>
+                                </a>
+                                <hr class="bbc-section-divider">
+                            @else
+                                <a href="{{ route('frontend.postBySubcategory.details',[$saradeshcat->slug,$row->slug])}}" class="bbc-card-row">
+                                    <div class="bbc-card-row-img-wrapper">
+                                        <img src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-row-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                    </div>
+                                </a>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -625,16 +906,29 @@
                     <div class="bbc-section-header">
                         <a href="{{ route('frontend.category',$campuscat->slug)}}" class="bbc-section-title">{{ $campuscat->title }}</a>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; flex-direction: column;">
                         @foreach($campuscatpostbig as $row)
-                            <a href="{{ route('frontend.postBySubcategory.details',[$campuscat->slug,$row->slug])}}" class="bbc-card" style="flex-direction: row; height: auto;">
-                                <div class="bbc-card-img-wrapper" style="width: 140px; padding-top: 100px; flex-shrink: 0;">
-                                    <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
-                                </div>
-                                <div class="bbc-card-content" style="padding: 12px;">
-                                    <h3 class="bbc-card-title" style="font-size: 14px; margin: 0;">{{strlen($row->title)>60 ? mb_substr($row->title,0,60,"utf-8").'...' : $row->title}}</h3>
-                                </div>
-                            </a>
+                            @if ($loop->first)
+                                <a href="{{ route('frontend.postBySubcategory.details',[$campuscat->slug,$row->slug])}}" class="bbc-lead-card-section">
+                                    <div class="bbc-card-img-wrapper">
+                                        <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                        <p class="bbc-card-desc">{!! strlen($row->short_description)>100 ? mb_substr($row->short_description,0,100,"utf-8").'...' : $row->short_description !!}</p>
+                                    </div>
+                                </a>
+                                <hr class="bbc-section-divider">
+                            @else
+                                <a href="{{ route('frontend.postBySubcategory.details',[$campuscat->slug,$row->slug])}}" class="bbc-card-row">
+                                    <div class="bbc-card-row-img-wrapper">
+                                        <img src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-row-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                    </div>
+                                </a>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -663,7 +957,7 @@
         @endif
 
         <!-- Two Column Categories 2 (Entertainment & Sports) -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; margin-bottom: 40px;">
+        <div class="bbc-grid-2-col" style="margin-bottom: 40px;">
             @php
                 $binodoncat=DB::table('categories')->where('parent_id',null)->skip(7)->first();
                 if ($binodoncat) {
@@ -681,16 +975,29 @@
                     <div class="bbc-section-header">
                         <a href="{{ route('frontend.category',$binodoncat->slug)}}" class="bbc-section-title">{{ $binodoncat->title }}</a>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; flex-direction: column;">
                         @foreach($binodoncatpostbig as $row)
-                            <a href="{{ route('frontend.postBySubcategory.details',[$binodoncat->slug,$row->slug])}}" class="bbc-card" style="flex-direction: row; height: auto;">
-                                <div class="bbc-card-img-wrapper" style="width: 140px; padding-top: 100px; flex-shrink: 0;">
-                                    <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
-                                </div>
-                                <div class="bbc-card-content" style="padding: 12px;">
-                                    <h3 class="bbc-card-title" style="font-size: 14px; margin: 0;">{{strlen($row->title)>60 ? mb_substr($row->title,0,60,"utf-8").'...' : $row->title}}</h3>
-                                </div>
-                            </a>
+                            @if ($loop->first)
+                                <a href="{{ route('frontend.postBySubcategory.details',[$binodoncat->slug,$row->slug])}}" class="bbc-lead-card-section">
+                                    <div class="bbc-card-img-wrapper">
+                                        <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                        <p class="bbc-card-desc">{!! strlen($row->short_description)>100 ? mb_substr($row->short_description,0,100,"utf-8").'...' : $row->short_description !!}</p>
+                                    </div>
+                                </a>
+                                <hr class="bbc-section-divider">
+                            @else
+                                <a href="{{ route('frontend.postBySubcategory.details',[$binodoncat->slug,$row->slug])}}" class="bbc-card-row">
+                                    <div class="bbc-card-row-img-wrapper">
+                                        <img src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-row-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                    </div>
+                                </a>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -702,16 +1009,29 @@
                     <div class="bbc-section-header">
                         <a href="{{ route('frontend.category',$khelacat->slug)}}" class="bbc-section-title">{{ $khelacat->title }}</a>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; flex-direction: column;">
                         @foreach($khelacatpostbig as $row)
-                            <a href="{{ route('frontend.postBySubcategory.details',[$khelacat->slug,$row->slug])}}" class="bbc-card" style="flex-direction: row; height: auto;">
-                                <div class="bbc-card-img-wrapper" style="width: 140px; padding-top: 100px; flex-shrink: 0;">
-                                    <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
-                                </div>
-                                <div class="bbc-card-content" style="padding: 12px;">
-                                    <h3 class="bbc-card-title" style="font-size: 14px; margin: 0;">{{strlen($row->title)>60 ? mb_substr($row->title,0,60,"utf-8").'...' : $row->title}}</h3>
-                                </div>
-                            </a>
+                            @if ($loop->first)
+                                <a href="{{ route('frontend.postBySubcategory.details',[$khelacat->slug,$row->slug])}}" class="bbc-lead-card-section">
+                                    <div class="bbc-card-img-wrapper">
+                                        <img class="bbc-card-img" src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                        <p class="bbc-card-desc">{!! strlen($row->short_description)>100 ? mb_substr($row->short_description,0,100,"utf-8").'...' : $row->short_description !!}</p>
+                                    </div>
+                                </a>
+                                <hr class="bbc-section-divider">
+                            @else
+                                <a href="{{ route('frontend.postBySubcategory.details',[$khelacat->slug,$row->slug])}}" class="bbc-card-row">
+                                    <div class="bbc-card-row-img-wrapper">
+                                        <img src="{{asset('assets/images/post/'.$row->image_big)}}" alt="" />
+                                    </div>
+                                    <div class="bbc-card-row-content">
+                                        <h3 class="bbc-card-title">{{$row->title}}</h3>
+                                    </div>
+                                </a>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -748,7 +1068,7 @@
             </audio>
         </div>
 
-    </div>
+    
 </div>
 
 @endsection
